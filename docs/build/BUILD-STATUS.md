@@ -151,24 +151,24 @@ owning modules; see `docs/build/HANDOFFS/05-finance.md`.
 
 Status means implementation readiness and evidence, not document existence.
 
-| ID  | Module                                    | Status            |
-| --- | ----------------------------------------- | ----------------- |
-| M00 | Decision and specification control        | IN PROGRESS       |
+| ID  | Module                                    | Status                                                                              |
+| --- | ----------------------------------------- | ----------------------------------------------------------------------------------- |
+| M00 | Decision and specification control        | IN PROGRESS                                                                         |
 | M01 | Platform/domain primitives                | VERIFIED (finance and authorization sub-slices; broader module remains conditional) |
-| M02 | Identity/membership/sessions              | VERIFIED          |
-| M03 | Roles/permissions/approvals               | VERIFIED          |
-| M04 | Audit/integrity/corrections evidence      | BUILD-READY       |
-| M05 | Catalogue/pricing/search                  | BUILD-READY       |
-| M06 | Customers/suppliers/payment methods       | REQUIRES DECISION |
-| M07 | Sales/payments/credit/repayments/receipts | BUILD-READY       |
-| M08 | Inventory/costing                         | BUILD-READY       |
-| M09 | Purchasing/supplier liabilities/returns   | BUILD-READY       |
-| M10 | Customer returns/refunds/corrections      | REQUIRES DECISION |
-| M11 | Business day/cash/reconciliation          | REQUIRES DECISION |
-| M12 | Incentives/management reporting           | BUILD-READY       |
-| M13 | Offline sync/conflicts                    | REQUIRES DECISION |
-| M14 | Notifications/localization/operations     | REQUIRES DECISION |
-| M15 | V1 integration/acceptance                 | BLOCKED           |
+| M02 | Identity/membership/sessions              | VERIFIED                                                                            |
+| M03 | Roles/permissions/approvals               | VERIFIED                                                                            |
+| M04 | Audit/integrity/corrections evidence      | BUILD-READY                                                                         |
+| M05 | Catalogue/pricing/search                  | BUILD-READY                                                                         |
+| M06 | Customers/suppliers/payment methods       | REQUIRES DECISION                                                                   |
+| M07 | Sales/payments/credit/repayments/receipts | BUILD-READY                                                                         |
+| M08 | Inventory/costing                         | BUILD-READY                                                                         |
+| M09 | Purchasing/supplier liabilities/returns   | BUILD-READY                                                                         |
+| M10 | Customer returns/refunds/corrections      | REQUIRES DECISION                                                                   |
+| M11 | Business day/cash/reconciliation          | REQUIRES DECISION                                                                   |
+| M12 | Incentives/management reporting           | BUILD-READY                                                                         |
+| M13 | Offline sync/conflicts                    | REQUIRES DECISION                                                                   |
+| M14 | Notifications/localization/operations     | REQUIRES DECISION                                                                   |
+| M15 | V1 integration/acceptance                 | BLOCKED                                                                             |
 
 ## Locked integration invariants
 
