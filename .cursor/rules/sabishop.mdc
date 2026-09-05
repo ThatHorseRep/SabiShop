@@ -1,0 +1,6 @@
+---
+description: Sabi Shop project rules
+alwaysApply: true
+---
+
+Follow `AGENTS.md` at the repository root. It defines validation commands (`npm test`, `npm run lint`, `npm run build`), feature-branch workflow, scope limits, tenant/authorization/audit safety rules, documentation requirements, and commit/push/PR/merge approval gates. Format only changed files.

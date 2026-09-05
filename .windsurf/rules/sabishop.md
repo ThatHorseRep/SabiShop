@@ -1,0 +1,1 @@
+Follow `AGENTS.md` at the repository root. It is the single source of truth for Sabi Shop conventions, validation commands, branch/PR workflow, scope rules, safety invariants, documentation, and approval gates. Format only changed files; never reformat the whole repository.
