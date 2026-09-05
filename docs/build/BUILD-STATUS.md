@@ -74,6 +74,36 @@ data/history, retry/synchronization, persistence-backed audit, reports, and
 feature-specific failure behavior remain deferred because those modules do
 not exist yet.
 
+## Domain-state slice
+
+**Status:** VERIFIED — domain contract and state-machine kernel
+
+Implemented:
+
+- Canonical typed state machines for sale, payment, credit/debt, return,
+  correction, reconciliation, synchronization, and authorization.
+- Invariant helpers for completion authority, confirmed payment, separation of
+  duties, inventory movement evidence, and expected cash.
+- Domain tests for normal, unauthorized, retry, failure, history-preserving,
+  and reporting-relevant behavior.
+- Slice handoff at `docs/build/HANDOFFS/04-domain-state.md`.
+
+Verification on 2026-09-05:
+
+```text
+npm test               PASS (2 files, 9 tests)
+npm run lint           PASS
+npm run build          PASS (TypeScript + Vite production build)
+git diff --check       PASS
+npm run format:check   FAIL (pre-existing repository-wide formatting drift)
+```
+
+The format failure is not caused only by this slice: the existing script
+reports formatting drift throughout the baseline repository. The new slice
+files were formatted individually. Persistence, tenant/RLS, API, report
+projection, external payment, and full synchronization conflict tests remain
+downstream because this slice intentionally adds no such modules.
+
 ## Current repository assessment
 
 | Area                                  | Status                                               | Evidence                                                      |
