@@ -48,6 +48,27 @@ describe('authorization boundary', () => {
     ).toMatchObject({ allowed: false, reason: 'permission_denied' })
   })
 
+  it('denies staff purchasing authority while allowing management purchasing authority', () => {
+    expect(
+      authorize(session(), {
+        permission: 'purchase:record',
+        businessId: 'business-a',
+      }),
+    ).toMatchObject({ allowed: false, reason: 'permission_denied' })
+
+    expect(
+      authorize(
+        session({
+          user: { userId: 'manager-1', displayName: 'Mina', active: true },
+          memberships: [
+            { businessId: 'business-a', roles: ['manager'], active: true },
+          ],
+        }),
+        { permission: 'purchase:record', businessId: 'business-a' },
+      ),
+    ).toMatchObject({ allowed: true, reason: 'allowed' })
+  })
+
   it('denies access to another business even when membership exists', () => {
     expect(
       authorize(session(), {
