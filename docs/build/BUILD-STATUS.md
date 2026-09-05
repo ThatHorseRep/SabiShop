@@ -59,7 +59,7 @@ Status means implementation readiness and evidence, not document existence.
 | ID  | Module                                    | Status            |
 | --- | ----------------------------------------- | ----------------- |
 | M00 | Decision and specification control        | IN PROGRESS       |
-| M01 | Platform/domain primitives                | REQUIRES DECISION |
+| M01 | Platform/domain primitives                | CONDITIONAL       |
 | M02 | Identity/membership/sessions              | REQUIRES DECISION |
 | M03 | Roles/permissions/approvals               | BUILD-READY       |
 | M04 | Audit/integrity/corrections evidence      | BUILD-READY       |
