@@ -1,9 +1,9 @@
 # Sabi Shop Build Status
 
 **As of:** 2026-09-05  
-**Overall:** **NOT READY** — specification baseline is substantially
-reconciled, but no implementation has been verified and the pre-build gate is
-not passed.
+**Overall:** **NOT READY** — the database/tenant foundation slice is implemented,
+but executable PostgreSQL verification and the wider pre-build gate remain
+pending.
 
 ## Current repository assessment
 
@@ -17,8 +17,8 @@ not passed.
 | Identity/recovery/device policy | REQUIRES DECISION | `36` and H11 Q25–Q27 |
 | Offline authorization/conflict policy | REQUIRES DECISION | `34`, H06, H11 Q22–Q24 |
 | Backup RPO/RTO/retention | REQUIRES DECISION | `33`, H11 Q28–Q31 |
-| Application implementation | NOT STARTED | No application source/build/test harness in repository |
-| Verification evidence | BLOCKED | No executable tests or release candidate |
+| Application implementation | IN PROGRESS | Database/tenant foundation exists; feature modules are not implemented |
+| Verification evidence | PARTIAL | Static validation completed; PostgreSQL/pgTAP execution is pending |
 
 ## Module status
 
@@ -27,7 +27,7 @@ Status means implementation readiness and evidence, not document existence.
 | ID | Module | Status | Blocking reason / next evidence |
 |---|---|---|---|
 | M00 | Decision and specification control | IN PROGRESS | Create traceable decision propagation and handoff workflow. |
-| M01 | Platform/domain primitives | REQUIRES DECISION | Fix exact IDs, precision, timezone, error envelope, migration strategy. |
+| M01 | Platform/domain primitives | CONDITIONAL | PostgreSQL foundation migration and tenant constraints implemented; exact UUID policy, precision, error envelope, and database execution evidence remain pending. |
 | M02 | Identity/membership/sessions | REQUIRES DECISION | Resolve authentication, recovery, session/device policy. |
 | M03 | Roles/permissions/approvals | BUILD-READY | Implement server-side matrix, then direct-call and self-approval tests. |
 | M04 | Audit/integrity/corrections evidence | BUILD-READY | Implement append-only evidence and tamper checks; prove with integrity tests. |
@@ -87,4 +87,3 @@ transitions, failure behavior, offline/sync behavior, reporting consequences,
 and tests from `51-qa-test-plan.md`, `52-scenario-matrix.md`, and
 `49-failure-testing.md`. Every release candidate must also cover the 15
 mandatory V1 regression domains listed in the QA plan.
-
