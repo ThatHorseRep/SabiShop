@@ -5,8 +5,9 @@
 ## Overall
 
 The specification baseline is substantially reconciled. The engineering
-foundation is implemented and verified; domain implementation remains
-blocked or pending the decisions recorded below.
+foundation and authorization boundary are implemented and verified; other
+domain implementation remains blocked or pending the decisions recorded
+below.
 
 ## Foundation slice
 
@@ -38,19 +39,55 @@ storage, synchronization, reports, POS, inventory, financial behavior, and
 domain failure/retry tests are not applicable until those modules exist. No
 product rules were invented for this slice.
 
+## Authorization slice
+
+**Status:** VERIFIED
+
+Implemented:
+
+- provider-neutral authentication adapter and session manager
+- user identity separated from device identity
+- explicit active business context and membership checks
+- Owner, Manager, and Staff role capabilities
+- explicit permission catalogue with deny-by-default evaluation
+- server/domain authorization boundary for consequential operations
+- tenant checks, stale/revoked session checks, device checks, and state
+  checks
+- approval verification contract, self-approval prevention, and offline
+  permission restrictions
+- authorization-required and permission-denied UI states
+- authorization decision/audit event contract
+
+Verification passed on 2026-09-05:
+
+```text
+npm run test -- --run  PASS (9 tests)
+npm run lint           PASS
+npm run build          PASS (TypeScript + Vite production build)
+npx prettier --check src/App.tsx src/auth docs/build/HANDOFFS/03-authorization.md  PASS
+```
+
+The slice tests cover normal authorized use, unauthorized use, cross-business
+access, role escalation, direct service/API invocation bypassing UI,
+self-approval, offline restrictions, and stale sessions. Saved domain
+data/history, retry/synchronization, persistence-backed audit, reports, and
+feature-specific failure behavior remain deferred because those modules do
+not exist yet.
+
 ## Current repository assessment
 
-| Area                                  | Status                                            | Evidence                                                      |
-| ------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------- |
-| Product vision and V1 boundary        | BUILD-READY                                       | `01-product-vision.md`, `50-mvp-scope.md`                     |
-| Locked business decisions             | BUILD-READY                                       | `00-final-decision-register.md`, Product Bible reconciliation |
-| Business invariants and state rules   | BUILD-READY                                       | `03`–`10`, `27`, `28`, `55`, H01–H02                          |
-| UX/design direction                   | BUILD-READY with implementation decisions pending | `11`–`22`, `29`                                               |
-| Data/API technical contract           | REQUIRES DECISION                                 | `24`–`26`, `43`–`44`                                          |
-| Identity/recovery/device policy       | REQUIRES DECISION                                 | `36` and H11 Q25–Q27                                          |
-| Offline authorization/conflict policy | REQUIRES DECISION                                 | `34`, H06, H11 Q22–Q24                                        |
-| Backup RPO/RTO/retention              | REQUIRES DECISION                                 | `33`, H11 Q28–Q31                                             |
-| Application foundation                | VERIFIED                                          | `docs/build/HANDOFFS/01-foundation.md`                        |
+| Area                                  | Status                                               | Evidence                                                      |
+| ------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------- |
+| Product vision and V1 boundary        | BUILD-READY                                          | `01-product-vision.md`, `50-mvp-scope.md`                     |
+| Locked business decisions             | BUILD-READY                                          | `00-final-decision-register.md`, Product Bible reconciliation |
+| Business invariants and state rules   | BUILD-READY                                          | `03`–`10`, `27`, `28`, `55`, H01–H02                          |
+| UX/design direction                   | BUILD-READY with implementation decisions pending    | `11`–`22`, `29`                                               |
+| Data/API technical contract           | REQUIRES DECISION                                    | `24`–`26`, `43`–`44`                                          |
+| Identity/recovery/device policy       | BUILD-READY for authorization seam; provider pending | `36`, `src/auth/session.ts`, and H11 Q25–Q27                  |
+| Offline authorization/conflict policy | REQUIRES DECISION                                    | `34`, H06, H11 Q22–Q24                                        |
+| Backup RPO/RTO/retention              | REQUIRES DECISION                                    | `33`, H11 Q28–Q31                                             |
+| Application foundation                | VERIFIED                                             | `docs/build/HANDOFFS/01-foundation.md`                        |
+| Authorization boundary                | VERIFIED                                             | `docs/build/HANDOFFS/03-authorization.md` and `src/auth/`     |
 
 ## Module status
 
@@ -60,8 +97,8 @@ Status means implementation readiness and evidence, not document existence.
 | --- | ----------------------------------------- | ----------------- |
 | M00 | Decision and specification control        | IN PROGRESS       |
 | M01 | Platform/domain primitives                | REQUIRES DECISION |
-| M02 | Identity/membership/sessions              | REQUIRES DECISION |
-| M03 | Roles/permissions/approvals               | BUILD-READY       |
+| M02 | Identity/membership/sessions              | VERIFIED          |
+| M03 | Roles/permissions/approvals               | VERIFIED          |
 | M04 | Audit/integrity/corrections evidence      | BUILD-READY       |
 | M05 | Catalogue/pricing/search                  | BUILD-READY       |
 | M06 | Customers/suppliers/payment methods       | REQUIRES DECISION |

@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { AuthorizationRequiredState } from './auth/AuthStates'
 
 type ErrorBoundaryProps = { children: ReactNode }
 type ErrorBoundaryState = { hasError: boolean }
@@ -59,6 +60,15 @@ function App() {
           <span className="status" role="status">
             Ready for domain modules
           </span>
+        </section>
+        <section className="status-card" aria-labelledby="authorization-status">
+          <h2 id="authorization-status">Identity and access</h2>
+          <AuthorizationRequiredState />
+          <p>
+            Actions will be authorized by active user, device, business
+            membership, role, permission, operation state, and approval
+            requirements on the service boundary.
+          </p>
         </section>
       </main>
     </AppErrorBoundary>
