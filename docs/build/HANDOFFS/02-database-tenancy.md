@@ -1,7 +1,7 @@
 # Handoff 02 — Database and Tenant Isolation
 
 **Module:** M01 platform/domain primitives and the M02 identity boundary  
-**Status:** Foundation implemented; database execution pending PostgreSQL test environment  
+**Status:** Foundation implemented; application CI checks pass; database execution pending PostgreSQL test environment
 **Migration:** `migrations/001_foundation.sql`  
 **Verification:** `tests/database/001_foundation_isolation.sql`
 
@@ -60,27 +60,28 @@ corrections; soft deletion must not hide historical truth.
 
 ## Traceability
 
-| Decision | Implementation |
-|---|---|
-| H04 §1–§4: business is the ownership boundary | `business_id` on all foundation-owned records and RLS |
-| H04 §6: switching re-establishes context | transaction-local `app.user_id`; service cache invalidation requirement |
-| H04 §7: security failures remain evidence | append-only `audit_events` |
-| D02 §5.2–§5.6: opaque IDs, timestamps, actors, FKs, deletion rules | UUIDs, `timestamptz`, actor membership, restrictive FKs |
-| D02 §47–§49: reproducible migrations and deterministic conventions | numbered transactional migration and this handoff |
-| D02 §55: authoritative evidence vs derived state | no sales/inventory/reporting projections are introduced here |
-| H08: cross-business access, audit deletion, sync replay controls | RLS, composite FKs, scoped sync idempotency key |
+| Decision                                                           | Implementation                                                          |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| H04 §1–§4: business is the ownership boundary                      | `business_id` on all foundation-owned records and RLS                   |
+| H04 §6: switching re-establishes context                           | transaction-local `app.user_id`; service cache invalidation requirement |
+| H04 §7: security failures remain evidence                          | append-only `audit_events`                                              |
+| D02 §5.2–§5.6: opaque IDs, timestamps, actors, FKs, deletion rules | UUIDs, `timestamptz`, actor membership, restrictive FKs                 |
+| D02 §47–§49: reproducible migrations and deterministic conventions | numbered transactional migration and this handoff                       |
+| D02 §55: authoritative evidence vs derived state                   | no sales/inventory/reporting projections are introduced here            |
+| H08: cross-business access, audit deletion, sync replay controls   | RLS, composite FKs, scoped sync idempotency key                         |
 
 ## Validation record
 
-| Check | Result | Evidence |
-|---|---|---|
-| Normal foundation workflow | PASS by inspection | User → business → membership → device/audit/sync relationships are represented with required foreign keys |
-| Unauthorized reads and writes | PASS by inspection; executable run pending | RLS policies and isolation cases are in `tests/database/001_foundation_isolation.sql` |
-| Saved data and history | PASS by inspection | UUID keys, timestamps, restrictive foreign keys, immutable business creator, append-only audit trigger |
-| Offline/retry/failure behavior | PASS by inspection; domain execution pending | Business-scoped sync idempotency key and explicit received/accepted/rejected/conflicted states |
-| Reports and related modules | NOT APPLICABLE to this slice | No sales, inventory, credit, reporting, or UI workflows were added |
-| Existing build/type/lint/test commands | NOT AVAILABLE | Repository contains no application source, package manifest, build harness, or installed `psql`/pgTAP runner |
-| Static repository validation | PASS | `git diff --check`; migration/test/handoff files are present and scope-limited |
+| Check                                  | Result                                       | Evidence                                                                                                                             |
+| -------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Normal foundation workflow             | PASS by inspection                           | User → business → membership → device/audit/sync relationships are represented with required foreign keys                            |
+| Unauthorized reads and writes          | PASS by inspection; executable run pending   | RLS policies and isolation cases are in `tests/database/001_foundation_isolation.sql`                                                |
+| Saved data and history                 | PASS by inspection                           | UUID keys, timestamps, restrictive foreign keys, immutable business creator, append-only audit trigger                               |
+| Offline/retry/failure behavior         | PASS by inspection; domain execution pending | Business-scoped sync idempotency key and explicit received/accepted/rejected/conflicted states                                       |
+| Reports and related modules            | NOT APPLICABLE to this slice                 | No sales, inventory, credit, reporting, or UI workflows were added                                                                   |
+| Existing build/type/lint/test commands | PASS                                         | `npm run lint`, `npm run test` (1 test), and `npm run build` (TypeScript + Vite)                                                     |
+| Formatting validation                  | PASS in CI-equivalent mode                   | Staged LF `BUILD-STATUS.md` passes Prettier; Windows working-tree CRLF conversion makes the broad local check report false positives |
+| Static repository validation           | PASS                                         | `git diff --check`; migration/test/handoff files are present and scope-limited                                                       |
 
 The isolation script is pgTAP-style SQL and must run as a non-owner database
 role so PostgreSQL RLS is exercised. It proves read isolation, mutation
