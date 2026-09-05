@@ -1,1 +1,98 @@
-# Sabi Shop Build Status**As of:** 2026-09-05## OverallThe specification baseline is substantially reconciled. The engineeringfoundation is implemented and verified; domain implementation remainsblocked or pending the decisions recorded below.## Foundation slice**Status:** VERIFIEDImplemented:- React + Vite TypeScript application shell- strict TypeScript, ESLint, Prettier, and Vitest configuration- reproducible `npm ci` installation- accessible mobile-first shell and uncaught UI error recovery- public-only environment guidance- GitHub Actions baseline for formatting, lint, tests, and build- developer documentation and foundation handoffVerification passed on 2026-09-05:```textnpm ci                 PASSnpm run format:check   PASSnpm run lint           PASSnpm run test           PASS (1 test)npm run build          PASS (TypeScript + Vite production build)```The current test covers the normal application-shell render and statusannouncement. Authentication, authorization, persistence, history, offlinestorage, synchronization, reports, POS, inventory, financial behavior, anddomain failure/retry tests are not applicable until those modules exist. Noproduct rules were invented for this slice.## Current repository assessment| Area                                  | Status                                            | Evidence                                                      || ------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------- || Product vision and V1 boundary        | BUILD-READY                                       | `01-product-vision.md`, `50-mvp-scope.md`                     || Locked business decisions             | BUILD-READY                                       | `00-final-decision-register.md`, Product Bible reconciliation || Business invariants and state rules   | BUILD-READY                                       | `03`–`10`, `27`, `28`, `55`, H01–H02                          || UX/design direction                   | BUILD-READY with implementation decisions pending | `11`–`22`, `29`                                               || Data/API technical contract           | REQUIRES DECISION                                 | `24`–`26`, `43`–`44`                                          || Identity/recovery/device policy       | REQUIRES DECISION                                 | `36` and H11 Q25–Q27                                          || Offline authorization/conflict policy | REQUIRES DECISION                                 | `34`, H06, H11 Q22–Q24                                        || Backup RPO/RTO/retention              | REQUIRES DECISION                                 | `33`, H11 Q28–Q31                                             || Application foundation                | VERIFIED                                          | `docs/build/HANDOFFS/01-foundation.md`                        |## Module statusStatus means implementation readiness and evidence, not document existence.| ID  | Module                                    | Status            || --- | ----------------------------------------- | ----------------- || M00 | Decision and specification control        | IN PROGRESS       || M01 | Platform/domain primitives                | REQUIRES DECISION || M02 | Identity/membership/sessions              | REQUIRES DECISION || M03 | Roles/permissions/approvals               | BUILD-READY       || M04 | Audit/integrity/corrections evidence      | BUILD-READY       || M05 | Catalogue/pricing/search                  | BUILD-READY       || M06 | Customers/suppliers/payment methods       | REQUIRES DECISION || M07 | Sales/payments/credit/repayments/receipts | BUILD-READY       || M08 | Inventory/costing                         | BUILD-READY       || M09 | Purchasing/supplier liabilities/returns   | BUILD-READY       || M10 | Customer returns/refunds/corrections      | REQUIRES DECISION || M11 | Business day/cash/reconciliation          | REQUIRES DECISION || M12 | Incentives/management reporting           | BUILD-READY       || M13 | Offline sync/conflicts                    | REQUIRES DECISION || M14 | Notifications/localization/operations     | REQUIRES DECISION || M15 | V1 integration/acceptance                 | BLOCKED           |## Locked integration invariants- No completed business record is deleted or silently overwritten.- Every business-owned record is tenant-scoped and authorization is enforced  at the authoritative boundary.- Retried events are idempotent; conflicts preserve evidence and surface  review.- Inventory is derived from accepted movements; negative stock is visible as  an exception; weighted-average cost does not rewrite historical COGS.- A transfer/payment is not successful until its required confirmation exists.- Tax/VAT is first-class data through sale, correction, return, and reporting.- Business sessions can cross midnight and retain cash discrepancies.- Gross Profit is Net Recognized Selling Value minus COGS.## Unresolved decisionsOpen product decisions include H11 Q01–Q36, especially transactionterminology, revenue timing, discount authority, tax mode, stock availability,returned-stock condition, credit/write-off policy, custody/session/reopening,offline authority, identity recovery, retention/RPO/RTO, multi-branch boundary,integrations, and exception ownership. The minimum customer profile questionalso remains open; Name + Phone is the corpus baseline.Exact API envelopes, event identifiers, sync ordering/conflict algorithms,routes, tokens, breakpoints, infrastructure, backend/database, migrationtool, authentication provider, and PWA service-worker policy must be recordedbefore their modules are verified.
+# Sabi Shop Build Status
+
+**As of:** 2026-09-05
+
+## Overall
+
+The engineering foundation and the M08 inventory domain slice are implemented
+and verified. Persistence, authentication/authorization integration, offline
+synchronization, reporting, and the remaining domain modules are still
+downstream work.
+
+## Verified foundation
+
+- React + Vite TypeScript application shell.
+- Strict TypeScript, ESLint, Prettier, and Vitest configuration.
+- Reproducible `npm ci` installation.
+- Accessible shell with status announcement and uncaught UI error recovery.
+- Public-only environment guidance.
+- GitHub Actions baseline for formatting, lint, tests, and build.
+- Foundation and tenant-isolation migrations/tests documented in
+  `docs/build/HANDOFFS/01-foundation.md` and
+  `docs/build/HANDOFFS/02-database-tenancy.md`.
+
+## Verified inventory slice
+
+**Module:** M08 — Inventory and costing
+**Status:** IMPLEMENTED DOMAIN SLICE
+**Handoff:** `docs/build/HANDOFFS/07-inventory.md`
+
+Implemented:
+
+- Append-only inventory movement ledger.
+- Receipts, sales deductions, customer returns, supplier returns, and
+  adjustments.
+- Sellable and held stock balances derived from movements.
+- Weighted-average valuation and sale-time historical COGS.
+- Explicit provisional COGS for negative-stock sales.
+- Negative-stock exception visibility and explainability.
+- Historical reconstruction by ledger sequence.
+- Integer-kobo money and scaled base-unit quantities using `bigint`.
+- Duplicate client-event idempotency and stale-version concurrency rejection.
+- Offline-safe receipt data at the domain boundary.
+
+Validation on 2026-09-05:
+
+```text
+npm test                                      PASS (9 tests)
+npm run build                                 PASS
+npm run lint                                  PASS
+npx prettier --check <inventory slice files>  PASS
+git diff --check                              PASS
+```
+
+The test suite covers the normal movement workflow, weighted-average
+recalculation, returns, adjustments, negative stock, later receipts,
+historical reconstruction, duplicate retry, and concurrent movement failure.
+Authorization and durable saved-data tests are not claimed for this in-memory
+slice; they belong to the tenant/persistence adapters. Report integration is
+also not applicable because no report module exists yet.
+
+## Current module assessment
+
+| Area                                        | Status                                     | Evidence                                                                      |
+| ------------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------------------- |
+| Product vision and V1 boundary              | BUILD-READY                                | `01-product-vision.md`, `50-mvp-scope.md`                                     |
+| Locked business decisions                   | BUILD-READY                                | `00-final-decision-register.md` and reconciled specifications                 |
+| Business invariants and state rules         | BUILD-READY                                | `03`–`10`, `27`, `28`, `55`, H01–H02                                          |
+| Application foundation                      | VERIFIED                                   | `docs/build/HANDOFFS/01-foundation.md`                                        |
+| Tenant/database foundation                  | IMPLEMENTED; execution environment pending | `migrations/001_foundation.sql`, `docs/build/HANDOFFS/02-database-tenancy.md` |
+| M08 inventory/costing                       | VERIFIED DOMAIN SLICE                      | `src/domain/inventory.ts`, `src/domain/inventory.test.ts`                     |
+| M09 purchasing/supplier liabilities/returns | BUILD-READY; integration pending           | `03-supplier-and-purchasing-rules.md`                                         |
+| M07 sales/payments/credit/receipts          | BUILD-READY; integration pending           | `27-sales-and-transaction-rules.md`                                           |
+| M05 catalogue/pricing/search                | BUILD-READY; integration pending           | `37-catalog-and-search.md`                                                    |
+| M10 customer returns/refunds/corrections    | REQUIRES INTEGRATION                       | `05-returns-and-refunds-rules.md`                                             |
+| M13 offline sync/conflicts                  | REQUIRES DECISION                          | `34-offline-sync.md`, H06, H11                                                |
+| M11 cash/reconciliation                     | REQUIRES DECISION                          | `06-cash-and-reconciliation-rules.md`                                         |
+| M15 V1 integration/acceptance               | BLOCKED                                    | dependent modules and unresolved technical decisions                          |
+
+## Locked integration invariants
+
+- No completed business record is deleted or silently overwritten.
+- Every business-owned record is tenant-scoped at the authoritative boundary.
+- Retried events are idempotent; conflicts preserve evidence and surface review.
+- Inventory is derived from accepted movements; negative stock remains visible as
+  an exception; weighted-average cost does not rewrite historical COGS.
+- A transfer/payment is not successful until required confirmation exists.
+- Tax/VAT remains first-class through sale, correction, return, and reporting.
+- Gross Profit is Net Recognized Selling Value minus COGS.
+
+## Known unresolved decisions
+
+The inventory slice does not resolve the existing open decisions around API
+envelopes, authentication provider, authorization/approval enforcement,
+durable database/migration adapter, offline authority and conflict ordering,
+quantity/unit formatting, report read models, tax mode, identity recovery,
+retention/RPO/RTO, multi-branch boundaries, integrations, or exception
+ownership. These remain tracked in the specification and clarification
+registers; no new product rule was introduced here.
