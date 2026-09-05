@@ -32,6 +32,24 @@ npm run test
 npm run build
 ```
 
+All commands passed on 2026-09-05. The test suite currently contains one
+application-shell test covering the normal rendered readiness state.
+
+## Scope test matrix
+
+- **Normal workflow:** covered by the shell render test; the app renders its
+  readiness state and status announcement.
+- **Unauthorized use:** not applicable yet; no authentication, authorization,
+  business context, or protected data exists in this slice.
+- **Saved data and history:** not applicable yet; no persistence or
+  historical business records exist in this slice.
+- **Offline, retry, and failure behavior:** the uncaught-render recovery state
+  and diagnostic logging convention are implemented, but offline storage,
+  synchronization, retries, and dependency failures are deferred until those
+  modules exist.
+- **Reports and related modules:** not applicable yet; no reports or domain
+  modules are present.
+
 ## Dependency assumptions
 
 Node.js 20.19+ and npm 10+ are required. Runtime dependencies are React and
