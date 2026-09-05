@@ -60,6 +60,21 @@ also not applicable because no report module exists yet.
 
 ## Current module assessment
 
+## Verified purchasing and supplier slice
+
+**Module:** M09 - Purchasing, suppliers, liabilities and supplier returns
+**Status:** IMPLEMENTED DOMAIN SLICE
+**Handoff:** `docs/build/HANDOFFS/08-purchasing-suppliers.md`
+
+Implemented:
+
+- Supplier records and business-scoped purchase history.
+- Physical receiving linked to inventory receipt events.
+- Multiple supplier payments and confirmed-success settlement accounting.
+- Supplier return verification, approval and application history.
+- Unpaid payable reductions versus paid supplier credit/receivable.
+- Separate replacement receipt and refund/credit settlement events.
+
 | Area                                        | Status                                     | Evidence                                                                      |
 | ------------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------------------- |
 | Product vision and V1 boundary              | BUILD-READY                                | `01-product-vision.md`, `50-mvp-scope.md`                                     |
@@ -68,7 +83,7 @@ also not applicable because no report module exists yet.
 | Application foundation                      | VERIFIED                                   | `docs/build/HANDOFFS/01-foundation.md`                                        |
 | Tenant/database foundation                  | IMPLEMENTED; execution environment pending | `migrations/001_foundation.sql`, `docs/build/HANDOFFS/02-database-tenancy.md` |
 | M08 inventory/costing                       | VERIFIED DOMAIN SLICE                      | `src/domain/inventory.ts`, `src/domain/inventory.test.ts`                     |
-| M09 purchasing/supplier liabilities/returns | BUILD-READY; integration pending           | `03-supplier-and-purchasing-rules.md`                                         |
+| M09 purchasing/supplier liabilities/returns | VERIFIED DOMAIN SLICE; integration pending | `src/domain/purchasing.ts`, `docs/build/HANDOFFS/08-purchasing-suppliers.md`  |
 | M07 sales/payments/credit/receipts          | BUILD-READY; integration pending           | `27-sales-and-transaction-rules.md`                                           |
 | M05 catalogue/pricing/search                | BUILD-READY; integration pending           | `37-catalog-and-search.md`                                                    |
 | M10 customer returns/refunds/corrections    | REQUIRES INTEGRATION                       | `05-returns-and-refunds-rules.md`                                             |
