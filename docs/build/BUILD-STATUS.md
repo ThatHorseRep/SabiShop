@@ -60,6 +60,18 @@ also not applicable because no report module exists yet.
 
 ## Current module assessment
 
+## Verified sales transaction slice
+
+**Module:** M07 - Sales, payments, credit and receipts
+**Status:** IMPLEMENTED DOMAIN SLICE
+**Handoff:** `docs/build/HANDOFFS/09-sales.md`
+
+Implemented canonical sale completion with explicit payment confirmation,
+split/custom payment classification, tax, credit approval, inventory/COGS,
+cash and credit consequences, audit/report events, reversal, negative-stock
+visibility, and client-request idempotency. Full validation passed after the
+slice was added.
+
 ## Verified purchasing and supplier slice
 
 **Module:** M09 - Purchasing, suppliers, liabilities and supplier returns
