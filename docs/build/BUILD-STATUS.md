@@ -72,6 +72,19 @@ cash and credit consequences, audit/report events, reversal, negative-stock
 visibility, and client-request idempotency. Full validation passed after the
 slice was added.
 
+## Verified customers and credit slice
+
+**Module:** M06 customer records and M07 customer credit/debt
+**Status:** IMPLEMENTED DOMAIN SLICE
+**Handoff:** `docs/build/HANDOFFS/10-customers-credit.md`
+
+Implemented business-scoped customer records, Name + Phone credit identity,
+credit eligibility, configurable limits, separate transaction and over-limit
+management approvals, multiple debts, partial/multiple repayments with explicit
+allocation, optional due dates, approved returns, write-offs, disputes,
+authorized corrections/reversals, and append-only credit history. No customer
+wallet or generic stored-credit balance was added.
+
 ## Verified purchasing and supplier slice
 
 **Module:** M09 - Purchasing, suppliers, liabilities and supplier returns
@@ -97,6 +110,7 @@ Implemented:
 | M08 inventory/costing                       | VERIFIED DOMAIN SLICE                      | `src/domain/inventory.ts`, `src/domain/inventory.test.ts`                     |
 | M09 purchasing/supplier liabilities/returns | VERIFIED DOMAIN SLICE; integration pending | `src/domain/purchasing.ts`, `docs/build/HANDOFFS/08-purchasing-suppliers.md`  |
 | M07 sales/payments/credit/receipts          | BUILD-READY; integration pending           | `27-sales-and-transaction-rules.md`                                           |
+| M06 customers and customer credit           | VERIFIED DOMAIN SLICE; integration pending | `src/domain/customersCredit.ts`, `docs/build/HANDOFFS/10-customers-credit.md` |
 | M05 catalogue/pricing/search                | BUILD-READY; integration pending           | `37-catalog-and-search.md`                                                    |
 | M10 customer returns/refunds/corrections    | REQUIRES INTEGRATION                       | `05-returns-and-refunds-rules.md`                                             |
 | M13 offline sync/conflicts                  | REQUIRES DECISION                          | `34-offline-sync.md`, H06, H11                                                |
