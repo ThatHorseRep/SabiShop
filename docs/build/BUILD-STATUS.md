@@ -100,22 +100,44 @@ Implemented:
 - Unpaid payable reductions versus paid supplier credit/receivable.
 - Separate replacement receipt and refund/credit settlement events.
 
-| Area                                        | Status                                     | Evidence                                                                      |
-| ------------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------------------- |
-| Product vision and V1 boundary              | BUILD-READY                                | `01-product-vision.md`, `50-mvp-scope.md`                                     |
-| Locked business decisions                   | BUILD-READY                                | `00-final-decision-register.md` and reconciled specifications                 |
-| Business invariants and state rules         | BUILD-READY                                | `03`–`10`, `27`, `28`, `55`, H01–H02                                          |
-| Application foundation                      | VERIFIED                                   | `docs/build/HANDOFFS/01-foundation.md`                                        |
-| Tenant/database foundation                  | IMPLEMENTED; execution environment pending | `migrations/001_foundation.sql`, `docs/build/HANDOFFS/02-database-tenancy.md` |
-| M08 inventory/costing                       | VERIFIED DOMAIN SLICE                      | `src/domain/inventory.ts`, `src/domain/inventory.test.ts`                     |
-| M09 purchasing/supplier liabilities/returns | VERIFIED DOMAIN SLICE; integration pending | `src/domain/purchasing.ts`, `docs/build/HANDOFFS/08-purchasing-suppliers.md`  |
-| M07 sales/payments/credit/receipts          | BUILD-READY; integration pending           | `27-sales-and-transaction-rules.md`                                           |
-| M06 customers and customer credit           | VERIFIED DOMAIN SLICE; integration pending | `src/domain/customersCredit.ts`, `docs/build/HANDOFFS/10-customers-credit.md` |
-| M05 catalogue/pricing/search                | BUILD-READY; integration pending           | `37-catalog-and-search.md`                                                    |
-| M10 customer returns/refunds/corrections    | REQUIRES INTEGRATION                       | `05-returns-and-refunds-rules.md`                                             |
-| M13 offline sync/conflicts                  | REQUIRES DECISION                          | `34-offline-sync.md`, H06, H11                                                |
-| M11 cash/reconciliation                     | REQUIRES DECISION                          | `06-cash-and-reconciliation-rules.md`                                         |
-| M15 V1 integration/acceptance               | BLOCKED                                    | dependent modules and unresolved technical decisions                          |
+## Verified returns, corrections and reversals slice
+
+**Module:** M10 — Customer returns, refunds, and corrections
+**Status:** IMPLEMENTED DOMAIN SLICE
+**Handoff:** `docs/build/HANDOFFS/11-returns-corrections.md`
+
+Implemented:
+
+- Customer return request, verification, approval, rejection, and application.
+- Partial returns with sellable/held inventory consequences.
+- Refund `due` and `settled` states without external money execution.
+- Additive ordinary, material, and high-integrity sale corrections.
+- Configurable correction window with the 15-minute default.
+- Manager/Owner authority, separate approval, and Owner review flags for
+  consequential Manager self-corrections.
+- Audit snapshots preserving original and corrected actor, reason, time,
+  values, authorization, state, and downstream effects.
+- Inventory, financial, reporting, and credit recalculation through existing
+  domain engines.
+- Controlled reversal, dependent-event blocking, duplicate/offline idempotency,
+  and explicit local/pending/accepted synchronization states.
+
+| Area                                        | Status                                        | Evidence                                                                            |
+| ------------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Product vision and V1 boundary              | BUILD-READY                                   | `01-product-vision.md`, `50-mvp-scope.md`                                           |
+| Locked business decisions                   | BUILD-READY                                   | `00-final-decision-register.md` and reconciled specifications                       |
+| Business invariants and state rules         | BUILD-READY                                   | `03`–`10`, `27`, `28`, `55`, H01–H02                                                |
+| Application foundation                      | VERIFIED                                      | `docs/build/HANDOFFS/01-foundation.md`                                              |
+| Tenant/database foundation                  | IMPLEMENTED; execution environment pending    | `migrations/001_foundation.sql`, `docs/build/HANDOFFS/02-database-tenancy.md`       |
+| M08 inventory/costing                       | VERIFIED DOMAIN SLICE                         | `src/domain/inventory.ts`, `src/domain/inventory.test.ts`                           |
+| M09 purchasing/supplier liabilities/returns | VERIFIED DOMAIN SLICE; integration pending    | `src/domain/purchasing.ts`, `docs/build/HANDOFFS/08-purchasing-suppliers.md`        |
+| M07 sales/payments/credit/receipts          | BUILD-READY; integration pending              | `27-sales-and-transaction-rules.md`                                                 |
+| M06 customers and customer credit           | VERIFIED DOMAIN SLICE; integration pending    | `src/domain/customersCredit.ts`, `docs/build/HANDOFFS/10-customers-credit.md`       |
+| M05 catalogue/pricing/search                | BUILD-READY; integration pending              | `37-catalog-and-search.md`                                                          |
+| M10 customer returns/refunds/corrections    | IMPLEMENTED DOMAIN SLICE; integration pending | `src/domain/returnsCorrections.ts`, `docs/build/HANDOFFS/11-returns-corrections.md` |
+| M13 offline sync/conflicts                  | REQUIRES DECISION                             | `34-offline-sync.md`, H06, H11                                                      |
+| M11 cash/reconciliation                     | REQUIRES DECISION                             | `06-cash-and-reconciliation-rules.md`                                               |
+| M15 V1 integration/acceptance               | BLOCKED                                       | dependent modules and unresolved technical decisions                                |
 
 ## Locked integration invariants
 
