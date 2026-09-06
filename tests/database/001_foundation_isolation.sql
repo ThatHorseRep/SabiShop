@@ -96,9 +96,9 @@ SET LOCAL app.user_id = '00000000-0000-0000-0000-000000000001';
 
 SELECT lives_ok(
     $$INSERT INTO app.audit_events
-      (business_id, event_type, target_type)
+      (business_id, event_type, target_type, operation_id)
       VALUES
-      ('10000000-0000-0000-0000-000000000001', 'test', 'test_target')$$,
+      ('10000000-0000-0000-0000-000000000001', 'test', 'test_target', 'operation-1')$$,
     'a member can append audit evidence'
 );
 
@@ -108,6 +108,16 @@ SELECT throws_ok(
     NULL,
     NULL,
     'audit evidence is not deletable'
+);
+
+SELECT throws_ok(
+    $$INSERT INTO app.audit_events
+      (business_id, event_type, target_type, operation_id, result)
+      VALUES
+      ('10000000-0000-0000-0000-000000000001', 'sale.completed', 'sale', 'operation-1', 'accepted')$$,
+    '23505',
+    NULL,
+    'duplicate operation identity is rejected within a business'
 );
 
 SELECT throws_ok(

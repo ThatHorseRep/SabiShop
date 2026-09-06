@@ -1,6 +1,6 @@
 # Sabi Shop Build Status
 
-**As of:** 2026-09-05
+**As of:** 2026-09-06
 
 ## Overall
 
@@ -59,6 +59,24 @@ slice; they belong to the tenant/persistence adapters. Report integration is
 also not applicable because no report module exists yet.
 
 ## Current module assessment
+
+## Verified audit and historical-integrity slice
+
+**Module:** M04 - audit, integrity, and correction evidence
+**Status:** VERIFIED REFERENCE INFRASTRUCTURE
+**Handoff:** `docs/build/HANDOFFS/13-audit-integrity.md`
+
+Implemented a shared append-only audit contract with tenant-scoped querying,
+stable operation-id retry deduplication, accepted/denied/failed/recovered
+results, actor/session/device context, correction/reversal/recovery links,
+recursive secret-key redaction, and immutable returned snapshots. The
+foundation migration now enforces the corresponding operation identity and
+result fields with a business-scoped uniqueness constraint while preserving
+RLS and the no-update/no-delete trigger.
+
+Authorization decisions write through the normalized contract shape; domain
+engines continue to preserve their existing detailed correction and
+reconciliation snapshots until the durable adapter is connected.
 
 ## Verified cash/reconciliation slice
 
