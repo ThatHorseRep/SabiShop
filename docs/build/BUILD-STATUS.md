@@ -58,6 +58,27 @@ Authorization and durable saved-data tests are not claimed for this in-memory
 slice; they belong to the tenant/persistence adapters. Report integration is
 also not applicable because no report module exists yet.
 
+## Verified offline synchronization slice
+
+**Module:** M13 - offline synchronization and conflict resolution
+**Status:** IMPLEMENTED REFERENCE BOUNDARY; durable API integration pending
+**Handoff:** `docs/build/HANDOFFS/14-offline-sync.md`
+
+Implemented durable-shaped local operation envelopes, globally unique
+caller-supplied operation identities, separate device identity, independent
+state dimensions, deterministic operation fingerprints, idempotent acceptance,
+bounded retry, causal ordering, rejected/failed/conflict/superseded states,
+server-side authorization recheck, tenant-scoped queues, management conflict
+escalation, explicit human supersession, write-ahead local recovery, and
+corrupt-state preservation. Adversarial tests cover duplicate delivery,
+identity reuse, timeout after acceptance, app restart, stale clients, partial
+batch failure, causal cycles, denial, tenant isolation, retry bounds, conflict
+resolution, interrupted writes, and corrupted local state.
+
+The in-memory server and browser storage classes are reference adapters. The
+authoritative database/API transaction, domain-specific conflict classifiers,
+management review queue, and production retry schedule remain downstream.
+
 ## Current module assessment
 
 ## Verified audit and historical-integrity slice
@@ -151,22 +172,22 @@ Implemented:
 - Controlled reversal, dependent-event blocking, duplicate/offline idempotency,
   and explicit local/pending/accepted synchronization states.
 
-| Area                                        | Status                                        | Evidence                                                                            |
-| ------------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Product vision and V1 boundary              | BUILD-READY                                   | `01-product-vision.md`, `50-mvp-scope.md`                                           |
-| Locked business decisions                   | BUILD-READY                                   | `00-final-decision-register.md` and reconciled specifications                       |
-| Business invariants and state rules         | BUILD-READY                                   | `03`–`10`, `27`, `28`, `55`, H01–H02                                                |
-| Application foundation                      | VERIFIED                                      | `docs/build/HANDOFFS/01-foundation.md`                                              |
-| Tenant/database foundation                  | IMPLEMENTED; execution environment pending    | `migrations/001_foundation.sql`, `docs/build/HANDOFFS/02-database-tenancy.md`       |
-| M08 inventory/costing                       | VERIFIED DOMAIN SLICE                         | `src/domain/inventory.ts`, `src/domain/inventory.test.ts`                           |
-| M09 purchasing/supplier liabilities/returns | VERIFIED DOMAIN SLICE; integration pending    | `src/domain/purchasing.ts`, `docs/build/HANDOFFS/08-purchasing-suppliers.md`        |
-| M07 sales/payments/credit/receipts          | BUILD-READY; integration pending              | `27-sales-and-transaction-rules.md`                                                 |
-| M06 customers and customer credit           | VERIFIED DOMAIN SLICE; integration pending    | `src/domain/customersCredit.ts`, `docs/build/HANDOFFS/10-customers-credit.md`       |
-| M05 catalogue/pricing/search                | BUILD-READY; integration pending              | `37-catalog-and-search.md`                                                          |
-| M10 customer returns/refunds/corrections    | IMPLEMENTED DOMAIN SLICE; integration pending | `src/domain/returnsCorrections.ts`, `docs/build/HANDOFFS/11-returns-corrections.md` |
-| M13 offline sync/conflicts                  | REQUIRES DECISION                             | `34-offline-sync.md`, H06, H11                                                      |
-| M11 cash/reconciliation                     | VERIFIED DOMAIN SLICE; integration pending    | `src/domain/cashReconciliation.ts`, `docs/build/HANDOFFS/12-cash-reconciliation.md` |
-| M15 V1 integration/acceptance               | BLOCKED                                       | dependent modules and unresolved technical decisions                                |
+| Area                                        | Status                                              | Evidence                                                                            |
+| ------------------------------------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Product vision and V1 boundary              | BUILD-READY                                         | `01-product-vision.md`, `50-mvp-scope.md`                                           |
+| Locked business decisions                   | BUILD-READY                                         | `00-final-decision-register.md` and reconciled specifications                       |
+| Business invariants and state rules         | BUILD-READY                                         | `03`–`10`, `27`, `28`, `55`, H01–H02                                                |
+| Application foundation                      | VERIFIED                                            | `docs/build/HANDOFFS/01-foundation.md`                                              |
+| Tenant/database foundation                  | IMPLEMENTED; execution environment pending          | `migrations/001_foundation.sql`, `docs/build/HANDOFFS/02-database-tenancy.md`       |
+| M08 inventory/costing                       | VERIFIED DOMAIN SLICE                               | `src/domain/inventory.ts`, `src/domain/inventory.test.ts`                           |
+| M09 purchasing/supplier liabilities/returns | VERIFIED DOMAIN SLICE; integration pending          | `src/domain/purchasing.ts`, `docs/build/HANDOFFS/08-purchasing-suppliers.md`        |
+| M07 sales/payments/credit/receipts          | BUILD-READY; integration pending                    | `27-sales-and-transaction-rules.md`                                                 |
+| M06 customers and customer credit           | VERIFIED DOMAIN SLICE; integration pending          | `src/domain/customersCredit.ts`, `docs/build/HANDOFFS/10-customers-credit.md`       |
+| M05 catalogue/pricing/search                | BUILD-READY; integration pending                    | `37-catalog-and-search.md`                                                          |
+| M10 customer returns/refunds/corrections    | IMPLEMENTED DOMAIN SLICE; integration pending       | `src/domain/returnsCorrections.ts`, `docs/build/HANDOFFS/11-returns-corrections.md` |
+| M13 offline sync/conflicts                  | IMPLEMENTED REFERENCE BOUNDARY; integration pending | `src/sync/offlineSync.ts`, `docs/build/HANDOFFS/14-offline-sync.md`                 |
+| M11 cash/reconciliation                     | VERIFIED DOMAIN SLICE; integration pending          | `src/domain/cashReconciliation.ts`, `docs/build/HANDOFFS/12-cash-reconciliation.md` |
+| M15 V1 integration/acceptance               | BLOCKED                                             | dependent modules and unresolved technical decisions                                |
 
 ## Locked integration invariants
 
