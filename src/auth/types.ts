@@ -71,6 +71,7 @@ export type Approval = {
 export type AuthorizationRequest = {
   permission: Permission
   businessId: string
+  operationId?: string
   targetBusinessId?: string
   targetRecordId?: string
   requesterUserId?: string
@@ -115,6 +116,8 @@ export type AuthorizationAuditEvent = {
   eventId: string
   eventType: 'authorization.decision' | 'authorization.denied'
   actorUserId?: string
+  actorRole?: string
+  sessionId?: string
   businessId: string
   targetRecordId?: string
   permission: Permission

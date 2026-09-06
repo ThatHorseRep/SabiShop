@@ -65,16 +65,26 @@ CREATE TABLE app.audit_events (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     business_id uuid NOT NULL REFERENCES app.businesses(id) ON DELETE RESTRICT,
     actor_membership_id uuid,
+    actor_role text,
+    session_id text,
+    device_id text,
+    operation_id text NOT NULL DEFAULT gen_random_uuid()::text,
     event_type text NOT NULL CHECK (length(trim(event_type)) > 0),
     target_type text NOT NULL CHECK (length(trim(target_type)) > 0),
     target_id uuid,
+    result text NOT NULL DEFAULT 'accepted'
+        CHECK (result IN ('accepted', 'denied', 'failed', 'recovered')),
     reason text,
+    correction_of text,
+    reversal_of text,
+    recovery_action text,
     occurred_at timestamptz NOT NULL DEFAULT now(),
     recorded_at timestamptz NOT NULL DEFAULT now(),
     metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
     FOREIGN KEY (business_id, actor_membership_id)
         REFERENCES app.business_memberships (business_id, id)
-        ON DELETE RESTRICT
+        ON DELETE RESTRICT,
+    UNIQUE (business_id, operation_id)
 );
 
 CREATE INDEX audit_events_business_time_idx

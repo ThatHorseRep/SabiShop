@@ -243,12 +243,20 @@ export const recordDecision = (
   now = Date.now(),
 ): void => {
   if (!decision.auditRequired) return
+  const membership = session?.memberships.find(
+    (candidate) =>
+      candidate.businessId === request.businessId && candidate.active,
+  )
   sink.append({
-    eventId: `auth-${now}-${Math.random().toString(36).slice(2, 10)}`,
+    eventId:
+      request.operationId ??
+      `auth-${request.businessId}-${request.targetRecordId ?? 'operation'}-${now}-${Math.random().toString(36).slice(2, 10)}`,
     eventType: decision.allowed
       ? 'authorization.decision'
       : 'authorization.denied',
     actorUserId: session?.user.userId,
+    actorRole: membership?.roles.join(','),
+    sessionId: session?.sessionId,
     businessId: request.businessId,
     targetRecordId: request.targetRecordId,
     permission: request.permission,
