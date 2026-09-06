@@ -1,5 +1,13 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react'
+import {
+  Component,
+  useEffect,
+  useState,
+  type ErrorInfo,
+  type ReactNode,
+} from 'react'
 import { AuthorizationRequiredState } from './auth/AuthStates'
+import { LocalStorageStore, type SyncOperation } from './sync/offlineSync'
+import { activateUpdate } from './pwa'
 
 type ErrorBoundaryProps = { children: ReactNode }
 type ErrorBoundaryState = { hasError: boolean }
@@ -40,9 +48,61 @@ class AppErrorBoundary extends Component<
 }
 
 function App() {
+  const [online, setOnline] = useState(() => navigator.onLine)
+  const [update, setUpdate] = useState<ServiceWorkerRegistration | null>(null)
+  const [operations, setOperations] = useState<SyncOperation[]>([])
+  const [storageUnavailable, setStorageUnavailable] = useState(false)
+
+  useEffect(() => {
+    const onOnline = () => setOnline(true)
+    const onOffline = () => setOnline(false)
+    const onUpdate = (event: Event) =>
+      setUpdate((event as CustomEvent<ServiceWorkerRegistration>).detail)
+    window.addEventListener('online', onOnline)
+    window.addEventListener('offline', onOffline)
+    window.addEventListener('sabi-shop:update', onUpdate)
+    try {
+      setOperations(new LocalStorageStore(window.localStorage).load())
+    } catch {
+      setStorageUnavailable(true)
+    }
+    return () => {
+      window.removeEventListener('online', onOnline)
+      window.removeEventListener('offline', onOffline)
+      window.removeEventListener('sabi-shop:update', onUpdate)
+    }
+  }, [])
+
+  const pending = operations.filter((operation) =>
+    ['LOCAL_ONLY', 'PENDING_SYNC', 'FAILED', 'CONFLICT'].includes(
+      operation.syncState,
+    ),
+  ).length
+
   return (
     <AppErrorBoundary>
       <main className="shell">
+        <div className="connection-bar" role="status" aria-live="polite">
+          <span
+            className={online ? 'connection-dot online' : 'connection-dot'}
+            aria-hidden="true"
+          />
+          {online ? 'Online' : 'Offline — local work remains available'}
+          <span className="sync-status">
+            {storageUnavailable
+              ? 'Sync storage unavailable'
+              : `${pending} sync item${pending === 1 ? '' : 's'} pending`}
+          </span>
+          {update && (
+            <button
+              type="button"
+              className="update-button"
+              onClick={() => activateUpdate(update)}
+            >
+              Update available
+            </button>
+          )}
+        </div>
         <header className="hero">
           <p className="eyebrow">Sabi Shop</p>
           <h1>Shop operations, ready for the workday.</h1>

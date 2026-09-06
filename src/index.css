@@ -20,6 +20,9 @@
 body {
   margin: 0;
   min-width: 320px;
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: contain;
 }
 
 button {
@@ -42,6 +45,45 @@ button:focus-visible {
   width: min(100% - 2rem, 56rem);
   margin: 0 auto;
   padding: 3rem 0;
+}
+
+.connection-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 2rem;
+  color: #49635d;
+  font-size: 0.9rem;
+}
+
+.connection-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: #b45309;
+}
+.connection-dot.online {
+  background: #16a34a;
+}
+.sync-status {
+  margin-left: auto;
+}
+.update-button {
+  min-height: 36px;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 480px) {
+  .shell {
+    width: min(100% - 1.25rem, 56rem);
+    padding: 1.25rem 0 2rem;
+  }
+  .sync-status {
+    width: 100%;
+    margin-left: 1.35rem;
+  }
 }
 
 .hero {

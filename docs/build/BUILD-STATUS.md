@@ -81,6 +81,14 @@ management review queue, and production retry schedule remain downstream.
 
 ## Current module assessment
 
+## Verified PWA and device-resilience slice
+
+**Module:** M15 — PWA shell and device resilience
+**Status:** IMPLEMENTED FOUNDATION; production API/cache integration pending
+**Handoff:** `docs/build/HANDOFFS/15-pwa.md`
+
+Implemented install metadata, shell service-worker caching with offline navigation fallback, explicit update activation, connection/sync visibility, local-storage failure handling, and mobile viewport/touch defaults. The UI consumes the existing offline-sync storage boundary and does not duplicate sync or business rules.
+
 ## Verified audit and historical-integrity slice
 
 **Module:** M04 - audit, integrity, and correction evidence
