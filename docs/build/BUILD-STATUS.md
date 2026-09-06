@@ -60,6 +60,17 @@ also not applicable because no report module exists yet.
 
 ## Current module assessment
 
+## Verified cash/reconciliation slice
+
+**Module:** M11 - operational business-day and cash reconciliation
+**Status:** IMPLEMENTED DOMAIN SLICE
+**Handoff:** `docs/build/HANDOFFS/12-cash-reconciliation.md`
+
+Implemented explicit business-day sessions, management-confirmed opening cash,
+cash-in/out/sales/refunds paid from till, Expected Cash, physical Actual Cash,
+variance and unresolved discrepancy handling, interim checkpoints, shared or
+individual custody accounts, closure, audited reopen, and additive audit history.
+
 ## Verified sales transaction slice
 
 **Module:** M07 - Sales, payments, credit and receipts
@@ -136,7 +147,7 @@ Implemented:
 | M05 catalogue/pricing/search                | BUILD-READY; integration pending              | `37-catalog-and-search.md`                                                          |
 | M10 customer returns/refunds/corrections    | IMPLEMENTED DOMAIN SLICE; integration pending | `src/domain/returnsCorrections.ts`, `docs/build/HANDOFFS/11-returns-corrections.md` |
 | M13 offline sync/conflicts                  | REQUIRES DECISION                             | `34-offline-sync.md`, H06, H11                                                      |
-| M11 cash/reconciliation                     | REQUIRES DECISION                             | `06-cash-and-reconciliation-rules.md`                                               |
+| M11 cash/reconciliation                     | VERIFIED DOMAIN SLICE; integration pending    | `src/domain/cashReconciliation.ts`, `docs/build/HANDOFFS/12-cash-reconciliation.md` |
 | M15 V1 integration/acceptance               | BLOCKED                                       | dependent modules and unresolved technical decisions                                |
 
 ## Locked integration invariants
