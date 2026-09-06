@@ -89,6 +89,22 @@ management review queue, and production retry schedule remain downstream.
 
 Implemented install metadata, shell service-worker caching with offline navigation fallback, explicit update activation, connection/sync visibility, local-storage failure handling, and mobile viewport/touch defaults. The UI consumes the existing offline-sync storage boundary and does not duplicate sync or business rules.
 
+## Verified canonical reporting slice
+
+**Module:** M12 - business performance and management visibility
+**Status:** IMPLEMENTED REFERENCE PROJECTION
+**Handoff:** `docs/build/HANDOFFS/16-reporting.md`
+
+Implemented `CanonicalReporting` as a tenant-scoped, event-time projection of
+canonical sales, returns/corrections, inventory, credit, supplier, cash, and
+optional expense/incentive source records. Reports preserve signed additive
+effects for reversals and approved exceptions, expose tax separately, use the
+canonical Gross Profit formula, surface negative stock and cash discrepancies,
+and return traceable source IDs. No incentive payout logic was added.
+
+Focused reporting tests cover known sale, tax, COGS, payment, valuation,
+reversal, period-boundary, incentive-eligibility, and traceability scenarios.
+
 ## Verified audit and historical-integrity slice
 
 **Module:** M04 - audit, integrity, and correction evidence

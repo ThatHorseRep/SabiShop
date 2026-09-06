@@ -96,6 +96,15 @@ export type FinancialEffect = {
   creditKobo: number
 }
 
+export type IntegrityReportEvent = FinancialEffect & {
+  id: string
+  type:
+    'sale.correction.applied' | 'sale.return.applied' | 'sale.reversal.applied'
+  businessId: string
+  saleId: string
+  occurredAt: string
+}
+
 export type CorrectionEvent = {
   id: string
   type: 'sale.correction.applied' | 'sale.reversal.applied'
@@ -330,18 +339,7 @@ export class ReturnsCorrectionsEngine {
   private readonly corrections = new Map<string, CorrectionEvent>()
   private readonly returns = new Map<string, ReturnRecord>()
   private readonly audits: IntegrityAuditEvent[] = []
-  private readonly reportEvents: Array<
-    FinancialEffect & {
-      id: string
-      type:
-        | 'sale.correction.applied'
-        | 'sale.return.applied'
-        | 'sale.reversal.applied'
-      businessId: string
-      saleId: string
-      occurredAt: string
-    }
-  > = []
+  private readonly reportEvents: IntegrityReportEvent[] = []
   private nextId = 1
 
   constructor(
@@ -921,6 +919,12 @@ export class ReturnsCorrectionsEngine {
 
   listAuditEvents(): IntegrityAuditEvent[] {
     return this.audits.map((event) => clone(event))
+  }
+
+  listReportEvents(businessId: string): IntegrityReportEvent[] {
+    return this.reportEvents
+      .filter((event) => event.businessId === businessId)
+      .map((event) => clone(event))
   }
 
   listOwnerReviewRequired(businessId: string): CorrectionEvent[] {
