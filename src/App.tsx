@@ -33,6 +33,7 @@ import {
   roleLabel,
   sessionForActor,
 } from './pos/posSession'
+import { InventoryWorkspace } from './inventory/InventoryWorkspace'
 
 type ErrorBoundaryProps = { children: ReactNode }
 type ErrorBoundaryState = { hasError: boolean }
@@ -342,6 +343,14 @@ function App() {
             storageUnavailable={storageUnavailable}
             update={update}
             onSell={() => setActiveArea('sell')}
+          />
+        ) : activeArea === 'products-inventory' ? (
+          <InventoryWorkspace
+            actorId={actorId}
+            onActorChange={setActorId}
+            online={online}
+            pendingCount={pending}
+            storageUnavailable={storageUnavailable}
           />
         ) : (
           <ModulePendingScreen area={activeArea} />

@@ -18,6 +18,31 @@ describe('application shell', () => {
     expect(screen.getByText(/chidi okoro/i)).toBeInTheDocument()
   })
 
+  it('navigates to the inventory workspace and keeps the shell session in sync', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const rail = screen.getByRole('navigation', { name: 'Primary' })
+    await user.click(
+      within(rail).getByRole('button', { name: 'Products & Inventory' }),
+    )
+
+    expect(
+      screen.getByRole('heading', { name: 'Products & Inventory' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Cost information hidden')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('tab', { name: 'Purchasing' }),
+    ).not.toBeInTheDocument()
+
+    await user.selectOptions(
+      screen.getByLabelText('Reference session'),
+      'user-ngozi',
+    )
+    expect(screen.getAllByText(/ngozi balogun/i).length).toBeGreaterThan(0)
+    expect(screen.getByRole('tab', { name: 'Purchasing' })).toBeInTheDocument()
+  })
+
   it('opens the system state panel from the header indicator', async () => {
     const user = userEvent.setup()
     render(<App />)
