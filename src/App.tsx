@@ -34,6 +34,7 @@ import {
   sessionForActor,
 } from './pos/posSession'
 import { InventoryWorkspace } from './inventory/InventoryWorkspace'
+import { CustomerCreditWorkspace } from './customers/CustomerCreditWorkspace'
 
 type ErrorBoundaryProps = { children: ReactNode }
 type ErrorBoundaryState = { hasError: boolean }
@@ -351,6 +352,12 @@ function App() {
             online={online}
             pendingCount={pending}
             storageUnavailable={storageUnavailable}
+          />
+        ) : activeArea === 'customers-credit' ? (
+          <CustomerCreditWorkspace
+            actorId={actorId}
+            onActorChange={setActorId}
+            online={online}
           />
         ) : (
           <ModulePendingScreen area={activeArea} />

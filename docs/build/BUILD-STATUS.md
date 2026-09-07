@@ -5,10 +5,10 @@
 ## Overall
 
 The engineering foundation, the application shell/design system, the POS
-selling workspace, the inventory/purchasing workspace, and the implemented
-domain slices are verified. Persistence, authentication/authorization
-integration, the remaining domain screens, and the remaining modules are still
-downstream work.
+selling workspace, the inventory/purchasing workspace, the customer/credit
+workspace, and the implemented domain slices are verified. Persistence,
+authentication/authorization integration, the remaining domain screens, and
+the remaining modules are still downstream work.
 
 ## Verified foundation
 
@@ -192,6 +192,61 @@ Repository-wide formatting now passes after normalizing working-tree line
 endings; no authorization source changes were needed. The Vitest timeout was
 raised to 15 seconds to remove parallel-run POS timeouts on this machine.
 
+## Implemented customer and credit UX slice
+
+**Module:** M06/M07 — Customer, credit/debt, and repayment UX (C08)
+**Status:** IMPLEMENTED WORKSPACE; durable API/persistence integration pending
+**Handoff:** `docs/build/HANDOFFS/20-customer-credit-ux.md`
+
+Implemented the Customers & Credit workspace in `src/customers/`, installed
+behind the existing C04 application shell and synchronized with the current
+reference session actor/business context:
+
+- customer overview with outstanding credit, an attention queue (restricted
+  credit, disputed debts, overdue debts), recent repayments, and recent
+  credit activity;
+- customer list/search by name and phone with similar names kept
+  distinguishable, and creation limited to the authoritative Name + Phone
+  minimum identity;
+- customer profile with the exact B03 credit statuses, credit limit and
+  available credit, outstanding-debt summary, independently traceable debts,
+  and full credit history;
+- credit sale flow with consequence preview, separate Manager/Owner approval,
+  and a second separate over-limit exception approval;
+- repayment flow with confirmed payment components, split methods, and
+  explicit allocation across multiple debts, including partial repayment;
+- return impact that reduces the obligation without rewriting the original
+  sale, write-offs distinguishable from Paid, corrections and reversals that
+  preserve original state, and disputes that remain visible;
+- exception/authorization states: restricted/blocked credit, permission
+  denials, offline operation with sync-pending envelopes, sync conflict
+  display, and three-part errors (what happened, whether anything was saved,
+  what to do next).
+
+Debt is never presented as an ambiguous generic “balance”: the workspace uses
+precise financial terms (outstanding debt, remaining obligation, resulting
+obligation, collectible outstanding amount), and the POS credit-approval copy
+was corrected to match. The interface contains no free-edit balance field;
+every mutation passes through `executeAuthorized` and the verified
+`CustomersCreditEngine`.
+
+Validation on 2026-09-07/08:
+
+```text
+npm ci                                       PASS (268 packages, 0 vulnerabilities)
+npm run format:check                         PASS
+npm test                                      PASS (189 tests, 19 files)
+npm run lint                                  PASS
+npm run build                                 PASS
+npx tsc -b --pretty false                     PASS
+npx prettier --check <customer/credit files>  PASS
+git diff --check                              PASS
+```
+
+Browser verification (production build, 320–1600 px) found no horizontal
+overflow on the profile or credit-sale dialog; screenshots are archived with
+the slice deliverables.
+
 ## Verified canonical reporting slice
 
 **Module:** M12 - business performance and management visibility
@@ -313,6 +368,7 @@ Implemented:
 | M07 sales/payments/credit/receipts          | IMPLEMENTED DOMAIN SLICE; integration pending          | `src/domain/sales.ts`, `docs/build/HANDOFFS/09-sales.md`                            |
 | M07 POS selling workspace (C06)             | IMPLEMENTED WORKSPACE; persistence integration pending | `src/pos/`, `docs/build/HANDOFFS/18-pos-ux.md`                                      |
 | M06 customers and customer credit           | VERIFIED DOMAIN SLICE; integration pending             | `src/domain/customersCredit.ts`, `docs/build/HANDOFFS/10-customers-credit.md`       |
+| M06/M07 customer & credit UX (C08)          | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/customers/`, `docs/build/HANDOFFS/20-customer-credit-ux.md`                    |
 | M05 catalogue/pricing/search                | BUILD-READY; integration pending                       | `37-catalog-and-search.md`                                                          |
 | M10 customer returns/refunds/corrections    | IMPLEMENTED DOMAIN SLICE; integration pending          | `src/domain/returnsCorrections.ts`, `docs/build/HANDOFFS/11-returns-corrections.md` |
 | M13 offline sync/conflicts                  | IMPLEMENTED REFERENCE BOUNDARY; integration pending    | `src/sync/offlineSync.ts`, `docs/build/HANDOFFS/14-offline-sync.md`                 |
