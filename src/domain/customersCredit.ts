@@ -752,6 +752,12 @@ export class CustomersCreditEngine {
     return customer && this.cloneCustomer(customer)
   }
 
+  listCustomers(businessId: string): Customer[] {
+    return [...this.customers.values()]
+      .filter((customer) => customer.businessId === businessId)
+      .map((customer) => this.cloneCustomer(customer))
+  }
+
   getDebt(
     businessId: string,
     customerId: string,

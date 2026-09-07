@@ -302,6 +302,38 @@ export class SalesTransactionEngine {
     return this.cloneSale(sale)
   }
 
+  /**
+   * Read-only totals for a draft basket, using the same tax computation
+   * `complete` applies. Completion remains the authoritative check.
+   */
+  previewTotals(input: {
+    lines: ReadonlyArray<{ unitPriceKobo: number; quantity: number }>
+    currency?: Currency
+    taxRateBasisPoints?: bigint
+    taxMode?: TaxMode
+  }): {
+    subtotalKobo: number
+    taxKobo: number
+    totalDueKobo: number
+  } {
+    const currency = input.currency ?? 'NGN'
+    const subtotalKobo = input.lines.reduce(
+      (sum, line) => sum + line.unitPriceKobo * line.quantity,
+      0,
+    )
+    const taxRate = input.taxRateBasisPoints ?? 0n
+    const net = moneyFromMinor(currency, BigInt(subtotalKobo))
+    const taxed =
+      (input.taxMode ?? 'exclusive') === 'exclusive'
+        ? taxFromNet(net, taxRate)
+        : taxFromTotal(net, taxRate)
+    return {
+      subtotalKobo,
+      taxKobo: Number(taxed.tax.minor),
+      totalDueKobo: Number(taxed.total.minor),
+    }
+  }
+
   getSale(businessId: string, saleId: string): CompletedSale | undefined {
     const sale = [...this.sales.values()].find(
       (candidate) =>
@@ -326,7 +358,9 @@ export class SalesTransactionEngine {
     CompletedSale,
     'cashKobo' | 'nonCashKobo' | 'creditKobo' | 'creditObligationKobo'
   > {
-    if (input.payments.length === 0)
+    // An approved fully-free sale (₦0 total) settles with no payment
+    // components; every other sale requires at least one confirmed payment.
+    if (input.payments.length === 0 && totalDueKobo > 0)
       throw new SalesError(
         'INVALID_PAYMENT',
         'At least one payment is required',

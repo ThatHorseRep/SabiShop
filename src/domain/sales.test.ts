@@ -143,4 +143,57 @@ describe('sales transaction lifecycle', () => {
     expect(sale.cogsKobo).toBe(0)
     expect(inventory.getStock('p1').negative).toBe(true)
   })
+
+  it('previews draft totals with the same tax computation as completion', () => {
+    const { sales } = setup()
+    const lines = [{ unitPriceKobo: 900, quantity: 2 }]
+    const exclusive = sales.previewTotals({
+      lines,
+      taxRateBasisPoints: 1000n,
+    })
+    expect(exclusive.subtotalKobo).toBe(1800)
+    expect(exclusive.taxKobo).toBe(180)
+    expect(exclusive.totalDueKobo).toBe(1980)
+
+    const inclusive = sales.previewTotals({
+      lines,
+      taxRateBasisPoints: 1000n,
+      taxMode: 'inclusive',
+    })
+    expect(inclusive.totalDueKobo).toBe(1800)
+    expect(inclusive.taxKobo).toBe(164)
+
+    const sale = sales.complete(
+      base([confirmed('p', 'cash', 1980)], { taxRateBasisPoints: 1000n }),
+    )
+    expect(sale.totalDueKobo).toBe(exclusive.totalDueKobo)
+  })
+
+  it('completes an approved fully-free sale with no payment components', () => {
+    const { sales } = setup()
+    const sale = sales.complete(
+      base([], {
+        lines: [
+          {
+            id: 'l-free',
+            productId: 'p1',
+            quantity: 1,
+            unitPriceKobo: 0,
+            pricingAuthorization: {
+              actorId: 'manager',
+              role: 'manager' as const,
+              approvedBy: 'owner',
+              reason: 'Goodwill replacement',
+            },
+          },
+        ],
+        actorRole: 'manager' as const,
+      }),
+    )
+    expect(sale.totalDueKobo).toBe(0)
+    expect(sale.payments).toHaveLength(0)
+    expect(sale.cashKobo).toBe(0)
+    expect(sale.lines[0].unitPriceKobo).toBe(0)
+    expect(sale.lines[0].pricingApprovedBy).toBe('owner')
+  })
 })

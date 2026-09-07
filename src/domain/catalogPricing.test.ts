@@ -201,4 +201,46 @@ describe('catalog pricing domain', () => {
       }),
     ).toThrowError(/inactive/i)
   })
+
+  it('previews line pricing without recording a sale line', () => {
+    const domain = catalog()
+
+    const normal = domain.previewSaleLine({
+      productId: 'p-1',
+      quantity: 2,
+    })
+    expect(normal.actualUnitPriceKobo).toBe(500_000)
+    expect(normal.effectiveFloorKobo).toBe(450_000)
+    expect(normal.belowFloor).toBe(false)
+    expect(normal.requiresAuthorization).toBe(false)
+
+    const discounted = domain.previewSaleLine({
+      productId: 'p-1',
+      quantity: 1,
+      discount: { kind: 'percentage', value: 10 },
+    })
+    expect(discounted.discountKobo).toBe(50_000)
+    expect(discounted.actualUnitPriceKobo).toBe(450_000)
+    expect(discounted.requiresAuthorization).toBe(false)
+
+    const belowFloor = domain.previewSaleLine({
+      productId: 'p-1',
+      quantity: 1,
+      unitPriceKobo: 440_000,
+    })
+    expect(belowFloor.belowFloor).toBe(true)
+    expect(belowFloor.requiresAuthorization).toBe(true)
+
+    const free = domain.previewSaleLine({
+      productId: 'p-1',
+      quantity: 1,
+      unitPriceKobo: 0,
+    })
+    expect(free.freeSale).toBe(true)
+    expect(free.requiresAuthorization).toBe(true)
+
+    expect(() => domain.getIncentivePricingFacts('sale-1')).toThrowError(
+      /not found/i,
+    )
+  })
 })

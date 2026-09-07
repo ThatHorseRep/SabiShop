@@ -1,24 +1,38 @@
 import {
   Component,
+  useCallback,
   useEffect,
+  useMemo,
+  useRef,
   useState,
   type ErrorInfo,
   type ReactNode,
 } from 'react'
-import { LocalStorageStore, type SyncOperation } from './sync/offlineSync'
+import type { SyncOperation } from './sync/offlineSync'
 import { activateUpdate } from './pwa'
 import { AppShell } from './shell/AppShell'
 import { PageHeader } from './shell/PageHeader'
-import { navigationFor } from './shell/navigation'
+import { findDestination, navigationFor } from './shell/navigation'
+import type { NavDestinationId } from './shell/navigation'
 import { Alert } from './ui/Feedback'
 import { Drawer } from './ui/Overlays'
 import { Button } from './ui/Button'
 import { Status } from './ui/Status'
 import {
   AuthorizationRequiredState,
+  EmptyState,
   OfflineState,
   SyncConflictState,
 } from './ui/states'
+import { AbandonSaleDialog } from './pos/PosDialogs'
+import { PosScreen } from './pos/PosScreen'
+import { createPosController, type PosController } from './pos/posController'
+import {
+  findActor,
+  posActors,
+  roleLabel,
+  sessionForActor,
+} from './pos/posSession'
 
 type ErrorBoundaryProps = { children: ReactNode }
 type ErrorBoundaryState = { hasError: boolean }
@@ -62,23 +76,37 @@ class AppErrorBoundary extends Component<
 }
 
 const pendingStates = ['LOCAL_ONLY', 'PENDING_SYNC', 'FAILED'] as const
+const actorStorageKey = 'sabi-shop:pos-actor'
+
+function defaultActorId(): string {
+  try {
+    const stored = window.localStorage.getItem(actorStorageKey)
+    if (stored && posActors.some((actor) => actor.id === stored)) return stored
+  } catch {
+    /* preference persistence is best-effort */
+  }
+  return posActors[0].id
+}
 
 function HomePage({
   online,
   pendingCount,
   storageUnavailable,
   update,
+  onSell,
 }: {
   online: boolean
   pendingCount: number
   storageUnavailable: boolean
   update: ServiceWorkerRegistration | null
+  onSell: () => void
 }) {
   return (
     <>
       <PageHeader
         title="Home"
         description="Daily overview, attention, and system state."
+        actions={<Button onClick={onSell}>Start selling</Button>}
       />
       {!online && <OfflineState />}
       <section className="home-section" aria-labelledby="foundation-status">
@@ -86,8 +114,9 @@ function HomePage({
           Foundation status
         </h2>
         <p className="ui-text-body ui-text-secondary">
-          The application shell and design system are in place. Feature modules
-          will be added behind explicit business and authorization boundaries.
+          The application shell, design system, and POS selling workspace are in
+          place. Further feature modules arrive behind explicit business and
+          authorization boundaries.
         </p>
         <div className="home-statuses">
           <Status
@@ -114,11 +143,11 @@ function HomePage({
         <h2 className="ui-text-h3" id="access-status">
           Identity and access
         </h2>
-        <AuthorizationRequiredState />
+        <AuthorizationRequiredState message="Selling currently runs on the reference session adapter. The authoritative provider will take over this boundary without changing the POS workflow." />
         <p className="ui-text-body-sm ui-text-secondary">
-          Actions will be authorized by active user, device, business
-          membership, role, permission, operation state, and approval
-          requirements on the service boundary.
+          Actions are authorized by active user, device, business membership,
+          role, permission, operation state, and approval requirements on the
+          service boundary.
         </p>
       </section>
       {update && (
@@ -140,6 +169,22 @@ function HomePage({
           be recoverable after the app closes.
         </Alert>
       )}
+    </>
+  )
+}
+
+function ModulePendingScreen({ area }: { area: NavDestinationId }) {
+  const destination = findDestination(area)
+  return (
+    <>
+      <PageHeader
+        title={destination.label}
+        description={destination.description}
+      />
+      <EmptyState
+        title="Arrives in a later module"
+        description="This area is specified in the corpus but its screen is built in a later module. Selling is available now from Sell."
+      />
     </>
   )
 }
@@ -189,8 +234,31 @@ function App() {
   const [online, setOnline] = useState(() => navigator.onLine)
   const [update, setUpdate] = useState<ServiceWorkerRegistration | null>(null)
   const [operations, setOperations] = useState<SyncOperation[]>([])
-  const [storageUnavailable, setStorageUnavailable] = useState(false)
   const [systemPanelOpen, setSystemPanelOpen] = useState(false)
+  const [activeArea, setActiveArea] = useState<NavDestinationId>('home')
+  const [actorId, setActorId] = useState(defaultActorId)
+  const [posEpoch, setPosEpoch] = useState(0)
+  const [abandonPromptOpen, setAbandonPromptOpen] = useState(false)
+  const [saleState, setSaleState] = useState({
+    dirty: false,
+    itemCount: 0,
+    totalKobo: 0,
+  })
+  const pendingNavigationRef = useRef<NavDestinationId | null>(null)
+
+  const controllerRef = useRef<PosController | null>(null)
+  if (!controllerRef.current) controllerRef.current = createPosController()
+  const controller = controllerRef.current
+
+  const session = useMemo(() => sessionForActor(findActor(actorId)), [actorId])
+  const navigation = useMemo(
+    () => navigationFor(session.permissions),
+    [session],
+  )
+
+  const refreshOperations = useCallback(() => {
+    setOperations(controller.listOperations())
+  }, [controller])
 
   useEffect(() => {
     const onOnline = () => setOnline(true)
@@ -200,17 +268,21 @@ function App() {
     window.addEventListener('online', onOnline)
     window.addEventListener('offline', onOffline)
     window.addEventListener('sabi-shop:update', onUpdate)
-    try {
-      setOperations(new LocalStorageStore(window.localStorage).load())
-    } catch {
-      setStorageUnavailable(true)
-    }
+    refreshOperations()
     return () => {
       window.removeEventListener('online', onOnline)
       window.removeEventListener('offline', onOffline)
       window.removeEventListener('sabi-shop:update', onUpdate)
     }
-  }, [])
+  }, [refreshOperations])
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(actorStorageKey, actorId)
+    } catch {
+      /* preference persistence is best-effort */
+    }
+  }, [actorId])
 
   const pending = operations.filter((operation) =>
     (pendingStates as readonly string[]).includes(operation.syncState),
@@ -218,15 +290,26 @@ function App() {
   const conflicts = operations.filter(
     (operation) => operation.syncState === 'CONFLICT',
   ).length
+  const storageUnavailable = controller.storageUnavailable
+
+  const handleNavigate = useCallback(
+    (id: NavDestinationId) => {
+      if (activeArea === 'sell' && id !== 'sell' && saleState.dirty) {
+        pendingNavigationRef.current = id
+        setAbandonPromptOpen(true)
+        return
+      }
+      setActiveArea(id)
+    },
+    [activeArea, saleState.dirty],
+  )
 
   return (
     <AppErrorBoundary>
       <AppShell
-        navigation={navigationFor(new Set())}
-        activeArea="home"
-        onNavigate={() => {
-          /* only Home is visible before a session exists */
-        }}
+        navigation={navigation}
+        activeArea={activeArea}
+        onNavigate={handleNavigate}
         systemState={{
           online,
           pendingCount: pending,
@@ -236,15 +319,33 @@ function App() {
         onSystemStateActivate={() => setSystemPanelOpen(true)}
         attentionCount={conflicts}
         onAttentionActivate={() => setSystemPanelOpen(true)}
-        businessName={null}
-        user={null}
+        businessName={session.businessName}
+        user={{
+          displayName: session.actor.displayName,
+          roleLabel: roleLabel(session.actor.role),
+        }}
       >
-        <HomePage
-          online={online}
-          pendingCount={pending}
-          storageUnavailable={storageUnavailable}
-          update={update}
-        />
+        {activeArea === 'sell' ? (
+          <PosScreen
+            key={posEpoch}
+            controller={controller}
+            session={session}
+            online={online}
+            onActorChange={setActorId}
+            onOperationsChanged={refreshOperations}
+            onSaleStateChange={setSaleState}
+          />
+        ) : activeArea === 'home' ? (
+          <HomePage
+            online={online}
+            pendingCount={pending}
+            storageUnavailable={storageUnavailable}
+            update={update}
+            onSell={() => setActiveArea('sell')}
+          />
+        ) : (
+          <ModulePendingScreen area={activeArea} />
+        )}
       </AppShell>
       <Drawer
         open={systemPanelOpen}
@@ -258,6 +359,23 @@ function App() {
           storageUnavailable={storageUnavailable}
         />
       </Drawer>
+      <AbandonSaleDialog
+        open={abandonPromptOpen}
+        itemCount={saleState.itemCount}
+        totalKobo={saleState.totalKobo}
+        onContinue={() => {
+          pendingNavigationRef.current = null
+          setAbandonPromptOpen(false)
+        }}
+        onDiscard={() => {
+          const target = pendingNavigationRef.current
+          pendingNavigationRef.current = null
+          setAbandonPromptOpen(false)
+          setSaleState({ dirty: false, itemCount: 0, totalKobo: 0 })
+          setPosEpoch((epoch) => epoch + 1)
+          if (target) setActiveArea(target)
+        }}
+      />
     </AppErrorBoundary>
   )
 }

@@ -7,6 +7,7 @@ export type PricingAuthorization = {
   actorId: string
   role: Role
   approvedBy?: string
+  reason?: string
 }
 
 export type Product = {
@@ -40,6 +41,20 @@ export type Discount = {
   reason?: string
 }
 
+/**
+ * Read-only pricing facts for a prospective sale line. Completion still
+ * flows through `priceSaleLine`, which re-validates authoritatively.
+ */
+export type SaleLinePricingPreview = {
+  unitPriceKobo: number
+  discountKobo: number
+  actualUnitPriceKobo: number
+  effectiveFloorKobo: number
+  belowFloor: boolean
+  freeSale: boolean
+  requiresAuthorization: boolean
+}
+
 export type SaleLine = {
   id: string
   productId: string
@@ -51,6 +66,8 @@ export type SaleLine = {
   discountKobo: number
   belowFloor: boolean
   flaggedForReview: boolean
+  pricingApprovedBy?: string
+  pricingApprovalReason?: string
   salespersonId: string
   completedAt: string
   status: SaleLineStatus
@@ -269,32 +286,9 @@ export class CatalogPricing {
     completedAt?: string
     authorization: PricingAuthorization
   }): SaleLine {
-    if (!Number.isInteger(input.quantity) || input.quantity <= 0) {
-      throw new DomainError(
-        'INVALID_QUANTITY',
-        'Quantity must be a positive integer',
-      )
-    }
-    const product = this.requireProduct(input.productId)
-    if (!product.active) {
-      throw new DomainError(
-        'PRODUCT_INACTIVE',
-        'Inactive products cannot be sold',
-      )
-    }
-    if (!product.availableForSale) {
-      throw new DomainError(
-        'PRODUCT_UNAVAILABLE',
-        'Product is unavailable for sale',
-      )
-    }
-    const unitPriceKobo = input.unitPriceKobo ?? product.sellingPriceKobo
-    assertMoney(unitPriceKobo, 'unitPriceKobo')
-    const discountKobo = this.discountFor(unitPriceKobo, input.discount)
-    const actualUnitPriceKobo = unitPriceKobo - discountKobo
-    const effectiveFloorKobo =
-      product.priceFloorKobo ?? product.sellingPriceKobo
-    const belowFloor = actualUnitPriceKobo < effectiveFloorKobo
+    const product = this.requireSellableProduct(input.productId)
+    const pricing = this.computeLinePricing(product, input)
+    const belowFloor = pricing.belowFloor
 
     if (
       belowFloor &&
@@ -312,7 +306,7 @@ export class CatalogPricing {
       }
     }
     if (
-      actualUnitPriceKobo === 0 &&
+      pricing.actualUnitPriceKobo === 0 &&
       (!input.authorization.approvedBy ||
         !managementRoles.includes(input.authorization.role) ||
         input.authorization.approvedBy === input.authorization.actorId)
@@ -329,17 +323,82 @@ export class CatalogPricing {
       productSku: product.sku,
       productName: product.name,
       quantity: input.quantity,
-      unitPriceKobo: actualUnitPriceKobo,
-      effectiveFloorKobo,
-      discountKobo,
+      unitPriceKobo: pricing.actualUnitPriceKobo,
+      effectiveFloorKobo: pricing.effectiveFloorKobo,
+      discountKobo: pricing.discountKobo,
       belowFloor,
       flaggedForReview: belowFloor,
+      pricingApprovedBy: input.authorization.approvedBy,
+      pricingApprovalReason: input.authorization.reason,
       salespersonId: input.salespersonId,
       completedAt: input.completedAt ?? now(),
       status: 'completed',
     }
     this.saleLines.push(line)
     return { ...line }
+  }
+
+  /**
+   * Pricing preview for draft sale lines. Returns the same pricing facts
+   * `priceSaleLine` will apply, including whether the configuration needs
+   * management authorization, without recording a sale line.
+   */
+  previewSaleLine(input: {
+    productId: string
+    quantity: number
+    unitPriceKobo?: number
+    discount?: Discount
+  }): SaleLinePricingPreview {
+    const product = this.requireSellableProduct(input.productId)
+    const pricing = this.computeLinePricing(product, input)
+    const requiresAuthorization =
+      (pricing.belowFloor &&
+        this.settings.belowFloorMode === 'block_until_authorized') ||
+      pricing.freeSale
+    return { ...pricing, requiresAuthorization }
+  }
+
+  private requireSellableProduct(productId: string): Product {
+    const product = this.requireProduct(productId)
+    if (!product.active) {
+      throw new DomainError(
+        'PRODUCT_INACTIVE',
+        'Inactive products cannot be sold',
+      )
+    }
+    if (!product.availableForSale) {
+      throw new DomainError(
+        'PRODUCT_UNAVAILABLE',
+        'Product is unavailable for sale',
+      )
+    }
+    return product
+  }
+
+  private computeLinePricing(
+    product: Product,
+    input: { quantity: number; unitPriceKobo?: number; discount?: Discount },
+  ) {
+    if (!Number.isInteger(input.quantity) || input.quantity <= 0) {
+      throw new DomainError(
+        'INVALID_QUANTITY',
+        'Quantity must be a positive integer',
+      )
+    }
+    const unitPriceKobo = input.unitPriceKobo ?? product.sellingPriceKobo
+    assertMoney(unitPriceKobo, 'unitPriceKobo')
+    const discountKobo = this.discountFor(unitPriceKobo, input.discount)
+    const actualUnitPriceKobo = unitPriceKobo - discountKobo
+    const effectiveFloorKobo =
+      product.priceFloorKobo ?? product.sellingPriceKobo
+    return {
+      unitPriceKobo,
+      discountKobo,
+      actualUnitPriceKobo,
+      effectiveFloorKobo,
+      belowFloor: actualUnitPriceKobo < effectiveFloorKobo,
+      freeSale: actualUnitPriceKobo === 0,
+    }
   }
 
   getPriceHistory(productId: string): PriceChange[] {
