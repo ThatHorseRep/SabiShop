@@ -4,10 +4,10 @@
 
 ## Overall
 
-The engineering foundation and the M08 inventory domain slice are implemented
-and verified. Persistence, authentication/authorization integration, offline
-synchronization, reporting, and the remaining domain modules are still
-downstream work.
+The engineering foundation, the application shell/design system, and the
+implemented domain slices are verified. Persistence, authentication/
+authorization integration, domain screens, and the remaining modules are
+still downstream work.
 
 ## Verified foundation
 
@@ -88,6 +88,23 @@ management review queue, and production retry schedule remain downstream.
 **Handoff:** `docs/build/HANDOFFS/15-pwa.md`
 
 Implemented install metadata, shell service-worker caching with offline navigation fallback, explicit update activation, connection/sync visibility, local-storage failure handling, and mobile viewport/touch defaults. The UI consumes the existing offline-sync storage boundary and does not duplicate sync or business rules.
+
+## Verified application shell and design-system slice
+
+**Module:** Cross-cutting application UI foundation
+**Status:** IMPLEMENTED FOUNDATION; domain screens pending
+**Handoff:** `docs/build/HANDOFFS/17-application-shell-design-system.md`
+
+Implemented the C03 token system (Geist typography, closed spacing and radius
+scales, semantic color roles, restrained surfaces, motion with reduced-motion
+support), the C04 adaptive hybrid shell (desktop rail, tablet compact rail,
+mobile bottom navigation plus More drawer, role-aware navigation over the real
+permission model, persistent system-state and attention indicators), and the
+shared component library with the complete operational state vocabulary
+(loading, empty, error, permission denied, authorization required, offline,
+sync pending, sync conflict, correction required, rejected, completed,
+cancelled). Fonts are bundled locally for offline use. No business data,
+metrics, or placeholder records are rendered.
 
 ## Verified canonical reporting slice
 
@@ -202,6 +219,7 @@ Implemented:
 | Locked business decisions                   | BUILD-READY                                         | `00-final-decision-register.md` and reconciled specifications                       |
 | Business invariants and state rules         | BUILD-READY                                         | `03`–`10`, `27`, `28`, `55`, H01–H02                                                |
 | Application foundation                      | VERIFIED                                            | `docs/build/HANDOFFS/01-foundation.md`                                              |
+| Application shell and design system         | IMPLEMENTED FOUNDATION; domain screens pending      | `docs/build/HANDOFFS/17-application-shell-design-system.md`                         |
 | Tenant/database foundation                  | IMPLEMENTED; execution environment pending          | `migrations/001_foundation.sql`, `docs/build/HANDOFFS/02-database-tenancy.md`       |
 | M08 inventory/costing                       | VERIFIED DOMAIN SLICE                               | `src/domain/inventory.ts`, `src/domain/inventory.test.ts`                           |
 | M09 purchasing/supplier liabilities/returns | VERIFIED DOMAIN SLICE; integration pending          | `src/domain/purchasing.ts`, `docs/build/HANDOFFS/08-purchasing-suppliers.md`        |

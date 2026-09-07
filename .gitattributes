@@ -1,0 +1,9 @@
+# Normalize all text files to LF in the repository and on checkout so
+# Prettier (endOfLine: lf) and the format:check gate behave identically on
+# Windows, macOS, and Linux. Existing blobs are already LF, so this changes
+# no committed content.
+* text=auto eol=lf
+
+# Binary assets must never be line-ending normalized.
+*.png binary
+*.woff2 binary

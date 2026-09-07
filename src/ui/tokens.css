@@ -1,0 +1,157 @@
+/*
+ * Sabi Shop design tokens.
+ *
+ * Source of truth: 14-design-system.md (C03) sections 6-16, 24, 41-45 and
+ * 15-application-shell-and-navigation.md (C04). These tokens are the single
+ * starting system for the application; screens must consume them instead of
+ * inventing per-screen values (C03-DEC-11). Hex values are the operational
+ * light-theme starting values carried over from the established Sabi Shop
+ * brand direction (manifest theme/background colors); final visual validation
+ * remains tracked as an open decision in C03 section 69.
+ */
+
+:root {
+  /* Typography: Geist primary, Geist Mono for identifiers (C03 sections 6-7). */
+  --font-sans:
+    'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    sans-serif;
+  --font-mono:
+    'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas,
+    monospace;
+
+  --text-display-size: 48px;
+  --text-display-line: 52px;
+  --text-h1-size: 32px;
+  --text-h1-line: 38px;
+  --text-h2-size: 24px;
+  --text-h2-line: 32px;
+  --text-h3-size: 20px;
+  --text-h3-line: 28px;
+  --text-h4-size: 18px;
+  --text-h4-line: 26px;
+  --text-body-lg-size: 16px;
+  --text-body-lg-line: 24px;
+  --text-body-size: 14px;
+  --text-body-line: 20px;
+  --text-body-sm-size: 13px;
+  --text-body-sm-line: 18px;
+  --text-caption-size: 12px;
+  --text-caption-line: 16px;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* Spacing: closed scale from C03 section 14. */
+  --space-0: 0px;
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
+  --space-64: 64px;
+  --space-80: 80px;
+  --space-96: 96px;
+
+  /* Radius: controlled system from C03 section 16. */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 999px;
+
+  /* Motion: quick, controlled, interruptible (C03 sections 43-45). */
+  --motion-fast: 140ms;
+  --motion-base: 200ms;
+  --motion-slow: 320ms;
+  --ease-out: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /*
+   * Surfaces: restrained hierarchy from C03 section 12.
+   * Light operational theme; a dark theme is an open decision (C03 section 69).
+   */
+  --surface-app: #f3f8f6;
+  --surface-primary: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: #eaf2ef;
+  --surface-selected: #dff3ef;
+  --surface-exception: #fff8ed;
+
+  --border-subtle: #d4e5df;
+  --border-default: #c9ded8;
+  --border-strong: #9dbfb6;
+
+  /* Text colors. */
+  --text-primary: #16302b;
+  --text-secondary: #49635d;
+  --text-muted: #6d837d;
+  --text-on-primary: #ffffff;
+
+  /* Brand / primary action, from the established manifest theme color. */
+  --color-primary: #0f766e;
+  --color-primary-hover: #115e59;
+  --color-primary-active: #134e4a;
+  --color-primary-subtle: #ccfbf1;
+  --color-primary-text: #0d5d56;
+
+  /* Semantic roles from C03 section 10. Never rely on color alone. */
+  --color-success: #15803d;
+  --color-success-surface: #dcfce7;
+  --color-success-border: #bbf7d0;
+
+  --color-pending: #b45309;
+  --color-pending-surface: #fef3c7;
+  --color-pending-border: #fde68a;
+
+  --color-warning: #c2410c;
+  --color-warning-surface: #ffedd5;
+  --color-warning-border: #fed7aa;
+
+  --color-danger: #b91c1c;
+  --color-danger-surface: #fee2e2;
+  --color-danger-border: #fecaca;
+
+  --color-info: #1d4ed8;
+  --color-info-surface: #dbeafe;
+  --color-info-border: #bfdbfe;
+
+  --color-offline: #475569;
+  --color-offline-surface: #f1f5f9;
+  --color-offline-border: #e2e8f0;
+
+  --color-conflict: #9a3412;
+  --color-conflict-surface: #ffedd5;
+  --color-conflict-border: #fdba74;
+
+  --color-integrity: #991b1b;
+  --color-integrity-surface: #fef2f2;
+  --color-integrity-border: #fecaca;
+
+  /* Focus and keyboard visibility. */
+  --focus-color: #0f766e;
+  --focus-outline: 2px;
+  --focus-offset: 2px;
+
+  /* Elevation: subtle, single light source, no decorative glow. */
+  --shadow-raised: 0 1px 2px rgb(22 48 43 / 6%);
+  --shadow-overlay: 0 12px 32px rgb(22 48 43 / 14%);
+
+  /* Layering scale; native dialog top layer sits above these. */
+  --z-sticky: 100;
+  --z-drawer: 400;
+  --z-toast: 600;
+
+  /* Shell metrics. */
+  --shell-header-height: 56px;
+  --shell-nav-width: 248px;
+  --shell-nav-collapsed-width: 72px;
+  --shell-bottom-nav-height: 60px;
+
+  /* Touch floor for operational controls (C03 section 47). */
+  --touch-target: 44px;
+}

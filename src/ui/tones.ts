@@ -1,0 +1,11 @@
+export type StatusTone =
+  | 'neutral'
+  | 'success'
+  | 'pending'
+  | 'warning'
+  | 'danger'
+  | 'info'
+  | 'offline'
+  | 'conflict'
+  | 'integrity'
+  | 'correction'
