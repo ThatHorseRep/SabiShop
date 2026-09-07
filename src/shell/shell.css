@@ -316,6 +316,7 @@ button.app-system-state:hover {
 .app-workspace {
   flex: 1;
   min-width: 0;
+  overflow-x: clip;
   padding: var(--space-24);
 }
 

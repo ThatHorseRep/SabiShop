@@ -15,7 +15,9 @@ html {
 
 body {
   margin: 0;
-  min-width: 320px;
+  /* No forced minimum width: classic scrollbars can reduce the usable area
+   * below the smallest supported viewport, and a forced minimum would create
+   * horizontal scroll and gaps beside fixed bars. */
   min-height: 100dvh;
   color: var(--text-primary);
   background: var(--surface-app);

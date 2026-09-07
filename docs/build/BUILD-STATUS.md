@@ -1,13 +1,13 @@
 # Sabi Shop Build Status
 
-**As of:** 2026-09-06
+**As of:** 2026-09-07
 
 ## Overall
 
-The engineering foundation, the application shell/design system, and the
-implemented domain slices are verified. Persistence, authentication/
-authorization integration, domain screens, and the remaining modules are
-still downstream work.
+The engineering foundation, the application shell/design system, the POS
+selling workspace, and the implemented domain slices are verified.
+Persistence, authentication/authorization integration, the remaining domain
+screens, and the remaining modules are still downstream work.
 
 ## Verified foundation
 
@@ -105,6 +105,44 @@ shared component library with the complete operational state vocabulary
 sync pending, sync conflict, correction required, rejected, completed,
 cancelled). Fonts are bundled locally for offline use. No business data,
 metrics, or placeholder records are rendered.
+
+## Verified POS selling-workspace slice
+
+**Module:** M07 POS user experience (C06)
+**Status:** IMPLEMENTED WORKSPACE on the verified domain engines; persistence/API integration pending
+**Handoff:** `docs/build/HANDOFFS/18-pos-ux.md`
+
+Implemented the production POS interface in `src/pos/`: fast product search
+and basket building with quantity and stock-visibility, line price editing
+with discount and floor-preview, per-sale tax, cash/transfer/POS-card/
+credit/custom methods with explicit successful-payment confirmation, split
+payments that must settle the total exactly, customer lookup/creation with
+credit assessment, deliberate management approval for below-floor, free
+sale, stock-exception, credit, and over-limit actions, unmistakable
+completion with receipts and historical prices, offline sales with sync
+pending and synchronize actions, and the abandon-sale guard. The UI contains
+no business rules: pricing previews, totals, credit assessment, completion,
+and sync envelopes all delegate to the tested `src/domain` engines and the
+`src/sync` boundary. Verified on desktop and mobile viewports in a browser
+against the production build.
+
+Validation on 2026-09-07 (clean install):
+
+```text
+npm ci                       PASS (268 packages, 0 vulnerabilities)
+npm run format:check         PASS
+npm run lint                 PASS
+npm test                     PASS (157 tests, 17 files)
+npm run build                PASS
+npx tsc -b --pretty false    PASS
+git diff --check             PASS
+npx prettier --check <POS slice files>  PASS
+```
+
+Responsive audit: 19 viewport widths from 320px to 1600px measured with zero
+horizontal overflow; the two-column layout holds from 1200px, the sticky sale
+bar stacks above mobile bottom navigation, and the base `min-width: 320px`
+was removed so classic-scrollbar viewports do not force horizontal scroll.
 
 ## Verified canonical reporting slice
 
@@ -213,23 +251,24 @@ Implemented:
 - Controlled reversal, dependent-event blocking, duplicate/offline idempotency,
   and explicit local/pending/accepted synchronization states.
 
-| Area                                        | Status                                              | Evidence                                                                            |
-| ------------------------------------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Product vision and V1 boundary              | BUILD-READY                                         | `01-product-vision.md`, `50-mvp-scope.md`                                           |
-| Locked business decisions                   | BUILD-READY                                         | `00-final-decision-register.md` and reconciled specifications                       |
-| Business invariants and state rules         | BUILD-READY                                         | `03`–`10`, `27`, `28`, `55`, H01–H02                                                |
-| Application foundation                      | VERIFIED                                            | `docs/build/HANDOFFS/01-foundation.md`                                              |
-| Application shell and design system         | IMPLEMENTED FOUNDATION; domain screens pending      | `docs/build/HANDOFFS/17-application-shell-design-system.md`                         |
-| Tenant/database foundation                  | IMPLEMENTED; execution environment pending          | `migrations/001_foundation.sql`, `docs/build/HANDOFFS/02-database-tenancy.md`       |
-| M08 inventory/costing                       | VERIFIED DOMAIN SLICE                               | `src/domain/inventory.ts`, `src/domain/inventory.test.ts`                           |
-| M09 purchasing/supplier liabilities/returns | VERIFIED DOMAIN SLICE; integration pending          | `src/domain/purchasing.ts`, `docs/build/HANDOFFS/08-purchasing-suppliers.md`        |
-| M07 sales/payments/credit/receipts          | BUILD-READY; integration pending                    | `27-sales-and-transaction-rules.md`                                                 |
-| M06 customers and customer credit           | VERIFIED DOMAIN SLICE; integration pending          | `src/domain/customersCredit.ts`, `docs/build/HANDOFFS/10-customers-credit.md`       |
-| M05 catalogue/pricing/search                | BUILD-READY; integration pending                    | `37-catalog-and-search.md`                                                          |
-| M10 customer returns/refunds/corrections    | IMPLEMENTED DOMAIN SLICE; integration pending       | `src/domain/returnsCorrections.ts`, `docs/build/HANDOFFS/11-returns-corrections.md` |
-| M13 offline sync/conflicts                  | IMPLEMENTED REFERENCE BOUNDARY; integration pending | `src/sync/offlineSync.ts`, `docs/build/HANDOFFS/14-offline-sync.md`                 |
-| M11 cash/reconciliation                     | VERIFIED DOMAIN SLICE; integration pending          | `src/domain/cashReconciliation.ts`, `docs/build/HANDOFFS/12-cash-reconciliation.md` |
-| M15 V1 integration/acceptance               | BLOCKED                                             | dependent modules and unresolved technical decisions                                |
+| Area                                        | Status                                                 | Evidence                                                                            |
+| ------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| Product vision and V1 boundary              | BUILD-READY                                            | `01-product-vision.md`, `50-mvp-scope.md`                                           |
+| Locked business decisions                   | BUILD-READY                                            | `00-final-decision-register.md` and reconciled specifications                       |
+| Business invariants and state rules         | BUILD-READY                                            | `03`–`10`, `27`, `28`, `55`, H01–H02                                                |
+| Application foundation                      | VERIFIED                                               | `docs/build/HANDOFFS/01-foundation.md`                                              |
+| Application shell and design system         | IMPLEMENTED FOUNDATION                                 | `docs/build/HANDOFFS/17-application-shell-design-system.md`                         |
+| Tenant/database foundation                  | IMPLEMENTED; execution environment pending             | `migrations/001_foundation.sql`, `docs/build/HANDOFFS/02-database-tenancy.md`       |
+| M08 inventory/costing                       | VERIFIED DOMAIN SLICE                                  | `src/domain/inventory.ts`, `src/domain/inventory.test.ts`                           |
+| M09 purchasing/supplier liabilities/returns | VERIFIED DOMAIN SLICE; integration pending             | `src/domain/purchasing.ts`, `docs/build/HANDOFFS/08-purchasing-suppliers.md`        |
+| M07 sales/payments/credit/receipts          | IMPLEMENTED DOMAIN SLICE; integration pending          | `src/domain/sales.ts`, `docs/build/HANDOFFS/09-sales.md`                            |
+| M07 POS selling workspace (C06)             | IMPLEMENTED WORKSPACE; persistence integration pending | `src/pos/`, `docs/build/HANDOFFS/18-pos-ux.md`                                      |
+| M06 customers and customer credit           | VERIFIED DOMAIN SLICE; integration pending             | `src/domain/customersCredit.ts`, `docs/build/HANDOFFS/10-customers-credit.md`       |
+| M05 catalogue/pricing/search                | BUILD-READY; integration pending                       | `37-catalog-and-search.md`                                                          |
+| M10 customer returns/refunds/corrections    | IMPLEMENTED DOMAIN SLICE; integration pending          | `src/domain/returnsCorrections.ts`, `docs/build/HANDOFFS/11-returns-corrections.md` |
+| M13 offline sync/conflicts                  | IMPLEMENTED REFERENCE BOUNDARY; integration pending    | `src/sync/offlineSync.ts`, `docs/build/HANDOFFS/14-offline-sync.md`                 |
+| M11 cash/reconciliation                     | VERIFIED DOMAIN SLICE; integration pending             | `src/domain/cashReconciliation.ts`, `docs/build/HANDOFFS/12-cash-reconciliation.md` |
+| M15 V1 integration/acceptance               | BLOCKED                                                | dependent modules and unresolved technical decisions                                |
 
 ## Locked integration invariants
 
