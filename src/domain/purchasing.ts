@@ -128,6 +128,55 @@ const positive = (value: Quantity): Quantity => {
 const lineTotal = (quantity: Quantity, unitCost: Money) =>
   (quantity * unitCost) / 1000n
 
+const roundMoney = (numerator: bigint, denominator: bigint): Money => {
+  if (denominator === 0n) return 0n
+  return (numerator + denominator / 2n) / denominator
+}
+
+export type AcquisitionCostInput = {
+  paidQuantity: Quantity
+  bonusQuantity: Quantity
+  unitCost: Money
+  discount?: Money
+}
+
+/**
+ * B06 allocates the net acquisition cost across paid and bonus quantity.
+ * Bonus stock therefore increases quantity and lowers the effective unit cost;
+ * it is never recorded as a zero-cost layer.
+ */
+export const effectiveAcquisitionUnitCost = ({
+  paidQuantity,
+  bonusQuantity,
+  unitCost,
+  discount = 0n,
+}: AcquisitionCostInput): Money => {
+  if (paidQuantity < 0n || bonusQuantity < 0n)
+    throw new PurchasingError(
+      'quantities must be non-negative',
+      'invalid_quantity',
+    )
+  if (unitCost < 0n || discount < 0n)
+    throw new PurchasingError('amount must be non-negative', 'invalid_amount')
+
+  const totalQuantity = paidQuantity + bonusQuantity
+  if (totalQuantity === 0n)
+    throw new PurchasingError(
+      'acquisition requires a quantity',
+      'invalid_quantity',
+    )
+
+  const paidCost = (paidQuantity * unitCost) / 1000n
+  const netCost = paidCost - discount
+  if (netCost < 0n)
+    throw new PurchasingError(
+      'discount cannot exceed acquisition cost',
+      'invalid_amount',
+    )
+
+  return roundMoney(netCost * 1000n, totalQuantity)
+}
+
 export class PurchasingEngine {
   readonly inventory: InventoryEngine
   private readonly suppliers = new Map<string, Supplier>()

@@ -5,9 +5,10 @@
 ## Overall
 
 The engineering foundation, the application shell/design system, the POS
-selling workspace, and the implemented domain slices are verified.
-Persistence, authentication/authorization integration, the remaining domain
-screens, and the remaining modules are still downstream work.
+selling workspace, the inventory/purchasing workspace, and the implemented
+domain slices are verified. Persistence, authentication/authorization
+integration, the remaining domain screens, and the remaining modules are still
+downstream work.
 
 ## Verified foundation
 
@@ -144,6 +145,53 @@ horizontal overflow; the two-column layout holds from 1200px, the sticky sale
 bar stacks above mobile bottom navigation, and the base `min-width: 320px`
 was removed so classic-scrollbar viewports do not force horizontal scroll.
 
+## Implemented inventory and purchasing UX slice
+
+**Module:** M08/M09 — Inventory, purchasing, receiving, and supplier-return UX
+**Status:** IMPLEMENTED WORKSPACE; durable API/persistence integration pending
+**Handoff:** `docs/build/HANDOFFS/19-inventory-purchasing-ux.md`
+
+Implemented the Products & Inventory workspace in `src/inventory/`, installed
+behind the existing C04 application shell and synchronized with the current
+reference session actor/business context:
+
+- operational overview with exceptions and recent source-linked activity;
+- product discovery and detail with permission-aware cost context;
+- event-derived sellable/held stock and explicit negative-stock exceptions;
+- physical-count investigation and authorized append-only correction;
+- management-owned receiving with actual quantity, bonus stock, discount,
+  effective acquisition-cost preview, payment, and supplier payable;
+- supplier records, purchase/payment history, and remaining liabilities;
+- supplier return workflow with payable reduction, supplier credit, separate
+  replacement receipts, and separate settlement outcomes;
+- filterable inventory history tracing stock → movement → source record →
+  correction/return, with a source-transaction panel for the selected purchase,
+  sale, supplier return, replacement, or investigation.
+
+The interface contains no generic editable stock field. Every mutation passes
+through `executeAuthorized`; Staff purchasing controls and cost information are
+hidden, and offline management mutations remain denied under the current policy.
+The workspace uses in-memory engines plus the labeled reference session/seed
+adapter; durable persistence and the real authentication provider remain
+downstream.
+
+Validation on 2026-09-07:
+
+```text
+npm ci                                      PASS (268 packages, 0 vulnerabilities)
+npm run format:check                        PASS
+npm test                                     PASS (166 tests, 18 files)
+npm run lint                                 PASS
+npm run build                                PASS
+npx tsc -b --pretty false                    PASS
+npx prettier --check <inventory slice files> PASS
+git diff --check                             PASS
+```
+
+Repository-wide formatting now passes after normalizing working-tree line
+endings; no authorization source changes were needed. The Vitest timeout was
+raised to 15 seconds to remove parallel-run POS timeouts on this machine.
+
 ## Verified canonical reporting slice
 
 **Module:** M12 - business performance and management visibility
@@ -261,6 +309,7 @@ Implemented:
 | Tenant/database foundation                  | IMPLEMENTED; execution environment pending             | `migrations/001_foundation.sql`, `docs/build/HANDOFFS/02-database-tenancy.md`       |
 | M08 inventory/costing                       | VERIFIED DOMAIN SLICE                                  | `src/domain/inventory.ts`, `src/domain/inventory.test.ts`                           |
 | M09 purchasing/supplier liabilities/returns | VERIFIED DOMAIN SLICE; integration pending             | `src/domain/purchasing.ts`, `docs/build/HANDOFFS/08-purchasing-suppliers.md`        |
+| M08/M09 inventory & purchasing UX           | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/inventory/`, `docs/build/HANDOFFS/19-inventory-purchasing-ux.md`               |
 | M07 sales/payments/credit/receipts          | IMPLEMENTED DOMAIN SLICE; integration pending          | `src/domain/sales.ts`, `docs/build/HANDOFFS/09-sales.md`                            |
 | M07 POS selling workspace (C06)             | IMPLEMENTED WORKSPACE; persistence integration pending | `src/pos/`, `docs/build/HANDOFFS/18-pos-ux.md`                                      |
 | M06 customers and customer credit           | VERIFIED DOMAIN SLICE; integration pending             | `src/domain/customersCredit.ts`, `docs/build/HANDOFFS/10-customers-credit.md`       |

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PurchasingEngine } from './purchasing'
+import { effectiveAcquisitionUnitCost, PurchasingEngine } from './purchasing'
 import { quantity } from './inventory'
 
 const setup = () => {
@@ -13,6 +13,32 @@ const setup = () => {
 }
 
 describe('PurchasingEngine', () => {
+  it('allocates discounts and bonus stock across the total acquired quantity', () => {
+    expect(
+      effectiveAcquisitionUnitCost({
+        paidQuantity: quantity(10),
+        bonusQuantity: quantity(2),
+        unitCost: 100000n,
+        discount: 60000n,
+      }),
+    ).toBe(78333n)
+    expect(
+      effectiveAcquisitionUnitCost({
+        paidQuantity: 0n,
+        bonusQuantity: quantity(2),
+        unitCost: 100000n,
+      }),
+    ).toBe(0n)
+    expect(() =>
+      effectiveAcquisitionUnitCost({
+        paidQuantity: quantity(1),
+        bonusQuantity: 0n,
+        unitCost: 100n,
+        discount: 200n,
+      }),
+    ).toThrowError('discount cannot exceed acquisition cost')
+  })
+
   it('receives purchases into inventory and keeps supplier liability separate from payments', () => {
     const engine = setup()
     const purchase = engine.receivePurchase({
