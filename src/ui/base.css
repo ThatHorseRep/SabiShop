@@ -1,0 +1,83 @@
+/*
+ * Base element styles. Typography defaults follow the C03 type scale;
+ * no ad hoc font sizes, spacing, or radii are introduced here.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100dvh;
+  color: var(--text-primary);
+  background: var(--surface-app);
+  font-family: var(--font-sans);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: contain;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+}
+
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--font-mono);
+}
+
+small {
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-line);
+}
+
+/* Numerical data uses tabular figures so columns scan cleanly (C03 section 9). */
+.numeric,
+.ui-money,
+.ui-table td.numeric,
+.ui-input input {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: var(--focus-outline) solid var(--focus-color);
+  outline-offset: var(--focus-offset);
+}
+
+/* Reduced motion: keep essential state feedback, remove decorative movement. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
