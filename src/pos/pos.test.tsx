@@ -342,7 +342,7 @@ describe('POS journeys', () => {
     )
     const dialog = screen.getByRole('dialog', { name: 'Credit sale approval' })
     expect(
-      within(dialog).getByText(/Customer balance will increase by/i),
+      within(dialog).getByText(/Outstanding debt will increase by/i),
     ).toBeInTheDocument()
     await user.click(within(dialog).getByRole('button', { name: 'Approve' }))
 

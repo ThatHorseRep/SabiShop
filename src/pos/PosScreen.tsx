@@ -499,14 +499,14 @@ export function PosScreen({
     if (!creditPayment || !customer || !creditAssessment) return
     if (creditAssessment.status !== 'eligible') return
     const amount = creditPayment.amountKobo
-    const effects = [`Customer balance will increase by ${formatKobo(amount)}.`]
+    const effects = [`Outstanding debt will increase by ${formatKobo(amount)}.`]
     if (creditAssessment.creditLimitKobo !== undefined) {
       effects.push(
-        `Outstanding becomes ${formatKobo(creditAssessment.projectedKobo)} of ${formatKobo(creditAssessment.creditLimitKobo)} limit.`,
+        `Outstanding debt becomes ${formatKobo(creditAssessment.projectedKobo)} of ${formatKobo(creditAssessment.creditLimitKobo)} limit.`,
       )
     } else {
       effects.push(
-        `Outstanding becomes ${formatKobo(creditAssessment.projectedKobo)}.`,
+        `Outstanding debt becomes ${formatKobo(creditAssessment.projectedKobo)}.`,
       )
     }
     if (creditAssessment.overLimit) {
