@@ -10,7 +10,11 @@ import type {
   IntegrityReportEvent,
   ReturnsCorrectionsEngine,
 } from './domain/returnsCorrections'
-import type { SalesTransactionEngine, SaleReportEvent } from './domain/sales'
+import type {
+  CompletedSale,
+  SalesTransactionEngine,
+  SaleReportEvent,
+} from './domain/sales'
 
 export type ReportingPeriod = Readonly<{ from: string; to: string }>
 export type ExpenseRecord = Readonly<{
@@ -257,9 +261,21 @@ export class CanonicalReporting {
       minimumQualifyingCompletedSales: 0,
     }
     const staffMap = new Map<string, StaffPerformance>()
+    const eligibleValueOfSale = (sale: CompletedSale): number =>
+      sale.lines.reduce(
+        (sum, line) =>
+          sum +
+          Math.max(0, line.unitPriceKobo - line.effectiveFloorKobo) *
+            line.quantity,
+        0,
+      )
+    // Qualification is a count, so it only moves for sales whose completion
+    // was counted inside this period. Value effects stay signed and additive,
+    // exactly like the business totals (B13 sections 3, 11, 13).
+    const countedSales = new Set<string>()
+    const unqualifiedSales = new Set<string>()
+    const returnedValueBySale = new Map<string, number>()
     events.forEach((event) => {
-      if (event.type !== 'sale.completed' && event.type !== 'sale.reversed')
-        return
       const sale = this.sources.sales.getSale(businessId, event.saleId)
       if (!sale) return
       const current = {
@@ -275,20 +291,50 @@ export class CanonicalReporting {
         }),
         sourceEventIds: [...(staffMap.get(sale.actorId)?.sourceEventIds ?? [])],
       }
-      current.qualifyingSales += event.type === 'sale.completed' ? 1 : 0
+      current.sourceEventIds.push(`${event.type}:${event.saleId}`)
       current.netRecognizedSellingValueKobo +=
         event.totalDueKobo - event.taxKobo
       current.cogsKobo += event.cogsKobo
       current.grossProfitKobo += event.grossProfitKobo
-      current.sourceEventIds.push(`${event.type}:${event.saleId}`)
-      if (policy.enabled && event.type === 'sale.completed')
-        current.incentiveEligibleValueKobo += sale.lines.reduce(
-          (sum, line) =>
-            sum +
-            Math.max(0, line.unitPriceKobo - line.effectiveFloorKobo) *
-              line.quantity,
-          0,
-        )
+      if (event.type === 'sale.completed') {
+        countedSales.add(event.saleId)
+        current.qualifyingSales += 1
+        if (policy.enabled)
+          current.incentiveEligibleValueKobo += eligibleValueOfSale(sale)
+      } else if (event.type === 'sale.reversed') {
+        if (
+          countedSales.has(event.saleId) &&
+          !unqualifiedSales.has(event.saleId)
+        ) {
+          unqualifiedSales.add(event.saleId)
+          current.qualifyingSales -= 1
+        }
+        if (policy.enabled)
+          current.incentiveEligibleValueKobo -= eligibleValueOfSale(sale)
+      } else if (
+        event.type === 'sale.return.applied' ||
+        event.type === 'sale.correction.applied' ||
+        event.type === 'sale.reversal.applied'
+      ) {
+        // Applied return or correction: the signed value effects above are
+        // joined by the floor-aware incentive delta computed by the integrity
+        // engine, so provisional eligibility recalculates (B13 sections 11,
+        // 13). A sale whose entire value has been returned no longer counts
+        // toward the qualifying-sales volume gate.
+        if (policy.enabled)
+          current.incentiveEligibleValueKobo += event.incentiveEligibleValueKobo
+        const cumulative =
+          (returnedValueBySale.get(event.saleId) ?? 0) + event.totalDueKobo
+        returnedValueBySale.set(event.saleId, cumulative)
+        if (
+          countedSales.has(event.saleId) &&
+          !unqualifiedSales.has(event.saleId) &&
+          -cumulative >= sale.totalDueKobo
+        ) {
+          unqualifiedSales.add(event.saleId)
+          current.qualifyingSales -= 1
+        }
+      }
       const status = !policy.enabled
         ? 'disabled'
         : current.qualifyingSales >= policy.minimumQualifyingCompletedSales

@@ -37,6 +37,7 @@ import { InventoryWorkspace } from './inventory/InventoryWorkspace'
 import { CustomerCreditWorkspace } from './customers/CustomerCreditWorkspace'
 import { ExceptionsWorkspace } from './exceptions/ExceptionsWorkspace'
 import { ManagementWorkspace } from './management/ManagementWorkspace'
+import { StaffWorkspace } from './staff/StaffWorkspace'
 
 type ErrorBoundaryProps = { children: ReactNode }
 type ErrorBoundaryState = { hasError: boolean }
@@ -98,19 +99,30 @@ function HomePage({
   storageUnavailable,
   update,
   onSell,
+  onOpenManagement,
 }: {
   online: boolean
   pendingCount: number
   storageUnavailable: boolean
   update: ServiceWorkerRegistration | null
   onSell: () => void
+  onOpenManagement?: () => void
 }) {
   return (
     <>
       <PageHeader
         title="Home"
         description="Daily overview, attention, and system state."
-        actions={<Button onClick={onSell}>Start selling</Button>}
+        actions={
+          <>
+            {onOpenManagement && (
+              <Button variant="secondary" onClick={onOpenManagement}>
+                Open Management
+              </Button>
+            )}
+            <Button onClick={onSell}>Start selling</Button>
+          </>
+        }
       />
       {!online && <OfflineState />}
       <section className="home-section" aria-labelledby="foundation-status">
@@ -340,13 +352,32 @@ function App() {
             onSaleStateChange={setSaleState}
           />
         ) : activeArea === 'home' ? (
-          <HomePage
-            online={online}
-            pendingCount={pending}
-            storageUnavailable={storageUnavailable}
-            update={update}
-            onSell={() => setActiveArea('sell')}
-          />
+          session.actor.role === 'staff' ? (
+            <StaffWorkspace
+              actorId={actorId}
+              onActorChange={setActorId}
+              onOpenArea={(area) => setActiveArea(area)}
+              online={online}
+              pendingCount={pending}
+              conflictCount={conflicts}
+              storageUnavailable={storageUnavailable}
+              update={update}
+              onOpenSystemState={() => setSystemPanelOpen(true)}
+            />
+          ) : (
+            <HomePage
+              online={online}
+              pendingCount={pending}
+              storageUnavailable={storageUnavailable}
+              update={update}
+              onSell={() => setActiveArea('sell')}
+              onOpenManagement={
+                session.permissions.has('audit:read')
+                  ? () => setActiveArea('management')
+                  : undefined
+              }
+            />
+          )
         ) : activeArea === 'products-inventory' ? (
           <InventoryWorkspace
             actorId={actorId}
