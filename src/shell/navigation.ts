@@ -84,10 +84,13 @@ export const navigationModel: readonly NavDestination[] = [
   {
     id: 'money',
     label: 'Money',
-    description: 'Cash, expenses, and reconciliation.',
+    description: 'Cash, reconciliation, and exception review.',
     icon: Wallet,
     group: 'money',
-    requiredPermission: 'cash:reconcile',
+    // Staff need this area to request returns, record cash events, and enter
+    // physical counts; management controls official figures, confirmation,
+    // closure, and resolution (B05 sections 3, 22, 28).
+    requiredPermission: 'business:work',
   },
   {
     id: 'activity',
