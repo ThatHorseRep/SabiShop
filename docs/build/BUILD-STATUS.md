@@ -7,8 +7,8 @@
 The engineering foundation, the application shell/design system, the POS
 selling workspace, the inventory/purchasing workspace, the customer/credit
 workspace, the exceptions/reconciliation workspace, the management dashboard
-workspace, the staff dashboard workspace, and the implemented domain slices
-are verified. Persistence,
+workspace, the staff dashboard workspace, the public landing page, and the
+implemented domain slices are verified. Persistence,
 authentication/authorization integration, the remaining domain screens, and
 the remaining modules are still downstream work.
 
@@ -433,6 +433,65 @@ boundary were exercised interactively. The 1280 px grid reuses the management
 workspace's verified pattern (viewport control was unavailable in this
 environment).
 
+## Implemented public landing page slice
+
+**Module:** C05 — Public landing page (marketing experience)
+**Status:** IMPLEMENTED MARKETING PAGE; acquisition/onboarding path pending
+**Handoff:** `docs/build/HANDOFFS/24-landing-page.md`
+
+Implemented the public landing experience as a separate Vite entry
+(`landing.html` + `src/landing/`) so the marketing page never loads the
+operational application code, while sharing its visual DNA by consuming the
+same C03 tokens, base styles, button/badge component classes, Geist
+typeface, and Phosphor icon family:
+
+- one conversion objective and one primary CTA (Get Started), with the
+  final CTA matching it exactly; the temporary destination is the working
+  product because onboarding does not exist yet, and no fake signup is
+  presented;
+- C05 page sequence: header, hero, problem recognition, five outcome
+  pillars, tagline reveal, how it works (record, connect, see what needs
+  attention), product areas, trust and control, audience fit, ten-question
+  FAQ, final CTA, footer;
+- the external landing-page methodology is followed for structure,
+  copywriting discipline, scroll reveals, the floating glass pill nav with
+  morphing mobile menu, and the word-by-word tagline reveal, while Sabi Shop
+  product truth outranks it where they differ;
+- no testimonials, user numbers, revenue claims, performance statistics,
+  customer logos, or fabricated social proof; the hero visual is a
+  representative sale workspace using the application's own seed catalogue
+  and is labelled as example data; proof near claims is honest capability
+  statements only;
+- offline support is stated as a bounded capability, corrections as
+  controlled and traceable, and no pricing, security, or legal claims are
+  invented; the footer states that privacy and terms arrive with the public
+  release;
+- SEO/AEO: indexed page with title, meta description, Open Graph and
+  Twitter tags, semantic landmarks, skip link, and FAQ structured data
+  rendered from the same copy source; a noscript summary links to the
+  product;
+- accessibility: semantic HTML, keyboard-operable menu with focus wrap and
+  Escape, native FAQ disclosures, visible focus, reduced-motion support,
+  and progressive enhancement so all content renders fully without
+  scripting or observers.
+
+Validation on 2026-09-08:
+
+```text
+npm test                                      PASS (232 tests, 23 files)
+npm run lint                                  PASS (0 errors, 0 warnings)
+npm run build                                 PASS
+npx tsc -b --pretty false                     PASS
+npx prettier --check <landing slice files>    PASS
+git diff --check                              PASS
+```
+
+Browser verification (production build via `vite preview`, 390 px and
+1440 px): no horizontal overflow at either width, hero/CTAs/tagline/FAQ/menu
+exercised interactively, scroll reveals and tagline words activate through
+IntersectionObserver, and the Geist typeface and shared button system render
+as designed. Screenshots are archived under `work/`.
+
 ## Verified canonical reporting slice
 
 **Module:** M12 - business performance and management visibility
@@ -562,6 +621,7 @@ Implemented:
 | M10/M11 exceptions & reconciliation UX (C09) | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/exceptions/`, `docs/build/HANDOFFS/21-exceptions-reconciliation-ux.md`         |
 | M12 management dashboard UX                  | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/management/`, `docs/build/HANDOFFS/22-management-dashboard.md`                 |
 | Staff Home / staff dashboard UX              | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/staff/`, `docs/build/HANDOFFS/23-staff-dashboard.md`                           |
+| Public landing page (C05)                    | IMPLEMENTED MARKETING PAGE; acquisition path pending   | `landing.html`, `src/landing/`, `docs/build/HANDOFFS/24-landing-page.md`            |
 | M15 V1 integration/acceptance                | BLOCKED                                                | dependent modules and unresolved technical decisions                                |
 
 ## Locked integration invariants
