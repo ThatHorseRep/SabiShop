@@ -1,14 +1,15 @@
 # Sabi Shop Build Status
 
-**As of:** 2026-09-07
+**As of:** 2026-09-08
 
 ## Overall
 
 The engineering foundation, the application shell/design system, the POS
 selling workspace, the inventory/purchasing workspace, the customer/credit
-workspace, and the implemented domain slices are verified. Persistence,
-authentication/authorization integration, the remaining domain screens, and
-the remaining modules are still downstream work.
+workspace, the exceptions/reconciliation workspace, and the implemented
+domain slices are verified. Persistence, authentication/authorization
+integration, the remaining domain screens, and the remaining modules are
+still downstream work.
 
 ## Verified foundation
 
@@ -247,6 +248,67 @@ Browser verification (production build, 320–1600 px) found no horizontal
 overflow on the profile or credit-sale dialog; screenshots are archived with
 the slice deliverables.
 
+## Implemented exceptions and reconciliation UX slice
+
+**Module:** M10/M11 — Returns, corrections, reversals, refund settlement, and
+cash reconciliation UX (C09)
+**Status:** IMPLEMENTED WORKSPACE; durable API/persistence integration pending
+**Handoff:** `docs/build/HANDOFFS/21-exceptions-reconciliation-ux.md`
+
+Implemented the Exceptions & Reconciliation workspace in `src/exceptions/`,
+mounted at the Money navigation destination and synchronized with the current
+reference session actor/business context:
+
+- management review queue for returns awaiting verification/approval, refunds
+  due, supplier returns, Owner-review flags, and cash discrepancies — every
+  item states what happened, why it needs attention, its consequence, the
+  requested action, and the required authority;
+- sale returns linked to the intact original sale, with partial/full derived
+  states, condition recording, separate management approval, applied
+  inventory/debt/reporting effects, rejected attempts that apply nothing, and
+  refund `Not required / Due / Settled` states recorded without executing
+  money movement;
+- supplier returns with settlement-state-aware consequence preview (unpaid
+  purchase → payable reduction; paid purchase → supplier credit), separate
+  replacement receipts, and recorded settlements;
+- corrections with the correction-window state, original-versus-proposed
+  comparison, consequence preview, mandatory reason, ordinary/material/
+  high-integrity authority guidance, separate approvals, and preserved
+  correction chains; deliberate reversal as a management action that is never
+  presented as deletion;
+- cash reconciliation with the four canonical B05 figures distinct —
+  Expected Cash (derived, formula shown), Actual Cash (only from a deliberate
+  physical count, never a routine dashboard input), Cash Variance
+  (investigation-first discrepancy, not an accusation), and Cash in Hand
+  (operational view, labelled when not yet counted) — plus interim counts,
+  cash in/out with reasons, audited close/reopen with reasons, and
+  payment-method totals that stay distinguishable;
+- investigation/history timeline across sales, returns, corrections,
+  reversals, supplier returns, cash, and authorization decisions, with
+  filters and preserved audit-event counts.
+
+Every mutation passes `executeAuthorized` with the operation's permission
+before the verified domain engines (Handoffs 08, 11, 12) run. The Money
+navigation destination is now staff-visible because staff must record cash
+events, enter physical counts, and request returns (B05 §3, §22, §28; C09
+§42); official figures, confirmation, closure, resolution, and reopen remain
+management-only. No correction is ever disguised as deletion.
+
+Validation on 2026-09-08:
+
+```text
+npm test                                      PASS (201 tests, 20 files)
+npm run lint                                  PASS (0 errors, 0 warnings)
+npm run build                                 PASS
+npx tsc -b --pretty false                     PASS
+npx prettier --check <exceptions files>       PASS
+```
+
+Browser verification (production build, 390–1280 px) found no horizontal
+overflow on any tab; the count-cash dialog and correction preview were
+exercised interactively. Screenshots are archived with the slice deliverables
+under `work/`.
+
 ## Verified canonical reporting slice
 
 **Module:** M12 - business performance and management visibility
@@ -354,26 +416,27 @@ Implemented:
 - Controlled reversal, dependent-event blocking, duplicate/offline idempotency,
   and explicit local/pending/accepted synchronization states.
 
-| Area                                        | Status                                                 | Evidence                                                                            |
-| ------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| Product vision and V1 boundary              | BUILD-READY                                            | `01-product-vision.md`, `50-mvp-scope.md`                                           |
-| Locked business decisions                   | BUILD-READY                                            | `00-final-decision-register.md` and reconciled specifications                       |
-| Business invariants and state rules         | BUILD-READY                                            | `03`–`10`, `27`, `28`, `55`, H01–H02                                                |
-| Application foundation                      | VERIFIED                                               | `docs/build/HANDOFFS/01-foundation.md`                                              |
-| Application shell and design system         | IMPLEMENTED FOUNDATION                                 | `docs/build/HANDOFFS/17-application-shell-design-system.md`                         |
-| Tenant/database foundation                  | IMPLEMENTED; execution environment pending             | `migrations/001_foundation.sql`, `docs/build/HANDOFFS/02-database-tenancy.md`       |
-| M08 inventory/costing                       | VERIFIED DOMAIN SLICE                                  | `src/domain/inventory.ts`, `src/domain/inventory.test.ts`                           |
-| M09 purchasing/supplier liabilities/returns | VERIFIED DOMAIN SLICE; integration pending             | `src/domain/purchasing.ts`, `docs/build/HANDOFFS/08-purchasing-suppliers.md`        |
-| M08/M09 inventory & purchasing UX           | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/inventory/`, `docs/build/HANDOFFS/19-inventory-purchasing-ux.md`               |
-| M07 sales/payments/credit/receipts          | IMPLEMENTED DOMAIN SLICE; integration pending          | `src/domain/sales.ts`, `docs/build/HANDOFFS/09-sales.md`                            |
-| M07 POS selling workspace (C06)             | IMPLEMENTED WORKSPACE; persistence integration pending | `src/pos/`, `docs/build/HANDOFFS/18-pos-ux.md`                                      |
-| M06 customers and customer credit           | VERIFIED DOMAIN SLICE; integration pending             | `src/domain/customersCredit.ts`, `docs/build/HANDOFFS/10-customers-credit.md`       |
-| M06/M07 customer & credit UX (C08)          | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/customers/`, `docs/build/HANDOFFS/20-customer-credit-ux.md`                    |
-| M05 catalogue/pricing/search                | BUILD-READY; integration pending                       | `37-catalog-and-search.md`                                                          |
-| M10 customer returns/refunds/corrections    | IMPLEMENTED DOMAIN SLICE; integration pending          | `src/domain/returnsCorrections.ts`, `docs/build/HANDOFFS/11-returns-corrections.md` |
-| M13 offline sync/conflicts                  | IMPLEMENTED REFERENCE BOUNDARY; integration pending    | `src/sync/offlineSync.ts`, `docs/build/HANDOFFS/14-offline-sync.md`                 |
-| M11 cash/reconciliation                     | VERIFIED DOMAIN SLICE; integration pending             | `src/domain/cashReconciliation.ts`, `docs/build/HANDOFFS/12-cash-reconciliation.md` |
-| M15 V1 integration/acceptance               | BLOCKED                                                | dependent modules and unresolved technical decisions                                |
+| Area                                         | Status                                                 | Evidence                                                                            |
+| -------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| Product vision and V1 boundary               | BUILD-READY                                            | `01-product-vision.md`, `50-mvp-scope.md`                                           |
+| Locked business decisions                    | BUILD-READY                                            | `00-final-decision-register.md` and reconciled specifications                       |
+| Business invariants and state rules          | BUILD-READY                                            | `03`–`10`, `27`, `28`, `55`, H01–H02                                                |
+| Application foundation                       | VERIFIED                                               | `docs/build/HANDOFFS/01-foundation.md`                                              |
+| Application shell and design system          | IMPLEMENTED FOUNDATION                                 | `docs/build/HANDOFFS/17-application-shell-design-system.md`                         |
+| Tenant/database foundation                   | IMPLEMENTED; execution environment pending             | `migrations/001_foundation.sql`, `docs/build/HANDOFFS/02-database-tenancy.md`       |
+| M08 inventory/costing                        | VERIFIED DOMAIN SLICE                                  | `src/domain/inventory.ts`, `src/domain/inventory.test.ts`                           |
+| M09 purchasing/supplier liabilities/returns  | VERIFIED DOMAIN SLICE; integration pending             | `src/domain/purchasing.ts`, `docs/build/HANDOFFS/08-purchasing-suppliers.md`        |
+| M08/M09 inventory & purchasing UX            | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/inventory/`, `docs/build/HANDOFFS/19-inventory-purchasing-ux.md`               |
+| M07 sales/payments/credit/receipts           | IMPLEMENTED DOMAIN SLICE; integration pending          | `src/domain/sales.ts`, `docs/build/HANDOFFS/09-sales.md`                            |
+| M07 POS selling workspace (C06)              | IMPLEMENTED WORKSPACE; persistence integration pending | `src/pos/`, `docs/build/HANDOFFS/18-pos-ux.md`                                      |
+| M06 customers and customer credit            | VERIFIED DOMAIN SLICE; integration pending             | `src/domain/customersCredit.ts`, `docs/build/HANDOFFS/10-customers-credit.md`       |
+| M06/M07 customer & credit UX (C08)           | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/customers/`, `docs/build/HANDOFFS/20-customer-credit-ux.md`                    |
+| M05 catalogue/pricing/search                 | BUILD-READY; integration pending                       | `37-catalog-and-search.md`                                                          |
+| M10 customer returns/refunds/corrections     | IMPLEMENTED DOMAIN SLICE; integration pending          | `src/domain/returnsCorrections.ts`, `docs/build/HANDOFFS/11-returns-corrections.md` |
+| M13 offline sync/conflicts                   | IMPLEMENTED REFERENCE BOUNDARY; integration pending    | `src/sync/offlineSync.ts`, `docs/build/HANDOFFS/14-offline-sync.md`                 |
+| M11 cash/reconciliation                      | VERIFIED DOMAIN SLICE; integration pending             | `src/domain/cashReconciliation.ts`, `docs/build/HANDOFFS/12-cash-reconciliation.md` |
+| M10/M11 exceptions & reconciliation UX (C09) | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/exceptions/`, `docs/build/HANDOFFS/21-exceptions-reconciliation-ux.md`         |
+| M15 V1 integration/acceptance                | BLOCKED                                                | dependent modules and unresolved technical decisions                                |
 
 ## Locked integration invariants
 

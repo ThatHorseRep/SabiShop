@@ -35,10 +35,13 @@ describe('role-aware navigation model', () => {
     expect(visible).toContain('sell')
     expect(visible).toContain('products-inventory')
     expect(visible).toContain('customers-credit')
+    // Money stays visible to staff: they record cash events, enter physical
+    // counts, and request returns there (B05 sections 3, 22, 28; C09 §42).
+    // Management controls inside the workspace remain permission-gated.
+    expect(visible).toContain('money')
     expect(visible).toContain('activity')
     expect(visible).toContain('settings')
     expect(visible).not.toContain('suppliers-purchasing')
-    expect(visible).not.toContain('money')
     expect(visible).not.toContain('management')
   })
 
@@ -99,7 +102,10 @@ describe('AppShell', () => {
     const rail = screen.getByRole('navigation', { name: 'Primary' })
     expect(within(rail).queryByText('Management')).toBeNull()
     expect(within(rail).queryByText('Suppliers & Purchasing')).toBeNull()
-    expect(within(rail).queryByText('Money')).toBeNull()
+    // Staff keep the Money area for cash recording and return requests.
+    expect(
+      within(rail).getByRole('button', { name: 'Money' }),
+    ).toBeInTheDocument()
     expect(
       within(rail).getByRole('button', { name: 'Sell' }),
     ).toBeInTheDocument()

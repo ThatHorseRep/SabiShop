@@ -35,6 +35,7 @@ import {
 } from './pos/posSession'
 import { InventoryWorkspace } from './inventory/InventoryWorkspace'
 import { CustomerCreditWorkspace } from './customers/CustomerCreditWorkspace'
+import { ExceptionsWorkspace } from './exceptions/ExceptionsWorkspace'
 
 type ErrorBoundaryProps = { children: ReactNode }
 type ErrorBoundaryState = { hasError: boolean }
@@ -359,6 +360,8 @@ function App() {
             onActorChange={setActorId}
             online={online}
           />
+        ) : activeArea === 'money' ? (
+          <ExceptionsWorkspace actorId={actorId} onActorChange={setActorId} />
         ) : (
           <ModulePendingScreen area={activeArea} />
         )}
