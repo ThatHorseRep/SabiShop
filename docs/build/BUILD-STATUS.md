@@ -6,10 +6,10 @@
 
 The engineering foundation, the application shell/design system, the POS
 selling workspace, the inventory/purchasing workspace, the customer/credit
-workspace, the exceptions/reconciliation workspace, and the implemented
-domain slices are verified. Persistence, authentication/authorization
-integration, the remaining domain screens, and the remaining modules are
-still downstream work.
+workspace, the exceptions/reconciliation workspace, the management dashboard
+workspace, and the implemented domain slices are verified. Persistence,
+authentication/authorization integration, the remaining domain screens, and
+the remaining modules are still downstream work.
 
 ## Verified foundation
 
@@ -309,6 +309,62 @@ overflow on any tab; the count-cash dialog and correction preview were
 exercised interactively. Screenshots are archived with the slice deliverables
 under `work/`.
 
+## Implemented management dashboard slice
+
+**Module:** M12 — Management dashboards and business visibility
+**Status:** IMPLEMENTED WORKSPACE; durable API/persistence integration pending
+**Handoff:** `docs/build/HANDOFFS/22-management-dashboard.md`
+
+Implemented the Management workspace in `src/management/`, mounted at the
+Management navigation destination (Manager/Owner only via `audit:read`) and
+synchronized with the current reference session actor/business context:
+
+- business performance over an explicit event-time period (last 24 hours /
+  7 days / 30 days) using the canonical reporting projection only — sales,
+  tax kept first-class, COGS, Gross Profit shown as Net Recognized Selling
+  Value − COGS, expenses, and the cash/non-cash/credit payment mix;
+- attention items derived from real engine state — unresolved cash
+  discrepancies, negative stock, sale returns awaiting decisions, Owner-review
+  flags on consequential manager self-corrections, unconfirmed supplier
+  payments, and overdue customer credit — each stating what happened, the
+  consequence, where it is resolved, and linking to the owning workspace;
+- investigation drill-down: summary → attention → record → business event →
+  history, including a sale detail dialog with the intact original record,
+  payments, lines, inventory effects, signed report events, and return/
+  correction history with resolution pointers;
+- inventory remaining and stock health from the movement ledger (sellable,
+  held, negative, provisional cost, weighted-average value);
+- cash/reconciliation exception status with expected/actual/variance, cash
+  activity, reconciliation audit history, and expense records;
+- customer credit outstanding and supplier obligations with their underlying
+  debt, purchase, payment, and return records;
+- staff activity/performance and incentive visibility per the incentive rules
+  (provisional eligible value above floor, volume gate, contributing sales)
+  with no payout/release logic.
+
+The dashboard is read-only: it exposes no mutation method, recalculates
+nothing, and never becomes a second source of truth. Staff sessions receive a
+permission-denied state instead of financial analysis. Two canonical defects
+found while wiring the dashboard were fixed at their source and pinned with
+tests: the reporting cash accumulator discarded counted variance (Handoff 16
+bug), and the sales engine double-subtracted exclusive tax from per-sale
+Gross Profit (H05 §8 contract).
+
+Validation on 2026-09-08:
+
+```text
+npm test                                      PASS (215 tests, 21 files)
+npm run lint                                 PASS (0 errors, 0 warnings)
+npm run build                                 PASS
+npx tsc -b --pretty false                    PASS
+npx prettier --check <management slice files> PASS
+```
+
+Browser verification (production build, 390–1280 px) found no horizontal
+overflow on the exercised tabs; the sale drill-down dialog, attention
+deep-link into Money & Reconciliation, and the staff permission-denied state
+were exercised interactively. Screenshots are archived under `work/`.
+
 ## Verified canonical reporting slice
 
 **Module:** M12 - business performance and management visibility
@@ -436,6 +492,7 @@ Implemented:
 | M13 offline sync/conflicts                   | IMPLEMENTED REFERENCE BOUNDARY; integration pending    | `src/sync/offlineSync.ts`, `docs/build/HANDOFFS/14-offline-sync.md`                 |
 | M11 cash/reconciliation                      | VERIFIED DOMAIN SLICE; integration pending             | `src/domain/cashReconciliation.ts`, `docs/build/HANDOFFS/12-cash-reconciliation.md` |
 | M10/M11 exceptions & reconciliation UX (C09) | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/exceptions/`, `docs/build/HANDOFFS/21-exceptions-reconciliation-ux.md`         |
+| M12 management dashboard UX                  | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/management/`, `docs/build/HANDOFFS/22-management-dashboard.md`                 |
 | M15 V1 integration/acceptance                | BLOCKED                                                | dependent modules and unresolved technical decisions                                |
 
 ## Locked integration invariants

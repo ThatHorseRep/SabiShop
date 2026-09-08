@@ -3,6 +3,7 @@ import { CanonicalReporting } from './reporting'
 import { CatalogPricing } from './domain/catalogPricing'
 import { InventoryEngine } from './domain/inventory'
 import { SalesTransactionEngine } from './domain/sales'
+import type { CashReconciliationSnapshot } from './domain/cashReconciliation'
 
 const payment = (amountKobo: number) => ({
   id: 'payment-1',
@@ -121,5 +122,77 @@ describe('canonical reporting projections', () => {
     expect(lifetime.sales.netRecognizedSellingValueKobo).toBe(0)
     expect(lifetime.sales.sourceEventIds).toHaveLength(2)
     expect(lifetime.inventory.negativeStockProductIds).toEqual([])
+  })
+
+  it('reports counted cash variance and keeps it undefined when a count is missing', () => {
+    const snapshot = (overrides: {
+      actualCashKobo?: number
+      cashVarianceKobo?: number
+      unresolved: boolean
+    }): CashReconciliationSnapshot => ({
+      sessionId: 'BD-1',
+      businessId: 'b1',
+      state: 'reconciliation_prepared',
+      custodyMode: 'shared_drawer',
+      confirmedOpeningCashKobo: 500,
+      cashSalesKobo: 1_000,
+      cashInKobo: 0,
+      cashOutKobo: 0,
+      cashRefundsKobo: 0,
+      expectedCashKobo: 1_500,
+      actualCashKobo: overrides.actualCashKobo,
+      cashVarianceKobo: overrides.cashVarianceKobo,
+      discrepancyStatus: overrides.unresolved ? 'unresolved' : 'none',
+      unresolved: overrides.unresolved,
+    })
+    const reporting = new CanonicalReporting({
+      sales: new SalesTransactionEngine(
+        new CatalogPricing(),
+        new InventoryEngine(),
+      ),
+      inventory: new InventoryEngine(),
+      cashSnapshots: [
+        snapshot({
+          actualCashKobo: 1_400,
+          cashVarianceKobo: -100,
+          unresolved: true,
+        }),
+        snapshot({
+          actualCashKobo: 1_600,
+          cashVarianceKobo: 100,
+          unresolved: false,
+        }),
+      ],
+    })
+    const report = reporting.project('b1', {
+      from: '2026-01-01T00:00:00.000Z',
+      to: '2026-01-02T00:00:00.000Z',
+    })
+    expect(report.cash.expectedKobo).toBe(3_000)
+    expect(report.cash.actualKobo).toBe(3_000)
+    expect(report.cash.varianceKobo).toBe(0)
+    expect(report.cash.unresolved).toBe(true)
+
+    const uncounted = new CanonicalReporting({
+      sales: new SalesTransactionEngine(
+        new CatalogPricing(),
+        new InventoryEngine(),
+      ),
+      inventory: new InventoryEngine(),
+      cashSnapshots: [
+        snapshot({ unresolved: false }),
+        snapshot({
+          actualCashKobo: 1_600,
+          cashVarianceKobo: 100,
+          unresolved: false,
+        }),
+      ],
+    })
+    const uncountedReport = uncounted.project('b1', {
+      from: '2026-01-01T00:00:00.000Z',
+      to: '2026-01-02T00:00:00.000Z',
+    })
+    expect(uncountedReport.cash.actualKobo).toBeUndefined()
+    expect(uncountedReport.cash.varianceKobo).toBeUndefined()
   })
 })

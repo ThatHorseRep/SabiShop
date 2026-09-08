@@ -224,7 +224,11 @@ export class SalesTransactionEngine {
       totalDueKobo,
       taxKobo: Number(taxed.tax.minor),
       cogsKobo,
-      grossProfitKobo: totals - Number(taxed.tax.minor) - cogsKobo,
+      // Canonical contract (H05 section 8): Gross Profit = Net Recognized
+      // Selling Value − COGS. `totalDueKobo − taxKobo` is the net recognized
+      // selling value under both exclusive and inclusive tax modes, so tax
+      // must never be subtracted from the pre-tax total twice.
+      grossProfitKobo: totalDueKobo - Number(taxed.tax.minor) - cogsKobo,
       payments: input.payments.map((payment) => ({
         ...payment,
         confirmation: payment.confirmation && { ...payment.confirmation },

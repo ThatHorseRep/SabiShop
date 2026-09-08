@@ -36,6 +36,7 @@ import {
 import { InventoryWorkspace } from './inventory/InventoryWorkspace'
 import { CustomerCreditWorkspace } from './customers/CustomerCreditWorkspace'
 import { ExceptionsWorkspace } from './exceptions/ExceptionsWorkspace'
+import { ManagementWorkspace } from './management/ManagementWorkspace'
 
 type ErrorBoundaryProps = { children: ReactNode }
 type ErrorBoundaryState = { hasError: boolean }
@@ -362,6 +363,12 @@ function App() {
           />
         ) : activeArea === 'money' ? (
           <ExceptionsWorkspace actorId={actorId} onActorChange={setActorId} />
+        ) : activeArea === 'management' ? (
+          <ManagementWorkspace
+            actorId={actorId}
+            onActorChange={setActorId}
+            onOpenArea={setActiveArea}
+          />
         ) : (
           <ModulePendingScreen area={activeArea} />
         )}

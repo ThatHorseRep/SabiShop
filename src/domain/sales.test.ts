@@ -79,6 +79,10 @@ describe('sales transaction lifecycle', () => {
     expect(sale.totalDueKobo).toBe(1980)
     expect(sale.cashKobo).toBe(1980)
     expect(sale.cogsKobo).toBe(800)
+    // Canonical contract (H05 section 8): Net Recognized Selling Value
+    // (total due minus tax) minus COGS. Tax is never subtracted twice.
+    expect(sale.grossProfitKobo).toBe(1_000)
+    expect(sales.listReports()[0].grossProfitKobo).toBe(1_000)
     expect(inventory.getStock('p1').sellable).toBe(8000n)
     expect(sales.listReports()[0].type).toBe('sale.completed')
   })
