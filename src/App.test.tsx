@@ -1,7 +1,11 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import App from './App'
+
+afterEach(() => {
+  window.localStorage.removeItem('sabi-shop:pos-actor')
+})
 
 describe('application shell', () => {
   it('shows the home workspace on the reference session', () => {
@@ -81,5 +85,31 @@ describe('application shell', () => {
 
     await user.click(screen.getByRole('button', { name: 'Continue sale' }))
     expect(screen.getByRole('heading', { name: 'Sell' })).toBeInTheDocument()
+  })
+
+  it('mounts the management dashboard for a management session and keeps it hidden from staff', async () => {
+    window.localStorage.setItem('sabi-shop:pos-actor', 'user-ngozi')
+    const user = userEvent.setup()
+    render(<App />)
+
+    const rail = screen.getByRole('navigation', { name: 'Primary' })
+    await user.click(within(rail).getByRole('button', { name: 'Management' }))
+
+    expect(
+      screen.getByRole('heading', { name: 'Management' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Net recognized selling value')).toBeInTheDocument()
+    expect(screen.getByText('₦170,500.00')).toBeInTheDocument()
+
+    // Switching the reference session to staff removes the financial view
+    // instead of leaking it (C01 sections 5.1, 16.1).
+    await user.selectOptions(
+      screen.getByLabelText('Reference session'),
+      'user-chidi',
+    )
+    expect(
+      screen.getByText(/Management dashboards are restricted/i),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('₦170,500.00')).not.toBeInTheDocument()
   })
 })

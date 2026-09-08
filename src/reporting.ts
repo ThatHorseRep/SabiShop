@@ -176,7 +176,12 @@ export class CanonicalReporting {
     const cashSnapshots = (this.sources.cashSnapshots ?? []).filter(
       (snapshot) => snapshot.businessId === businessId,
     )
-    const cash = cashSnapshots.reduce(
+    const cash = cashSnapshots.reduce<{
+      expected: number
+      actual: number | undefined
+      variance: number | undefined
+      unresolved: boolean
+    }>(
       (sum, snapshot) => ({
         expected: sum.expected + snapshot.expectedCashKobo,
         actual:
@@ -189,12 +194,10 @@ export class CanonicalReporting {
             : sum.variance + snapshot.cashVarianceKobo,
         unresolved: sum.unresolved || snapshot.unresolved,
       }),
-      {
-        expected: 0,
-        actual: undefined as number | undefined,
-        variance: undefined as number | undefined,
-        unresolved: false,
-      },
+      // Start from zero and let any missing actual/variance make the running
+      // total undefined; starting from undefined would discard every counted
+      // snapshot and hide reconciliation exceptions.
+      { expected: 0, actual: 0, variance: 0, unresolved: false },
     )
     ;(this.sources.cashEvents ?? [])
       .filter(
