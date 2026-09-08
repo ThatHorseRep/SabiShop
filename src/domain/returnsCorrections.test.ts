@@ -327,6 +327,71 @@ describe('returns, corrections and reversals', () => {
     expect(settled.refund?.settledAt).toBeDefined()
   })
 
+  it('emits a floor-aware incentive delta on applied returns and corrections', () => {
+    const { integrity, sales } = setup()
+    const sale = completeCashSale(sales)
+    integrity.requestReturn({
+      businessId: 'b1',
+      saleId: sale.id,
+      returnId: 'return-1',
+      clientEventId: 'return-event-1',
+      requestedById: 'staff-1',
+      requestedByRole: 'staff',
+      reason: 'Wrong part',
+      lines: [{ lineId: 'line-1', productId: 'p1', quantity: 1 }],
+      occurredAt: '2026-09-06T10:00:00.000Z',
+    })
+    integrity.verifyReturn('b1', 'return-1', 'manager-1', 'manager')
+    integrity.approveReturn('b1', 'return-1', 'manager-1', 'manager', {
+      condition: 'sellable',
+    })
+    integrity.applyReturn('b1', 'return-1', 'manager-1', 'manager')
+
+    const returnEvent = integrity
+      .listReportEvents('b1')
+      .find((event) => event.type === 'sale.return.applied')
+    // One unit returned at ₦10 with a ₦8 floor: the salesperson's eligible
+    // value above the floor drops by ₦2 (B13 sections 11 and 13).
+    expect(returnEvent?.incentiveEligibleValueKobo).toBe(-200)
+
+    const secondSale = sales.complete({
+      businessId: 'b1',
+      id: 'sale-2',
+      clientRequestId: 'sale-request-2',
+      actorId: 'staff-1',
+      actorRole: 'staff',
+      lines: [{ id: 'line-1', productId: 'p1', quantity: 2 }],
+      payments: [confirmedCash('pay-1', 2000)],
+      occurredAt: '2026-09-06T11:00:00.000Z',
+    })
+    integrity.correctSale({
+      businessId: 'b1',
+      saleId: secondSale.id,
+      clientEventId: 'correction-incentive',
+      actorId: 'manager-1',
+      actorRole: 'manager',
+      reason: 'Customer bought one, not two',
+      approval: { approverId: 'owner-1', approverRole: 'owner' },
+      occurredAt: '2026-09-06T11:05:00.000Z',
+      change: {
+        field: 'quantity',
+        lineId: 'line-1',
+        productId: 'p1',
+        correctedQuantity: 1,
+        correctedPayments: [
+          { id: 'pay-1', amountKobo: 1000, method: 'cash' },
+        ] satisfies PaymentCorrection[],
+      },
+    })
+
+    const correctionEvent = integrity
+      .listReportEvents('b1')
+      .find((event) => event.type === 'sale.correction.applied')
+    // Correcting the quantity from two to one removes one unit of
+    // above-floor value as well.
+    expect(correctionEvent?.incentiveEligibleValueKobo).toBe(-200)
+  })
+
   it('rejects unauthorized return approval without changing the return state', () => {
     const { integrity, sales } = setup()
     const sale = completeCashSale(sales)

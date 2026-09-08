@@ -7,7 +7,8 @@
 The engineering foundation, the application shell/design system, the POS
 selling workspace, the inventory/purchasing workspace, the customer/credit
 workspace, the exceptions/reconciliation workspace, the management dashboard
-workspace, and the implemented domain slices are verified. Persistence,
+workspace, the staff dashboard workspace, and the implemented domain slices
+are verified. Persistence,
 authentication/authorization integration, the remaining domain screens, and
 the remaining modules are still downstream work.
 
@@ -365,6 +366,73 @@ overflow on the exercised tabs; the sale drill-down dialog, attention
 deep-link into Money & Reconciliation, and the staff permission-denied state
 were exercised interactively. Screenshots are archived under `work/`.
 
+## Implemented staff dashboard slice
+
+**Module:** Staff Home — staff-facing daily work surface over M06–M12
+**Status:** IMPLEMENTED WORKSPACE; durable API/persistence integration pending
+**Handoff:** `docs/build/HANDOFFS/23-staff-dashboard.md`
+
+Implemented the staff dashboard in `src/staff/`, mounted at the Home
+navigation destination for staff-role sessions and synchronized with the
+current reference session actor/business context:
+
+- sync/offline status from the real POS sync queue, with offline treated as a
+  mode of operation and conflicts routed to management review;
+- today's operational work scoped to the open business-day session (which may
+  cross midnight): business-day state, custody mode, quick actions gated by
+  the real permission set;
+- Cash in Hand as the operational cash concept with its basis labelled
+  (expected-not-counted or last physical count), management-confirmed opening
+  cash, and every money-out event (cash out and cash refunds) with reason and
+  actor — with no routine Actual Cash entry or tab anywhere;
+- own sales only, with payment summaries and derived return states;
+  business-wide figures, other staff members' sales, costs, and margins never
+  appear;
+- stock/product access with current prices and stock states (no cost or
+  margin information), including the negative-stock exception;
+- customer collection work (overdue/due credit first) and own recorded
+  repayments;
+- personal performance where permitted: qualifying-sales progress against the
+  volume gate and provisional incentive-eligible value above the floor, all
+  labelled provisional with open returns called out as items that can still
+  change the figures once applied;
+- actionable exceptions (open returns awaiting management decisions, negative
+  stock, overdue credit) each stating what happened, why it matters, and what
+  to do next, linking to the owning workspace;
+- own activity feed across sales, return requests, cash events, and
+  repayments.
+
+The workspace is read-only and never becomes a second source of truth:
+personal performance comes from the canonical reporting projection, and every
+other figure is a plain presentation of verified engine records. Management
+sessions keep the foundation Home plus an Open Management pointer; the C01
+Manager/Owner Home remains downstream. Wiring the dashboard surfaced a
+canonical defect that would have misrepresented incentive eligibility: the
+reporting staff projection ignored applied returns and corrections and did
+not decrement qualifying sales for reversals. It was fixed at the source —
+integrity report events now carry a floor-aware
+`incentiveEligibleValueKobo` delta and the projection recalculates from every
+signed event — and pinned with tests.
+
+Validation on 2026-09-08 (clean install):
+
+```text
+npm ci                                        PASS (268 packages, 0 vulnerabilities)
+npm run format:check                          PASS
+npm run lint                                  PASS (0 errors, 0 warnings)
+npm test                                      PASS (224 tests, 22 files)
+npm run build                                 PASS
+npx tsc -b --pretty false                     PASS
+npx prettier --check <staff slice files>      PASS
+git diff --check                              PASS
+```
+
+Browser verification (production build, ~304 px mobile width) found no
+horizontal overflow; the full dashboard and the staff/management Home
+boundary were exercised interactively. The 1280 px grid reuses the management
+workspace's verified pattern (viewport control was unavailable in this
+environment).
+
 ## Verified canonical reporting slice
 
 **Module:** M12 - business performance and management visibility
@@ -493,6 +561,7 @@ Implemented:
 | M11 cash/reconciliation                      | VERIFIED DOMAIN SLICE; integration pending             | `src/domain/cashReconciliation.ts`, `docs/build/HANDOFFS/12-cash-reconciliation.md` |
 | M10/M11 exceptions & reconciliation UX (C09) | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/exceptions/`, `docs/build/HANDOFFS/21-exceptions-reconciliation-ux.md`         |
 | M12 management dashboard UX                  | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/management/`, `docs/build/HANDOFFS/22-management-dashboard.md`                 |
+| Staff Home / staff dashboard UX              | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/staff/`, `docs/build/HANDOFFS/23-staff-dashboard.md`                           |
 | M15 V1 integration/acceptance                | BLOCKED                                                | dependent modules and unresolved technical decisions                                |
 
 ## Locked integration invariants

@@ -103,6 +103,13 @@ export type IntegrityReportEvent = FinancialEffect & {
   businessId: string
   saleId: string
   occurredAt: string
+  /**
+   * Signed delta to the salesperson's incentive-eligible value above the
+   * effective price floor (B13 sections 11, 13). Returns and corrections
+   * recalculate provisional incentives, so the floor-aware delta is computed
+   * here, where the original sale lines still carry their floors.
+   */
+  incentiveEligibleValueKobo: number
 }
 
 export type CorrectionEvent = {
@@ -335,6 +342,27 @@ const financialDelta = (
 
 const clone = <T>(value: T): T => structuredClone(value)
 
+/**
+ * Floor-aware incentive delta for an applied correction. Only quantity
+ * corrections change the eligible value above the effective floor; payment,
+ * note, customer, and attribution corrections leave it unchanged (attribution
+ * corrections reattribute the whole sale through its sale record, B13
+ * section 4).
+ */
+const incentiveEligibleDelta = (
+  sale: CompletedSale,
+  change: CorrectionChange,
+): number => {
+  if (change.field !== 'quantity') return 0
+  const line = sale.lines.find((candidate) => candidate.id === change.lineId)
+  if (!line) return 0
+  const perUnitAboveFloor = Math.max(
+    0,
+    line.unitPriceKobo - line.effectiveFloorKobo,
+  )
+  return perUnitAboveFloor * (change.correctedQuantity - line.quantity)
+}
+
 export class ReturnsCorrectionsEngine {
   private readonly corrections = new Map<string, CorrectionEvent>()
   private readonly returns = new Map<string, ReturnRecord>()
@@ -386,6 +414,10 @@ export class ReturnsCorrectionsEngine {
 
     const corrected = this.correctedSnapshot(original, input.change)
     const effect = financialDelta(original, corrected)
+    const incentiveEligibleValueKobo = incentiveEligibleDelta(
+      sale,
+      input.change,
+    )
     const inventoryEvents: InventoryEvent[] = []
     let creditEvent: CreditHistoryEvent | undefined
 
@@ -484,6 +516,7 @@ export class ReturnsCorrectionsEngine {
       businessId: input.businessId,
       saleId: sale.id,
       occurredAt,
+      incentiveEligibleValueKobo,
     })
     this.corrections.set(`${input.businessId}:${input.clientEventId}`, event)
     this.audits.push(this.toAudit(event))
@@ -736,6 +769,7 @@ export class ReturnsCorrectionsEngine {
       nonCashKobo: 0,
       creditKobo: 0,
     }
+    let incentiveEligibleValueKobo = 0
 
     for (const line of record.lines) {
       const saleLine = sale.lines.find(
@@ -744,6 +778,9 @@ export class ReturnsCorrectionsEngine {
       const proportion = line.quantity / saleLine.quantity
       const value = line.valueKobo ?? saleLine.unitPriceKobo * line.quantity
       const lineTotal = saleLine.unitPriceKobo * line.quantity
+      incentiveEligibleValueKobo -=
+        Math.max(0, saleLine.unitPriceKobo - saleLine.effectiveFloorKobo) *
+        line.quantity
       effect.totalDueKobo -= value
       effect.taxKobo -= roundHalfUp(sale.taxKobo * proportion)
       const lineCogs = roundHalfUp(
@@ -824,6 +861,7 @@ export class ReturnsCorrectionsEngine {
       businessId,
       saleId: sale.id,
       occurredAt: appliedAt,
+      incentiveEligibleValueKobo,
     })
     this.audits.push({
       id: `integrity-${this.nextId++}`,

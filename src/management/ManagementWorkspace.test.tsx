@@ -225,9 +225,17 @@ describe('management dashboard', () => {
     expect(screen.getByText('₦171,500.00')).toBeInTheDocument()
     expect(screen.getByText('₦36,300.00')).toBeInTheDocument()
     expect(screen.getByText('₦18,500.00')).toBeInTheDocument()
+    // The Owner has no report events, so she stays "not measured". The
+    // Manager's sale sits outside the 24-hour window, but the payment
+    // correction applied inside it now produces an honest signed entry —
+    // the previous projection silently ignored correction events per
+    // salesperson (B13 sections 11 and 13).
+    expect(screen.getAllByText(/No qualifying sales in period/).length).toBe(1)
+    expect(screen.getAllByText(/Pending volume gate/).length).toBeGreaterThan(0)
+    expect(screen.getByText('−₦1,000.00')).toBeInTheDocument()
     expect(
-      screen.getAllByText(/No qualifying sales in period/).length,
-    ).toBeGreaterThan(1)
+      screen.getByText(/sale\.correction\.applied:SAL-4002/),
+    ).toBeInTheDocument()
     expect(screen.getByText('10%')).toBeInTheDocument()
     expect(screen.getAllByText('3').length).toBeGreaterThan(1)
     expect(screen.getByText('Not shown')).toBeInTheDocument()
