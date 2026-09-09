@@ -1,5 +1,5 @@
 import type { Product } from '../domain/catalogPricing'
-import type { Customer } from '../domain/customersCredit'
+import { CustomersCreditError, type Customer } from '../domain/customersCredit'
 import type { StockLevel } from '../domain/inventory'
 import type {
   CompletedSale,
@@ -250,6 +250,34 @@ export class PosController {
   }
 
   completeSale(input: CompleteSaleInput): CompletedSale {
+    // Credit eligibility is checked BEFORE the sale commits, so the credit
+    // engine's authoritative rejection can never leave a completed sale
+    // without its debt (INV-GLOBAL-004). The UI's own assessment stays
+    // advisory; this is the composition-level guard.
+    const creditKobo = input.payments
+      .filter((payment) => payment.method === 'customer_credit')
+      .reduce((sum, payment) => sum + payment.amountKobo, 0)
+    if (creditKobo > 0) {
+      const assessment = this.assessCredit({
+        customerId: input.customer?.id,
+        amountKobo: creditKobo,
+      })
+      if (assessment.status === 'not_allowed')
+        throw new CustomersCreditError(
+          'CREDIT_NOT_ALLOWED',
+          'Blocked customers cannot complete a credit sale',
+        )
+      if (assessment.status === 'restricted')
+        throw new CustomersCreditError(
+          'RESTRICTED_CREDIT_CONFIGURATION_REQUIRED',
+          'Restricted credit requires a configured management-handling rule',
+        )
+      if (assessment.overLimit && !input.overLimitApproval)
+        throw new CustomersCreditError(
+          'OVER_LIMIT_EXCEPTION_REQUIRED',
+          'A credit sale above the limit requires a separate management exception',
+        )
+    }
     const sale = this.engines.sales.complete({
       businessId: posBusiness.id,
       id: input.clientRequestId,

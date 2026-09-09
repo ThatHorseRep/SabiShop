@@ -643,6 +643,23 @@ export class ReturnsCorrectionsEngine {
     const sale = this.getSale(input.businessId, input.saleId)
     if (!input.reason.trim())
       throw new IntegrityError('reason_required', 'A return reason is required')
+    // Previously accepted (not rejected) returns reserve quantity on their
+    // sale lines, so cumulative returns can never exceed what was sold.
+    const reservedByLineId = new Map<string, number>()
+    for (const prior of [...this.returns.values()]) {
+      if (
+        prior.businessId !== input.businessId ||
+        prior.saleId !== input.saleId ||
+        prior.state === 'rejected'
+      )
+        continue
+      for (const line of prior.lines)
+        reservedByLineId.set(
+          line.lineId,
+          (reservedByLineId.get(line.lineId) ?? 0) + line.quantity,
+        )
+    }
+    const requestedByLineId = new Map<string, number>()
     for (const line of input.lines) {
       const saleLine = sale.lines.find(
         (candidate) => candidate.id === line.lineId,
@@ -652,10 +669,22 @@ export class ReturnsCorrectionsEngine {
           'invalid_return',
           'Return line does not match the sale',
         )
-      if (line.quantity <= 0 || line.quantity > saleLine.quantity)
+      if (line.quantity <= 0)
         throw new IntegrityError(
           'invalid_return',
-          'Return quantity must be positive and cannot exceed the sale quantity',
+          'Return quantity must be positive',
+        )
+      requestedByLineId.set(
+        line.lineId,
+        (requestedByLineId.get(line.lineId) ?? 0) + line.quantity,
+      )
+    }
+    for (const [lineId, quantity] of requestedByLineId) {
+      const saleLine = sale.lines.find((candidate) => candidate.id === lineId)!
+      if (quantity + (reservedByLineId.get(lineId) ?? 0) > saleLine.quantity)
+        throw new IntegrityError(
+          'invalid_return',
+          'Return quantity cannot exceed the remaining sale quantity',
         )
     }
 
@@ -777,12 +806,16 @@ export class ReturnsCorrectionsEngine {
       )!
       const proportion = line.quantity / saleLine.quantity
       const value = line.valueKobo ?? saleLine.unitPriceKobo * line.quantity
-      const lineTotal = saleLine.unitPriceKobo * line.quantity
+      // `value` is the net recognized value of the returned goods. The
+      // customer settled the proportional tax on top of it, so the
+      // total-due reversal and the refund are tax-inclusive (B04 §5,
+      // FIN-001). Net and gross-profit effects stay tax-free (H05).
+      const taxShare = roundHalfUp(sale.taxKobo * proportion)
       incentiveEligibleValueKobo -=
         Math.max(0, saleLine.unitPriceKobo - saleLine.effectiveFloorKobo) *
         line.quantity
-      effect.totalDueKobo -= value
-      effect.taxKobo -= roundHalfUp(sale.taxKobo * proportion)
+      effect.totalDueKobo -= value + taxShare
+      effect.taxKobo -= taxShare
       const lineCogs = roundHalfUp(
         (sale.cogsKobo * line.quantity) / saleLine.quantity,
       )
@@ -801,7 +834,6 @@ export class ReturnsCorrectionsEngine {
         condition: record.condition ?? 'sellable',
       })
       record.inventoryEventIds.push(inventoryEvent.id)
-      void lineTotal
     }
 
     let refundAmount = -effect.totalDueKobo
@@ -1152,9 +1184,13 @@ export class ReturnsCorrectionsEngine {
     const oldLineTotal = line.unitPriceKobo * line.quantity
     const newLineTotal = line.unitPriceKobo * change.correctedQuantity
     const proportion = change.correctedQuantity / line.quantity
-    corrected.totalDueKobo += newLineTotal - oldLineTotal
-    corrected.taxKobo +=
+    // The corrected total due moves by the net line change plus the
+    // proportional tax change, exactly like the sale's own tax arithmetic,
+    // so net recognized selling value stays tax-free (H05, FIN-001).
+    const taxDelta =
       roundHalfUp(original.taxKobo * proportion) - original.taxKobo
+    corrected.totalDueKobo += newLineTotal - oldLineTotal + taxDelta
+    corrected.taxKobo += taxDelta
     const oldCogs = roundHalfUp(
       (original.cogsKobo * line.quantity) /
         original.lines.reduce((sum, candidate) => sum + candidate.quantity, 0),

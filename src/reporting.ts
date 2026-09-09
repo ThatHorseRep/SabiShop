@@ -242,18 +242,31 @@ export class CanonicalReporting {
       this.sources.purchasing?.listPayments(businessId) ?? []
     const supplierReturns =
       this.sources.purchasing?.listReturns(businessId) ?? []
+    const supplierSettlements =
+      this.sources.purchasing?.listSettlements(businessId) ?? []
+    const confirmedSupplierPayments = supplierPayments.filter(
+      (payment) => payment.state === 'confirmed_success',
+    )
+    const acceptedSupplierReturns = supplierReturns.filter(
+      (item) => item.state === 'applied' || item.state === 'settled',
+    )
+    const confirmedSupplierSettlements = supplierSettlements.filter(
+      (settlement) => settlement.state === 'confirmed_success',
+    )
     const supplierOutstanding =
       supplierRecords.reduce((sum, purchase) => sum + purchase.total, 0n) -
-      supplierPayments
-        .filter((payment) => payment.state === 'confirmed_success')
-        .reduce((sum, payment) => sum + payment.amount, 0n) -
-      supplierReturns
-        .filter((item) => item.state === 'applied' || item.state === 'settled')
-        .reduce(
-          (sum, item) =>
-            sum + item.unpaidPayableReduction + item.supplierCredit,
-          0n,
-        )
+      confirmedSupplierPayments.reduce(
+        (sum, payment) => sum + payment.amount,
+        0n,
+      ) -
+      acceptedSupplierReturns.reduce(
+        (sum, item) => sum + item.unpaidPayableReduction + item.supplierCredit,
+        0n,
+      ) +
+      confirmedSupplierSettlements.reduce(
+        (sum, settlement) => sum + settlement.amount,
+        0n,
+      )
 
     const policy = this.sources.incentivePolicy ?? {
       enabled: false,
@@ -385,7 +398,12 @@ export class CanonicalReporting {
       },
       suppliers: {
         outstandingKobo: supplierOutstanding,
-        sourceEventIds: supplierRecords.map((purchase) => purchase.id),
+        sourceEventIds: [
+          ...supplierRecords.map((purchase) => purchase.id),
+          ...confirmedSupplierPayments.map((payment) => payment.id),
+          ...acceptedSupplierReturns.map((item) => item.id),
+          ...confirmedSupplierSettlements.map((settlement) => settlement.id),
+        ],
       },
       staff: [...staffMap.values()],
       traces,
