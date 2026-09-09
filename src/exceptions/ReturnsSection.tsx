@@ -183,12 +183,12 @@ export function ReturnsSection({
                   if (action === 'reject') {
                     return runAction('Return rejected', async () => {
                       await controller.rejectSaleReturn(view.record.id)
-                      return `Return ${view.record.id} is rejected and stays in history. No inventory, debt, or settlement effect was applied.`
+                      return `Return ${view.record.id} is rejected and stays in history. No stock, debt, or settlement effect was applied.`
                     })
                   }
                   return runAction('Return applied', async () => {
                     await controller.applySaleReturn(view.record.id)
-                    return `Return ${view.record.id} is applied. Inventory, debt, settlement, and reporting effects are recorded; the original sale is unchanged.`
+                    return `Return ${view.record.id} is applied. Stock, debt, settlement, and reporting effects are recorded; the original sale is unchanged.`
                   })
                 }}
               />
@@ -381,7 +381,7 @@ function ReturnCase({
       {record.state === 'rejected' && (
         <p className="exceptions-note">
           This return was rejected. It remains visible as a historical decision
-          and applied no inventory, debt, or settlement effect.
+          and applied no stock, debt, or settlement effect.
         </p>
       )}
       {record.state === 'applied' && record.refund?.state === 'due' && (
@@ -617,8 +617,8 @@ function ApproveReturnDialog({
     <Dialog open onClose={onClose} title="Approve return" dismissable={false}>
       <div className="exceptions-dialog-body">
         <p className="ui-text-body">
-          Approving this return records its condition and authorizes its
-          inventory, debt, settlement, and reporting effects.
+          Approving this return records its condition and authorizes its stock,
+          debt, settlement, and reporting effects.
         </p>
         <dl className="exceptions-details">
           <DetailRow label="Return">{record.id}</DetailRow>
@@ -636,7 +636,7 @@ function ApproveReturnDialog({
           </DetailRow>
         </dl>
         <fieldset className="exceptions-choice-group">
-          <legend>Condition of returned goods</legend>
+          <legend>Condition of returned stock</legend>
           <Radio
             name="return-condition"
             label="Sellable — returns to sellable stock"
@@ -652,7 +652,7 @@ function ApproveReturnDialog({
         </fieldset>
         <ConsequenceList
           effects={[
-            'Goods re-enter stock in the recorded condition when the return is applied.',
+            'Stock re-enters in the recorded condition when the return is applied.',
             view.sale.creditLink
               ? "The customer's outstanding obligation is reduced; repayments stay in history."
               : 'A refund becomes due for the approved value.',

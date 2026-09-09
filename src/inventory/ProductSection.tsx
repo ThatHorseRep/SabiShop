@@ -211,7 +211,7 @@ export function ProductSection({
                   </dd>
                 </div>
                 <div className="inventory-metric">
-                  <dt>Inventory value</dt>
+                  <dt>Stock value</dt>
                   <dd>{formatMoney(selected.valuation.value)}</dd>
                 </div>
                 <div className="inventory-metric">
@@ -225,8 +225,8 @@ export function ProductSection({
               </dl>
             ) : (
               <p className="inventory-row-subtitle">
-                Acquisition cost, floor price, weighted-average cost, and
-                inventory value are hidden for this role.
+                Acquisition cost, floor price, weighted-average cost, and stock
+                value are hidden for this role.
               </p>
             )}
             {selected.sellingBelowReplacementCost && (
@@ -268,7 +268,7 @@ export function ProductSection({
                 {movements.length === 0 && (
                   <li className="inventory-state-message info">
                     <h3>No stock movements recorded</h3>
-                    <p>Inventory begins when a physical receipt is recorded.</p>
+                    <p>Stock begins when a physical receipt is recorded.</p>
                   </li>
                 )}
               </ul>

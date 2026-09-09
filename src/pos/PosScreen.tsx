@@ -485,7 +485,7 @@ export function PosScreen({
         title: 'Stock exception approval',
         action: `Only ${sellable} ${line.productName} are sellable in stock, but ${requested} are being sold.`,
         effects: [
-          'Sellable stock will become negative and stay visible as an inventory exception.',
+          'Sellable stock will become negative and stay visible as a stock exception.',
           'Management review is required to reconcile the stock.',
           'The sale can complete only with this approval.',
         ],

@@ -254,15 +254,15 @@ describe('State surfaces', () => {
     )
     for (const label of [
       'Offline',
-      'Recorded · Sync pending',
-      'Sync conflict',
-      'Correction required',
+      'Recorded · Waiting to sync',
+      'Two versions need review',
+      'Correction needed',
       'Rejected',
       'Completed',
       'Cancelled',
       'Something went wrong',
       'Permission denied',
-      'Authorization required',
+      'Approval needed',
     ]) {
       expect(screen.getByText(label)).toBeInTheDocument()
     }

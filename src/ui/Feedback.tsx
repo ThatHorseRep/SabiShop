@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react'
 import { X } from '@phosphor-icons/react'
+import { useLanguage } from '../language'
 import { IconButton } from './Button'
 import { statusIconFor } from './statusIcons'
 import type { StatusTone } from './tones'
@@ -41,6 +42,7 @@ export function ToastStack({
   toasts: readonly Toast[]
   onDismiss: (id: string) => void
 }) {
+  const { t } = useLanguage()
   return (
     <div className="ui-toast-stack" role="status" aria-live="polite">
       {toasts.map((toast) => (
@@ -52,7 +54,7 @@ export function ToastStack({
             )}
           </div>
           <IconButton
-            label="Dismiss notification"
+            label={t('common.dismissNotification')}
             onClick={() => onDismiss(toast.id)}
           >
             <X size={16} weight="bold" aria-hidden="true" />

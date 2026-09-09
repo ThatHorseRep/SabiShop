@@ -113,7 +113,7 @@ export function CompletionView({
         <Status
           tone="warning"
           label="Stock exception recorded"
-          description={`${stockExceptionLines.join(', ')} left sellable stock negative. The inventory exception stays visible for management review.`}
+          description={`${stockExceptionLines.join(', ')} left sellable stock negative. The stock exception stays visible for management review.`}
         />
       )}
       {reviewedLines.length > 0 && (

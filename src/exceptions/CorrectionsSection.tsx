@@ -425,7 +425,7 @@ function CorrectionDialog({
         {kind === 'note' && (
           <Field
             label="Corrected note"
-            hint="Ordinary correction: no money, inventory, debt, or attribution effect."
+            hint="Ordinary correction: no money, stock, debt, or attribution effect."
           >
             {({ id, describedBy }) => (
               <Textarea
@@ -607,7 +607,7 @@ function CorrectionDialog({
             {authority.requirement}
             {authority.severity === 'material' ||
             authority.severity === 'high_integrity'
-              ? ' The original payment, inventory, debt, and attribution evidence stays recoverable.'
+              ? ' The original payment, stock, debt, and attribution evidence stays recoverable.'
               : ''}
           </AuthorizationNote>
         )}
@@ -741,7 +741,7 @@ function ReversalDialog({
         <ConsequenceList
           effects={[
             'Revenue, tax, COGS, and gross profit are removed from reporting by a compensating event.',
-            'Goods return to stock in sellable condition.',
+            'Stock returns in sellable condition.',
             sale.creditLink
               ? 'The remaining customer obligation is reversed; repayments already received stay in history.'
               : 'The payment events stay in history as evidence.',

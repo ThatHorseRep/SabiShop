@@ -108,9 +108,9 @@ export function InventoryWorkspace({
     <section className="inventory-app" aria-labelledby="inventory-title">
       <header className="inventory-header">
         <div>
-          <h1 id="inventory-title">Products &amp; Inventory</h1>
+          <h1 id="inventory-title">Products &amp; Stock</h1>
           <p>
-            Search products, understand stock, receive supplier goods, and trace
+            Search products, understand stock, receive supplier stock, and trace
             every level to its source movement and correction.
           </p>
         </div>
@@ -306,7 +306,7 @@ export function InventoryWorkspace({
               const result = await controller.receivePurchase(input, !online)
               const payable =
                 result.purchase.total - (result.payment?.amount ?? 0n)
-              return `Purchase ${result.purchase.id} recorded physical receipt. Inventory increased and supplier payable is now ${formatMoney(
+              return `Purchase ${result.purchase.id} recorded physical receipt. Stock increased and supplier payable is now ${formatMoney(
                 payable,
               )}.`
             })
@@ -351,7 +351,7 @@ export function InventoryWorkspace({
                 input,
                 !online,
               )
-              return `Replacement goods were recorded as separate receipt movements on return ${supplierReturn.id}. The original return remains visible.`
+              return `Replacement stock was recorded as separate receipt movements on return ${supplierReturn.id}. The original return remains visible.`
             })
           }
           onSettleReturn={async (input) =>

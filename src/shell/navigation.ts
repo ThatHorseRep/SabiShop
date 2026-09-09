@@ -10,7 +10,9 @@ import {
   Wallet,
   type Icon,
 } from '@phosphor-icons/react'
+import { useMemo } from 'react'
 import type { Permission } from '../auth/types'
+import { useLanguage, type MessageKey, type Translate } from '../language'
 
 export type NavDestinationId =
   | 'home'
@@ -59,7 +61,7 @@ export const navigationModel: readonly NavDestination[] = [
   },
   {
     id: 'products-inventory',
-    label: 'Products & Inventory',
+    label: 'Products & Stock',
     description: 'Products, stock, and movements.',
     icon: Package,
     group: 'work',
@@ -134,6 +136,38 @@ export type NavigationView = {
   }>
 }
 
+const navTitleKeys = {
+  home: 'nav.home',
+  sell: 'nav.sell',
+  'products-inventory': 'nav.productsInventory',
+  'customers-credit': 'nav.customersCredit',
+  'suppliers-purchasing': 'nav.suppliersPurchasing',
+  money: 'nav.money',
+  activity: 'nav.activity',
+  management: 'nav.management',
+  settings: 'nav.settings',
+} as const satisfies Record<NavDestinationId, MessageKey>
+
+const navDescriptionKeys = {
+  home: 'nav.homeDescription',
+  sell: 'nav.sellDescription',
+  'products-inventory': 'nav.productsInventoryDescription',
+  'customers-credit': 'nav.customersCreditDescription',
+  'suppliers-purchasing': 'nav.suppliersPurchasingDescription',
+  money: 'nav.moneyDescription',
+  activity: 'nav.activityDescription',
+  management: 'nav.managementDescription',
+  settings: 'nav.settingsDescription',
+} as const satisfies Record<NavDestinationId, MessageKey>
+
+export const navGroupTranslationKeys = {
+  work: 'nav.groupWork',
+  money: 'nav.groupMoney',
+  activity: 'nav.groupActivity',
+  management: 'nav.groupManagement',
+  system: 'nav.groupSystem',
+} as const satisfies Record<NavGroupId, MessageKey>
+
 /**
  * Filters the navigation model to destinations the current permission set
  * may see. Inaccessible management areas are hidden rather than shown as
@@ -164,6 +198,54 @@ export function navigationFor(
     }))
     .filter((entry) => entry.destinations.length > 0)
   return { home, groups }
+}
+
+function localizeNavigationView(
+  view: NavigationView,
+  t: Translate,
+): NavigationView {
+  const home = view.home
+    ? {
+        ...view.home,
+        label: t(navTitleKeys[view.home.id]),
+        description: t(navDescriptionKeys[view.home.id]),
+      }
+    : null
+  return {
+    home,
+    groups: view.groups.map((group) => ({
+      group: group.group,
+      destinations: group.destinations.map((destination) => ({
+        ...destination,
+        label: t(navTitleKeys[destination.id]),
+        description: t(navDescriptionKeys[destination.id]),
+      })),
+    })),
+  }
+}
+
+export function useNavigationFor(
+  permissions: ReadonlySet<Permission>,
+): NavigationView {
+  const { t } = useLanguage()
+  return useMemo(
+    () => localizeNavigationView(navigationFor(permissions), t),
+    [permissions, t],
+  )
+}
+
+export function useDestinationCopy(id: NavDestinationId): {
+  label: string
+  description: string
+} {
+  const { t } = useLanguage()
+  return useMemo(
+    () => ({
+      label: t(navTitleKeys[id]),
+      description: t(navDescriptionKeys[id]),
+    }),
+    [id, t],
+  )
 }
 
 export function findDestination(id: NavDestinationId): NavDestination {

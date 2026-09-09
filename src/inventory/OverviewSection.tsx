@@ -56,7 +56,7 @@ export function OverviewSection({
       <section className="inventory-panel">
         <div className="inventory-panel-header">
           <div>
-            <h2>Inventory overview</h2>
+            <h2>Stock overview</h2>
             <p className="inventory-row-subtitle">
               Operational state first. Every number links back to the movement
               that produced it.
@@ -112,7 +112,7 @@ export function OverviewSection({
           replacementWarnings.length === 0 &&
           openReturns.length === 0 &&
           openInvestigations.length === 0 ? (
-            <StateMessage tone="info" title="No inventory exceptions">
+            <StateMessage tone="info" title="No stock exceptions">
               No negative stock, replacement-cost warnings, open investigations,
               or supplier-return work requires attention.
             </StateMessage>
@@ -258,7 +258,7 @@ export function OverviewSection({
 
       <Panel
         title="Recent purchasing"
-        description="Received goods, payables, and payments remain separate records."
+        description="Received stock, payables, and payments remain separate records."
       >
         <div className="inventory-table-wrap">
           <table className="inventory-table">

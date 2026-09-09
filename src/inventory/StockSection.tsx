@@ -165,9 +165,9 @@ export function StockSection({
         >
           {!online && (
             <StateMessage tone="warning" title="Offline stock count">
-              The current authorization policy does not grant inventory
-              adjustment work offline. The count can be prepared, but it must be
-              recorded when the device is online.
+              The current permission policy does not allow stock changes
+              offline. The count can be prepared, but it must be recorded when
+              the device is online.
             </StateMessage>
           )}
           <form
@@ -274,7 +274,7 @@ export function StockSection({
 
         <Panel
           title="Investigations"
-          description="Understand the movement before changing inventory."
+          description="Understand the movement before changing stock."
         >
           <ul className="inventory-list">
             {snapshot.investigations.map((investigation) => {

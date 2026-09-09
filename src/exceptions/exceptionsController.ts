@@ -689,7 +689,7 @@ export class ExceptionsController {
     const effects: string[] = []
     if (change.field === 'note') {
       effects.push(
-        'Only the note changes. No money, inventory, debt, or attribution effect.',
+        'Only the note changes. No money, stock, debt, or attribution effect.',
       )
     } else {
       effects.push(
@@ -1381,7 +1381,7 @@ export class ExceptionsController {
         action: 'apply',
         label: 'Apply return',
         permitted: canProcess && isManagement(actor),
-        note: 'Applying records the inventory, debt, and reporting effects.',
+        note: 'Applying records the stock, debt, and reporting effects.',
       })
     }
     if (record.state === 'applied' && record.refund?.state === 'due') {
@@ -1628,7 +1628,7 @@ export class ExceptionsController {
             'The original purchase must be verified before approval is considered.',
           affectedArea: 'Customer return',
           consequence:
-            'Approval applies inventory, debt, settlement, and reporting effects. Rejection applies none and stays in history.',
+            'Approval applies stock, debt, settlement, and reporting effects. Rejection applies none and stays in history.',
           requestedAction: 'Verify the original sale, then approve or reject.',
           requiredAuthority: 'Manager or Owner, separate from the requester',
           occurredAt: record.requestedAt,
@@ -1646,7 +1646,7 @@ export class ExceptionsController {
             'Every verified return requires management approval before any business effect is applied.',
           affectedArea: 'Customer return',
           consequence:
-            'Approval applies inventory, debt, settlement, and reporting effects. Rejection applies none and stays in history.',
+            'Approval applies stock, debt, settlement, and reporting effects. Rejection applies none and stays in history.',
           requestedAction:
             'Approve with a condition, or reject with the reason visible.',
           requiredAuthority: 'Manager or Owner, separate from the requester',

@@ -528,7 +528,7 @@ describe('POS journeys', () => {
     expect(
       screen.getByRole('heading', { name: 'Leave the unfinished sale?' }),
     ).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Discard basket' }))
+    await user.click(screen.getByRole('button', { name: 'Clear basket' }))
 
     expect(screen.getByText('Start a sale')).toBeInTheDocument()
   })

@@ -173,7 +173,7 @@ describe('public landing page', () => {
       'Does it work offline?',
       'Can my staff use it?',
       'Can I track customer credit?',
-      'Can I track inventory?',
+      'Can I track stock?',
       'Can I record different payment methods?',
       'What happens when a sale needs correction?',
       'Can Sabi Shop work for more than one business?',

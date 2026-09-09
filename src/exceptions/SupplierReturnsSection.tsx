@@ -62,7 +62,7 @@ export function SupplierReturnsSection({
     <div className="exceptions-section">
       <Panel
         title="Supplier returns"
-        description="Return goods to a supplier against a recorded purchase. Unpaid purchases reduce what you owe; paid purchases create supplier credit. Replacements are separate receipts."
+        description="Return stock to a supplier against a recorded purchase. Unpaid purchases reduce what you owe; paid purchases create supplier credit. Replacements are separate receipts."
       >
         <div className="exceptions-search-row">
           <Field label="Search purchases">
@@ -156,7 +156,7 @@ export function SupplierReturnsSection({
                   if (action === 'approve') {
                     return runAction('Supplier return approved', async () => {
                       await controller.approveSupplierReturn(view.record.id)
-                      return `Supplier return ${view.record.id} is approved. Applying it moves the goods out of stock with the recorded condition.`
+                      return `Supplier return ${view.record.id} is approved. Applying it moves the stock out with the recorded condition.`
                     })
                   }
                   return runAction('Supplier return applied', async () => {
@@ -363,7 +363,7 @@ function RequestSupplierReturnDialog({
     >
       <div className="exceptions-dialog-body">
         <p className="ui-text-body ui-text-secondary">
-          Select the goods being returned to the supplier. The purchase record
+          Select the stock being returned to the supplier. The purchase record
           stays in history; the return is a separate linked event.
         </p>
         <table className="exceptions-table">
@@ -414,7 +414,7 @@ function RequestSupplierReturnDialog({
           </tbody>
         </table>
         <fieldset className="exceptions-choice-group">
-          <legend>Condition of returned goods</legend>
+          <legend>Condition of returned stock</legend>
           <Radio
             name="supplier-return-condition"
             label="Sellable"
@@ -670,7 +670,7 @@ function ReplacementDialog({
         </table>
         <ConsequenceList
           effects={[
-            'Replacement goods are received into stock at the recorded unit cost.',
+            'Replacement stock is received at the recorded unit cost.',
             'The return record and original purchase stay unchanged in history.',
           ]}
         />

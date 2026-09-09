@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode, type RefObject } from 'react'
 import { X } from '@phosphor-icons/react'
+import { useLanguage } from '../language'
 import { IconButton } from './Button'
 
 type OverlayBaseProps = {
@@ -77,6 +78,7 @@ export function Dialog({
   dismissable = true,
 }: OverlayBaseProps) {
   const ref = useNativeDialog(open, onClose, dismissable)
+  const { t } = useLanguage()
   if (!open) return null
   return (
     <dialog ref={ref} className="ui-dialog" aria-label={title}>
@@ -84,7 +86,7 @@ export function Dialog({
         <header className="ui-dialog__header">
           <h2 className="ui-dialog__title">{title}</h2>
           {dismissable && (
-            <IconButton label="Close dialog" onClick={onClose}>
+            <IconButton label={t('common.closeDialog')} onClick={onClose}>
               <X size={16} weight="bold" aria-hidden="true" />
             </IconButton>
           )}
@@ -107,6 +109,7 @@ export function Drawer({
   dismissable = true,
 }: OverlayBaseProps) {
   const ref = useNativeDialog(open, onClose, dismissable)
+  const { t } = useLanguage()
   if (!open) return null
   return (
     <dialog ref={ref} className="ui-drawer" aria-label={title}>
@@ -114,7 +117,7 @@ export function Drawer({
         <header className="ui-drawer__header">
           <h2 className="ui-drawer__title">{title}</h2>
           {dismissable && (
-            <IconButton label="Close panel" onClick={onClose}>
+            <IconButton label={t('common.closePanel')} onClick={onClose}>
               <X size={16} weight="bold" aria-hidden="true" />
             </IconButton>
           )}

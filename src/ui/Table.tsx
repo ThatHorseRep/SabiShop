@@ -104,21 +104,25 @@ export function DataTable<Row>({
         </TableRow>
       </TableHead>
       <TableBody>
-        {rows.length === 0
-          ? empty
-          : rows.map((row) => (
-              <TableRow key={rowKey(row)}>
-                {columns.map((column) => (
-                  <TableCell
-                    key={column.key}
-                    numeric={column.numeric}
-                    mono={column.mono}
-                  >
-                    {column.render(row)}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
+        {rows.length === 0 ? (
+          <TableRow>
+            <td colSpan={columns.length}>{empty}</td>
+          </TableRow>
+        ) : (
+          rows.map((row) => (
+            <TableRow key={rowKey(row)}>
+              {columns.map((column) => (
+                <TableCell
+                  key={column.key}
+                  numeric={column.numeric}
+                  mono={column.mono}
+                >
+                  {column.render(row)}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))
+        )}
       </TableBody>
     </Table>
   )
