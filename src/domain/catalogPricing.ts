@@ -286,6 +286,26 @@ export class CatalogPricing {
     completedAt?: string
     authorization: PricingAuthorization
   }): SaleLine {
+    const line = this.validateSaleLine(input)
+    this.saleLines.push(line)
+    return { ...line }
+  }
+
+  /**
+   * Build the authoritative sale-line snapshot without recording it. Sale
+   * completion uses this to validate every line and every payment before any
+   * line becomes historical evidence.
+   */
+  validateSaleLine(input: {
+    id: string
+    productId: string
+    quantity: number
+    unitPriceKobo?: number
+    discount?: Discount
+    salespersonId: string
+    completedAt?: string
+    authorization: PricingAuthorization
+  }): SaleLine {
     const product = this.requireSellableProduct(input.productId)
     const pricing = this.computeLinePricing(product, input)
     const belowFloor = pricing.belowFloor
@@ -334,7 +354,6 @@ export class CatalogPricing {
       completedAt: input.completedAt ?? now(),
       status: 'completed',
     }
-    this.saleLines.push(line)
     return { ...line }
   }
 
