@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { MemoryStorage } from '../sync/offlineSync'
+import { CustomersCreditError } from '../domain/customersCredit'
 import { PosScreen } from './PosScreen'
 import { CompletionView } from './PosReceipt'
 import { createPosController, type PosController } from './posController'
@@ -373,6 +374,58 @@ describe('POS journeys', () => {
     expect(
       screen.getByRole('button', { name: /Complete Sale/i }),
     ).toBeDisabled()
+  })
+
+  it('leaves no sale effects when credit is refused at the composition boundary', () => {
+    const controller = createPosController(new MemoryStorage())
+    const stockBefore = controller.engines.inventory.getStock('p-spark-plug')
+    const reportsBefore = controller.engines.sales.listReports()
+    const pricingLineRecorded = (lineId: string) => {
+      try {
+        controller.engines.pricing.getIncentivePricingFacts(lineId)
+        return true
+      } catch {
+        return false
+      }
+    }
+    const lineBefore = pricingLineRecorded('line-1')
+
+    // Calling the controller directly (the "API without the UI" path) must
+    // not commit a sale whose debt the credit engine would refuse.
+    expect(() =>
+      controller.completeSale({
+        actor: staff,
+        clientRequestId: 'blocked-credit-request',
+        lines: [
+          {
+            lineId: 'line-1',
+            productId: 'p-spark-plug',
+            quantity: 1,
+          },
+        ],
+        payments: [
+          {
+            id: 'pay-1',
+            method: 'customer_credit',
+            amountKobo: 85_000,
+            confirmedBy: 'user-ngozi',
+          },
+        ],
+        customer: { id: 'c-tunde', name: 'Tunde Bala', phone: '0810 999 3355' },
+        creditApproval: { approverId: 'user-ngozi', approverRole: 'manager' },
+        taxRateBasisPoints: 0n,
+        taxMode: 'exclusive',
+      }),
+    ).toThrowError(CustomersCreditError)
+
+    expect(controller.engines.inventory.getStock('p-spark-plug')).toEqual(
+      stockBefore,
+    )
+    expect(controller.engines.sales.listReports()).toEqual(reportsBefore)
+    expect(() =>
+      controller.engines.pricing.getIncentivePricingFacts('line-1'),
+    ).toThrow()
+    expect(pricingLineRecorded('line-1')).toBe(lineBefore)
   })
 
   it('requires a second exception approval when credit exceeds the limit', async () => {

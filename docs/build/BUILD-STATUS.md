@@ -8,9 +8,55 @@ The engineering foundation, the application shell/design system, the POS
 selling workspace, the inventory/purchasing workspace, the customer/credit
 workspace, the exceptions/reconciliation workspace, the management dashboard
 workspace, the staff dashboard workspace, the public landing page, the
-English/Nigerian Pidgin content foundation, and the implemented domain slices
-are verified. Persistence, authentication/authorization integration, the
-remaining domain screens, and the remaining modules are still downstream work.
+English/Nigerian Pidgin content foundation, the implemented domain slices, and
+the cross-domain integration journeys are verified. Persistence,
+authentication/authorization integration, the remaining domain screens, and
+the remaining modules are still downstream work.
+
+## Verified cross-domain integration suite
+
+**Module:** M06–M13 integration journeys, authorization, sync and reporting
+**Status:** VERIFIED INTEGRATION TEST SUITE
+**Handoff:** `docs/build/HANDOFFS/27-integration-testing.md`
+
+Implemented:
+
+- Journey-level tests for the ten critical business operations: sale →
+  payment → inventory → COGS → reporting; credit sale → debt → repayment;
+  purchase → receiving → supplier obligation; supplier return → payable /
+  credit / settlement; sale return consequences; correction → audit →
+  recalculation; cash sale → Expected Cash → reconciliation; business-day
+  lifecycle; offline sale → sync → authoritative state; authorization →
+  operation → audit.
+- Failure paths between components: refused payments, blocked and over-limit
+  credit, illegal supplier-return states, cumulative over-returns,
+  unauthorized corrections, premature/closed-day cash events, tampered sync
+  identities, server-side authorization rejection and cross-business
+  requests — each proven to leave no domain effect.
+- Five specification-driven integration fixes: tax-inclusive return
+  reversals and refunds; tax-consistent corrected totals; cumulative
+  return-quantity guard; report reconciliation with confirmed supplier-return
+  settlements; POS credit eligibility validated before the sale commits.
+
+Validation on 2026-09-09:
+
+```text
+npm ci                                       PASS (252 packages, 0 vulnerabilities)
+npm run format:check                         PASS
+npm run lint                                 PASS
+npm test                                     PASS (26 files, 263 tests)
+npm run build                                 PASS
+npx tsc -b --pretty false                    PASS
+npx vitest run src/domain/integration.test.ts
+                                             PASS (10 tests)
+npx prettier --check <changed source files>  PASS
+git diff --check                             PASS
+```
+
+Known gaps remain explicitly documented in Handoff 27: adapter-level cash
+integration, durable multi-domain transactions, evidence-only refund
+settlement, durable server-side sync replay, and the physical-count /
+provisional-COGS / incentive-release items carried from Handoff 26.
 
 ## Verified cross-domain verification suite
 
@@ -710,6 +756,7 @@ Implemented:
 | Public landing page (C05)                    | IMPLEMENTED MARKETING PAGE; acquisition path pending   | `landing.html`, `src/landing/`, `docs/build/HANDOFFS/24-landing-page.md`            |
 | M14 English/Nigerian Pidgin content          | IMPLEMENTED FOUNDATION; review/migration pending       | `src/language/`, `docs/build/HANDOFFS/25-language-pidgin.md`                        |
 | Cross-domain verification suite              | VERIFIED TEST SUITE                                    | `src/domain/domainVerification.test.ts`, `docs/build/HANDOFFS/26-domain-testing.md` |
+| Cross-domain integration suite               | VERIFIED TEST SUITE                                    | `src/domain/integration.test.ts`, `docs/build/HANDOFFS/27-integration-testing.md`   |
 | M15 V1 integration/acceptance                | BLOCKED                                                | dependent modules and unresolved technical decisions                                |
 
 ## Locked integration invariants
