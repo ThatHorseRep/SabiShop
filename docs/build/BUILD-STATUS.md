@@ -12,6 +12,43 @@ English/Nigerian Pidgin content foundation, and the implemented domain slices
 are verified. Persistence, authentication/authorization integration, the
 remaining domain screens, and the remaining modules are still downstream work.
 
+## Verified cross-domain verification suite
+
+**Module:** M06–M11 domain/state/finance/inventory/sales/credit/cash
+verification
+**Status:** VERIFIED DOMAIN TEST SUITE
+**Handoff:** `docs/build/HANDOFFS/26-domain-testing.md`
+
+Implemented:
+
+- Consolidated public-boundary tests for state machines, exact money/tax,
+  weighted-average costing, negative stock, payment states, credit, returns,
+  corrections, cash reconciliation, tenant scope, authorization, idempotency
+  and audit relationships.
+- A full requirement → invariant → test coverage matrix in Handoff 26.
+- A specification-driven fix so a failed or unconfirmed payment attempt can no
+  longer leave a completed catalog pricing line before sale completion fails.
+
+Validation on 2026-09-09:
+
+```text
+npm ci                                       PASS (252 packages, 0 vulnerabilities)
+npm run format:check                         PASS
+npm run lint                                 PASS
+npm test                                      PASS (25 files, 252 tests)
+npm run build                                 PASS
+npx tsc -b --pretty false                    PASS
+npx vitest run src/domain/domainVerification.test.ts
+                                              PASS (11 tests)
+npx prettier --check <changed source files>   PASS
+git diff --check                              PASS
+```
+
+Known gaps remain explicitly documented in Handoff 26: physical inventory count
+workflow, provisional negative-stock COGS settlement, automatic cash-event
+integration, durable multi-domain transactions, and the H01/H02 wording tension
+around closing a day with an unresolved cash discrepancy.
+
 ## Verified foundation
 
 - React + Vite TypeScript application shell.
@@ -672,6 +709,7 @@ Implemented:
 | Staff Home / staff dashboard UX              | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/staff/`, `docs/build/HANDOFFS/23-staff-dashboard.md`                           |
 | Public landing page (C05)                    | IMPLEMENTED MARKETING PAGE; acquisition path pending   | `landing.html`, `src/landing/`, `docs/build/HANDOFFS/24-landing-page.md`            |
 | M14 English/Nigerian Pidgin content          | IMPLEMENTED FOUNDATION; review/migration pending       | `src/language/`, `docs/build/HANDOFFS/25-language-pidgin.md`                        |
+| Cross-domain verification suite              | VERIFIED TEST SUITE                                    | `src/domain/domainVerification.test.ts`, `docs/build/HANDOFFS/26-domain-testing.md` |
 | M15 V1 integration/acceptance                | BLOCKED                                                | dependent modules and unresolved technical decisions                                |
 
 ## Locked integration invariants

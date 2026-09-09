@@ -166,8 +166,8 @@ export class SalesTransactionEngine {
     )
     if (existing) return this.cloneSale(existing)
     const currency = input.currency ?? 'NGN'
-    const lines = input.lines.map((line) =>
-      this.pricing.priceSaleLine({
+    const proposedLines = input.lines.map((line) =>
+      this.pricing.validateSaleLine({
         ...line,
         salespersonId: input.actorId,
         authorization: line.pricingAuthorization ?? {
@@ -176,12 +176,12 @@ export class SalesTransactionEngine {
         },
       }),
     )
-    if (lines.length === 0)
+    if (proposedLines.length === 0)
       throw new SalesError(
         'INVALID_PAYMENT',
         'A sale must contain at least one line',
       )
-    const totals = lines.reduce(
+    const totals = proposedLines.reduce(
       (sum, line) => sum + line.unitPriceKobo * line.quantity,
       0,
     )
@@ -193,6 +193,16 @@ export class SalesTransactionEngine {
         : taxFromTotal(net, taxRate)
     const totalDueKobo = Number(taxed.total.minor)
     const paymentSummary = this.validatePayments(input, totalDueKobo)
+    const lines = input.lines.map((line) =>
+      this.pricing.priceSaleLine({
+        ...line,
+        salespersonId: input.actorId,
+        authorization: line.pricingAuthorization ?? {
+          actorId: input.actorId,
+          role: input.actorRole,
+        },
+      }),
+    )
     const inventoryEvents: InventoryEvent[] = []
     let receipt: SaleReceipt | undefined
     let cogsKobo = 0
