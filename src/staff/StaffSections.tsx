@@ -25,7 +25,7 @@ import {
 const areaLabels: Record<string, string> = {
   sell: 'Sell',
   money: 'Money & Reconciliation',
-  'products-inventory': 'Products & Inventory',
+  'products-inventory': 'Products & Stock',
   'customers-credit': 'Customers & Credit',
 }
 
@@ -70,7 +70,7 @@ export function TodaySection({
                     ? ` by ${day.cashInHand.countedByName}`
                     : ''
                 }.`
-              : 'Operational view: what the system expects in the drawer. It has not been physically counted yet.'
+              : 'What the system expects in the drawer. It has not been counted yet.'
           }
         />
         <Metric
@@ -262,7 +262,7 @@ export function StockSection({
           variant="secondary"
           onClick={() => onOpenArea('products-inventory')}
         >
-          Open Products & Inventory
+          Open Products & Stock
         </Button>
       }
     >
@@ -425,29 +425,29 @@ export function PerformanceSection({ snapshot }: { snapshot: StaffSnapshot }) {
           hint="The minimum qualifying-sales gate applies to the management-configured release period, not only today. This is today's progress."
         />
         <Metric
-          label="My net selling value today"
+          label="My sales after discount today"
           value={formatMoneyKobo(performance.netRecognizedSellingValueKobo)}
-          hint="Your sales after applied returns, corrections, and reversals — the same canonical figures management sees."
+          hint="Your sales after applied returns, corrections, and reversals — the same figures management sees."
         />
         {performance.incentiveEnabled && (
           <Metric
-            label="Incentive-eligible value (provisional)"
+            label="Incentive value so far"
             value={formatMoneyKobo(performance.eligibleValueKobo)}
             hint="Amount sold above the applicable price floor. Provisional only — not a payout and not payable yet."
           />
         )}
       </dl>
       {performance.incentiveEnabled ? (
-        <BoundaryNote title="Provisional until management releases it">
-          Returns, corrections, reversals, and material corrections recalculate
-          this automatically before any release. Applied ones are already
-          reflected in these figures. The release schedule and decision belong
-          to management; nothing here is a promise of payment.
+        <BoundaryNote title="Not payable until management releases it">
+          Returns, corrections, reversals, and serious corrections recalculate
+          this automatically before any release. Applied ones are already in
+          these figures. Management decides when to release it; nothing here is
+          a promise of payment.
         </BoundaryNote>
       ) : (
         <BoundaryNote title="Incentives are off for this business">
-          Your sales are still attributed to you. Attribution follows who
-          actually performs the sale, not the incentive switch.
+          Your sales are still credited to you. Credit follows who actually made
+          the sale, not the incentive switch.
         </BoundaryNote>
       )}
       {performance.incentiveEnabled && performance.openReturns.length > 0 && (

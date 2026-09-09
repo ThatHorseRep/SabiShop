@@ -193,7 +193,7 @@ export function PurchasingSection({
 
   const submitReceiving = async () => {
     if (!receivingSupplierId) {
-      setFormError('Choose the supplier that delivered the goods.')
+      setFormError('Choose the supplier that delivered the stock.')
       return
     }
     if (receivingParsed.length === 0) {
@@ -329,7 +329,7 @@ export function PurchasingSection({
               {snapshot.suppliers.length === 0 && (
                 <li className="inventory-state-message info">
                   <h3>No supplier records</h3>
-                  <p>Create a supplier before recording received goods.</p>
+                  <p>Create a supplier before recording received stock.</p>
                 </li>
               )}
             </ul>
@@ -403,8 +403,8 @@ export function PurchasingSection({
       {subtab === 'receiving' && (
         <div className="inventory-grid">
           <Panel
-            title="Record received goods"
-            description="Inventory increases only when physical receipt is recorded."
+            title="Record received stock"
+            description="Stock increases only when physical receipt is recorded."
           >
             <form
               className="inventory-form"
@@ -892,7 +892,7 @@ export function PurchasingSection({
         <div className="inventory-grid">
           <Panel
             title="Request supplier return"
-            description="Goods received and goods later returned remain separate linked events."
+            description="Stock received and stock later returned remain separate linked events."
           >
             <form
               className="inventory-form"
@@ -1078,7 +1078,7 @@ export function PurchasingSection({
                   className="inventory-input"
                   value={returnReason}
                   onChange={(event) => setReturnReason(event.target.value)}
-                  placeholder="Why are these goods going back to the supplier?"
+                  placeholder="Why is this stock going back to the supplier?"
                 />
               </Field>
               {formError && (
@@ -1238,7 +1238,7 @@ export function PurchasingSection({
                         if (succeeded) setReplacementLines([])
                       }}
                     >
-                      <h3>Record replacement goods</h3>
+                      <h3>Record replacement stock</h3>
                       {replacementLines.map((line, index) => (
                         <div key={line.key} className="inventory-form-row">
                           <Field label={`Product ${index + 1}`}>

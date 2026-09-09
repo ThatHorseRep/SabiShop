@@ -477,7 +477,7 @@ export function CustomerCreditWorkspace({
       </div>
 
       <CreateCustomerDialog
-        key={String(createOpen)}
+        key={`create-customer-${createOpen}`}
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         busy={busy}
@@ -494,7 +494,7 @@ export function CustomerCreditWorkspace({
       {selected && (
         <>
           <CreditSaleDialog
-            key={`${selected.summary.customer.id}-${creditSaleOpen}`}
+            key={`credit-sale-${selected.summary.customer.id}-${creditSaleOpen}`}
             open={creditSaleOpen}
             onClose={() => setCreditSaleOpen(false)}
             customer={selected.summary}
@@ -519,7 +519,7 @@ export function CustomerCreditWorkspace({
           />
 
           <RepaymentDialog
-            key={`${selected.summary.customer.id}-${repaymentOpen}`}
+            key={`repayment-${selected.summary.customer.id}-${repaymentOpen}`}
             open={repaymentOpen}
             onClose={() => setRepaymentOpen(false)}
             customer={selected.summary}
@@ -551,7 +551,7 @@ export function CustomerCreditWorkspace({
           />
 
           <CreditStatusDialog
-            key={`${selected.summary.customer.id}-${statusOpen}`}
+            key={`credit-status-${selected.summary.customer.id}-${statusOpen}`}
             open={statusOpen}
             onClose={() => setStatusOpen(false)}
             customer={selected.summary}
@@ -576,7 +576,7 @@ export function CustomerCreditWorkspace({
           />
 
           <CreditLimitDialog
-            key={`${selected.summary.customer.id}-${limitOpen}`}
+            key={`credit-limit-${selected.summary.customer.id}-${limitOpen}`}
             open={limitOpen}
             onClose={() => setLimitOpen(false)}
             customer={selected.summary}

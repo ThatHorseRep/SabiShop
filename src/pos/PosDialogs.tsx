@@ -16,6 +16,7 @@ import {
 import { Dialog } from '../ui/Overlays'
 import { Status } from '../ui/Status'
 import { Money } from '../ui/Money'
+import { useLanguage } from '../language'
 import { formatKobo } from '../ui/format'
 import type { DraftDiscount, DraftLine, PendingApproval } from './posTypes'
 import { roleLabel, type ManagementActor } from './posSession'
@@ -591,20 +592,22 @@ export function AbandonSaleDialog({
   onContinue: () => void
   onDiscard: () => void
 }) {
+  const { t } = useLanguage()
   return (
-    <Dialog open={open} onClose={onContinue} title="Leave the unfinished sale?">
+    <Dialog open={open} onClose={onContinue} title={t('pos.abandon.title')}>
       <p className="ui-text-body">
-        This sale has {itemCount} item{itemCount === 1 ? '' : 's'} totalling{' '}
-        <Money amountKobo={totalKobo} /> and has not been completed.
+        {t('pos.abandon.description', {
+          count: itemCount,
+          total: `₦${formatKobo(BigInt(totalKobo))}`,
+        })}
       </p>
-      <Alert tone="info" title="An unfinished sale is not recorded">
-        Discarding the basket applies no business effect. Nothing will be
-        recorded as sold, paid, or owed.
+      <Alert tone="info" title={t('pos.abandon.notRecordedTitle')}>
+        {t('pos.abandon.notRecorded')}
       </Alert>
       <div className="pos-dialog-actions">
-        <Button onClick={onContinue}>Continue sale</Button>
+        <Button onClick={onContinue}>{t('pos.abandon.continue')}</Button>
         <Button variant="danger" onClick={onDiscard}>
-          Discard basket
+          {t('pos.abandon.discard')}
         </Button>
       </div>
     </Dialog>

@@ -71,7 +71,7 @@ const faqs: readonly Faq[] = [
       'Yes. Credit sales, repayments, and outstanding debt are tracked per customer, with credit limits and approval rules you control.',
   },
   {
-    question: 'Can I track inventory?',
+    question: 'Can I track stock?',
     answer:
       'Yes. Stock received, sold, returned, and adjusted is tracked per product, and low stock and out of stock items are surfaced for attention.',
   },
@@ -151,7 +151,7 @@ const productAreas: readonly Feature[] = [
   },
   {
     icon: Package,
-    title: 'Products & Inventory',
+    title: 'Products & Stock',
     detail: 'Track what came in, what moved, and what remains.',
   },
   {

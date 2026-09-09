@@ -28,7 +28,7 @@ const tabs: WorkspaceTab[] = [
   { id: 'overview', label: 'Overview' },
   { id: 'sales', label: 'Sales' },
   { id: 'money', label: 'Money & expenses' },
-  { id: 'inventory', label: 'Inventory' },
+  { id: 'inventory', label: 'Stock' },
   { id: 'credit-suppliers', label: 'Credit & suppliers' },
   { id: 'staff', label: 'Staff & incentives' },
 ]
@@ -84,9 +84,8 @@ export function ManagementWorkspace({
         <div>
           <h1 id="management-title">Management</h1>
           <p>
-            Business decisions, not decoration: canonical performance, attention
-            that needs a decision, and every number linked back to the records
-            that explain it. Nothing is recalculated here.
+            Business numbers, work that needs a decision, and links to the
+            records that explain each figure. Nothing changes here.
           </p>
         </div>
         <div className="management-session">
@@ -133,7 +132,7 @@ export function ManagementWorkspace({
               </select>
             </div>
             <p className="management-period-note">
-              {snapshot.period.description} Event-time basis{' '}
+              {snapshot.period.description} Based on event time{' '}
               {snapshot.period.from.slice(0, 10)} →{' '}
               {snapshot.period.to.slice(0, 10)}.
             </p>
@@ -191,10 +190,9 @@ export function ManagementWorkspace({
 
       <footer className="management-footer">
         <p className="ui-text-caption ui-text-secondary">
-          This dashboard is a read-only projection of accepted business events.
-          Corrections, returns, reconciliation, and other resolutions are
-          recorded in their owning workspaces with authorization, reasons, and
-          history — never here.
+          This dashboard only shows accepted business records. Corrections,
+          returns, reconciliation, and other changes happen in the workspace
+          that owns the record, with approval, reason, and history — never here.
         </p>
       </footer>
     </section>

@@ -1,5 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { DotsThree } from '@phosphor-icons/react'
+import { useLanguage } from '../language'
+import { LanguageSwitcher } from '../language/LanguageSwitcher'
 import { Drawer } from '../ui/Overlays'
 import {
   AttentionIndicator,
@@ -9,7 +11,7 @@ import {
   type ShellUser,
 } from './indicators'
 import {
-  navGroupLabels,
+  navGroupTranslationKeys,
   type NavDestination,
   type NavDestinationId,
   type NavigationView,
@@ -84,6 +86,7 @@ export function AppShell({
   onSignOut,
   children,
 }: AppShellProps) {
+  const { t } = useLanguage()
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return window.localStorage.getItem(collapseStorageKey) === 'true'
@@ -123,7 +126,7 @@ export function AppShell({
   return (
     <div className="app-shell">
       <a className="app-skip-link" href="#main-content">
-        Skip to main content
+        {t('shell.skipToContent')}
       </a>
       <header className="app-header">
         <div className="app-header__brand">
@@ -141,13 +144,14 @@ export function AppShell({
             state={systemState}
             onActivate={onSystemStateActivate}
           />
+          <LanguageSwitcher />
           <UserMenu user={user} onSignOut={onSignOut} />
         </div>
       </header>
       <div className="app-body">
         <nav
           className="app-nav"
-          aria-label="Primary"
+          aria-label={t('shell.primary')}
           data-collapsed={collapsed}
         >
           <div className="app-nav__scroll">
@@ -162,7 +166,7 @@ export function AppShell({
             {navigation.groups.map((group) => (
               <div className="app-nav__group" key={group.group}>
                 <span className="app-nav__group-label">
-                  {navGroupLabels[group.group]}
+                  {t(navGroupTranslationKeys[group.group])}
                 </span>
                 {group.destinations.map((destination) => (
                   <NavButton
@@ -184,7 +188,7 @@ export function AppShell({
           >
             {collapsed ? '»' : '«'}
             <span className={collapsed ? 'visually-hidden' : undefined}>
-              Collapse navigation
+              {t('shell.collapseNavigation')}
             </span>
           </button>
         </nav>
@@ -193,7 +197,7 @@ export function AppShell({
         </main>
       </div>
       {bottomDestinations.length > 0 && (
-        <nav className="app-bottom-nav" aria-label="Primary mobile">
+        <nav className="app-bottom-nav" aria-label={t('shell.primaryMobile')}>
           {home && (
             <button
               type="button"
@@ -241,12 +245,16 @@ export function AppShell({
               onClick={() => setMoreOpen(true)}
             >
               <DotsThree size={22} weight="bold" aria-hidden="true" />
-              <span>More</span>
+              <span>{t('shell.more')}</span>
             </button>
           )}
         </nav>
       )}
-      <Drawer open={moreOpen} onClose={() => setMoreOpen(false)} title="More">
+      <Drawer
+        open={moreOpen}
+        onClose={() => setMoreOpen(false)}
+        title={t('shell.more')}
+      >
         <div className="app-more">
           {navigation.groups
             .filter((group) =>
@@ -257,7 +265,7 @@ export function AppShell({
             .map((group) => (
               <div className="app-more__group" key={group.group}>
                 <span className="app-more__group-label">
-                  {navGroupLabels[group.group]}
+                  {t(navGroupTranslationKeys[group.group])}
                 </span>
                 {group.destinations
                   .filter((destination) =>

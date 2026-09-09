@@ -17,9 +17,9 @@ describe('application shell', () => {
     expect(screen.getAllByText('My sales today').length).toBeGreaterThan(0)
     // Staff never receive management-only analysis on Home.
     expect(
-      screen.queryByText('Net recognized selling value'),
+      screen.queryByText('Total sales after discount'),
     ).not.toBeInTheDocument()
-    expect(screen.queryByText('Gross profit')).not.toBeInTheDocument()
+    expect(screen.queryByText('Profit before expenses')).not.toBeInTheDocument()
   })
 
   it('keeps management analysis off the staff Home and gives management their own pointer', async () => {
@@ -38,7 +38,7 @@ describe('application shell', () => {
       screen.getByLabelText('Reference session'),
       'user-ngozi',
     )
-    expect(screen.getByText('Foundation status')).toBeInTheDocument()
+    expect(screen.getByText('Sabi Shop status')).toBeInTheDocument()
     expect(screen.queryByText('Today at a glance')).not.toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Open Management' }),
@@ -58,11 +58,11 @@ describe('application shell', () => {
 
     const rail = screen.getByRole('navigation', { name: 'Primary' })
     await user.click(
-      within(rail).getByRole('button', { name: 'Products & Inventory' }),
+      within(rail).getByRole('button', { name: 'Products & Stock' }),
     )
 
     expect(
-      screen.getByRole('heading', { name: 'Products & Inventory' }),
+      screen.getByRole('heading', { name: 'Products & Stock' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Cost information hidden')).toBeInTheDocument()
     expect(
@@ -129,7 +129,7 @@ describe('application shell', () => {
     expect(
       screen.getByRole('heading', { name: 'Management' }),
     ).toBeInTheDocument()
-    expect(screen.getByText('Net recognized selling value')).toBeInTheDocument()
+    expect(screen.getByText('Total sales after discount')).toBeInTheDocument()
     expect(screen.getByText('₦170,500.00')).toBeInTheDocument()
 
     // Switching the reference session to staff removes the financial view

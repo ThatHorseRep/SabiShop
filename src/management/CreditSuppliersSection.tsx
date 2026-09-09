@@ -149,9 +149,9 @@ export function CreditSuppliersSection({
           ))}
         </div>
         <TraceNote>
-          Supplier liability is not an operating expense: received inventory
-          created the payable, and it only reduces through confirmed settlement
-          events or applied supplier returns.
+          Supplier liability is not an operating expense: received stock created
+          the payable, and it only reduces through confirmed settlement events
+          or applied supplier returns.
         </TraceNote>
       </Panel>
     </div>

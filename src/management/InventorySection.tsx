@@ -31,15 +31,15 @@ export function InventorySection({
   return (
     <div className="management-section">
       <Panel
-        title="Inventory remaining & stock health"
-        description="Stock balances and valuation derive from the append-only inventory ledger; the dashboard never maintains a second stock figure."
+        title="Stock remaining & health"
+        description="Stock balances and value come from the stock record. The dashboard never keeps a second stock figure."
         actions={
           <Button
             size="sm"
             variant="secondary"
             onClick={() => onOpenArea('products-inventory')}
           >
-            Open Products &amp; Inventory
+            Open Products &amp; Stock
           </Button>
         }
       >

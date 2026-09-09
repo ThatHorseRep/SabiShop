@@ -45,11 +45,11 @@ export function SalesSection({ snapshot }: { snapshot: ManagementSnapshot }) {
     <div className="management-section">
       <Panel
         title="Sales performance"
-        description="The canonical sales figures for the period, then every underlying sale. Open a sale to inspect its payments, effects, and history."
+        description="The sales figures for this period, followed by each sale. Open a sale to see its payments, effects, and history."
       >
         <dl className="management-metrics">
           <Metric
-            label="Net recognized selling value"
+            label="Total sales after discount"
             value={formatMoneyKobo(report.sales.netRecognizedSellingValueKobo)}
           />
           <Metric
@@ -57,9 +57,9 @@ export function SalesSection({ snapshot }: { snapshot: ManagementSnapshot }) {
             value={formatMoneyKobo(report.sales.taxKobo)}
           />
           <Metric
-            label="Gross profit"
+            label="Profit before expenses"
             value={formatMoneyKobo(report.sales.grossProfitKobo)}
-            hint="Net recognized selling value − COGS."
+            hint="Total sales after discount − Cost of stock sold."
           />
           <Metric
             label="Cash / non-cash / credit"
@@ -99,9 +99,9 @@ export function SalesSection({ snapshot }: { snapshot: ManagementSnapshot }) {
                 <th>Recorded</th>
                 <th>Salesperson</th>
                 <th>State</th>
-                <th className="management-num">Net value</th>
+                <th className="management-num">Total after discount</th>
                 <th className="management-num">Tax</th>
-                <th className="management-num">Gross profit</th>
+                <th className="management-num">Profit before expenses</th>
                 <th className="management-num">Total due</th>
               </tr>
             </thead>
@@ -186,8 +186,8 @@ function SaleDetailDialog({
         <DetailRow label="Totals">
           Total due {formatMoneyKobo(sale.totalDueKobo)} · tax{' '}
           {formatMoneyKobo(sale.taxKobo)} · net{' '}
-          {formatMoneyKobo(sale.totalDueKobo - sale.taxKobo)} · COGS{' '}
-          {formatMoneyKobo(sale.cogsKobo)} · gross profit{' '}
+          {formatMoneyKobo(sale.totalDueKobo - sale.taxKobo)} · cost of stock
+          sold {formatMoneyKobo(sale.cogsKobo)} · profit before expenses{' '}
           {formatMoneyKobo(sale.grossProfitKobo)}
         </DetailRow>
         <DetailRow label="Payment mix">
@@ -225,12 +225,12 @@ function SaleDetailDialog({
             )
             .join(' · ')}
         </DetailRow>
-        <DetailRow label="Inventory effects">
+        <DetailRow label="Stock effects">
           {view.inventoryEventIds.length > 0
             ? view.inventoryEventIds.join(', ')
             : 'None recorded'}
         </DetailRow>
-        <DetailRow label="Business events (report)">
+        <DetailRow label="Report events">
           <ul className="management-timeline">
             {view.reportEvents.map((event) => (
               <li key={event.id} className="management-timeline-entry">
@@ -240,8 +240,8 @@ function SaleDetailDialog({
                 </div>
                 <p className="management-timeline-entry__detail">
                   Total effect {formatMoneyKobo(event.totalDueKobo)} · tax{' '}
-                  {formatMoneyKobo(event.taxKobo)} · COGS{' '}
-                  {formatMoneyKobo(event.cogsKobo)} · profit{' '}
+                  {formatMoneyKobo(event.taxKobo)} · cost of stock sold{' '}
+                  {formatMoneyKobo(event.cogsKobo)} · profit before expenses{' '}
                   {formatMoneyKobo(event.grossProfitKobo)}
                 </p>
                 <p className="management-timeline-entry__ids">{event.id}</p>

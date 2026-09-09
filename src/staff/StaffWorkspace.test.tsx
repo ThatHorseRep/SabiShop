@@ -34,7 +34,7 @@ describe('staff home workspace', () => {
     // yet counted — never a routine Actual Cash entry.
     expect(screen.getAllByText('₦113,000.00').length).toBeGreaterThan(0)
     expect(
-      screen.getByText(/Operational view: what the system expects/i),
+      screen.getByText(/What the system expects in the drawer/i),
     ).toBeInTheDocument()
     expect(
       screen.getByText(/Actual Cash is never entered here/i),
@@ -67,7 +67,7 @@ describe('staff home workspace', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('₦15,300.00')).toBeInTheDocument()
     expect(
-      screen.getByText(/Provisional until management releases it/i),
+      screen.getByText(/Not payable until management releases it/i),
     ).toBeInTheDocument()
     expect(
       screen.getByText(/Open returns that can still change these figures/i),
@@ -93,9 +93,9 @@ describe('staff home workspace', () => {
     expect(screen.getByText('₦850.00')).toBeInTheDocument()
     expect(screen.getByText('38 in stock')).toBeInTheDocument()
     // Management-only figures and labels never appear on the staff surface.
-    expect(screen.queryByText('Gross profit')).toBeNull()
-    expect(screen.queryByText('COGS')).toBeNull()
-    expect(screen.queryByText('Net recognized selling value')).toBeNull()
+    expect(screen.queryByText('Profit before expenses')).toBeNull()
+    expect(screen.queryByText('Cost of stock sold')).toBeNull()
+    expect(screen.queryByText('Total sales after discount')).toBeNull()
     expect(screen.queryByText('Acquisition cost')).toBeNull()
 
     // Negative stock stays visible as an actionable exception.

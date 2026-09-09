@@ -8,6 +8,7 @@ import {
   WifiHigh,
   WifiSlash,
 } from '@phosphor-icons/react'
+import { useLanguage } from '../language'
 import { statusIconFor } from '../ui/statusIcons'
 import type { StatusTone } from '../ui/tones'
 
@@ -30,24 +31,25 @@ export function SystemStateIndicator({
   state: ShellSystemState
   onActivate?: () => void
 }) {
+  const { t } = useLanguage()
   let tone: StatusTone = 'success'
-  let label = 'Online'
+  let label = t('system.online')
   let icon = <WifiHigh size={16} weight="bold" aria-hidden="true" />
 
   if (state.storageUnavailable) {
     tone = 'warning'
-    label = 'Sync storage unavailable'
+    label = t('system.storageUnavailable')
     icon = <WarningOctagon size={16} weight="bold" aria-hidden="true" />
   } else if (state.conflictCount > 0) {
     tone = 'conflict'
-    label = `Conflict · ${state.conflictCount}`
+    label = t('sync.conflictCount', { count: state.conflictCount })
   } else if (!state.online) {
     tone = 'offline'
-    label = 'Offline'
+    label = t('system.offline')
     icon = <WifiSlash size={16} weight="bold" aria-hidden="true" />
   } else if (state.pendingCount > 0) {
     tone = 'offline'
-    label = `Sync pending · ${state.pendingCount}`
+    label = t('sync.pendingCount', { count: state.pendingCount })
     icon = <ArrowsClockwise size={16} weight="bold" aria-hidden="true" />
   }
 
@@ -90,13 +92,14 @@ export function AttentionIndicator({
   count: number
   onActivate?: () => void
 }) {
+  const { t } = useLanguage()
   if (count <= 0) return null
   return (
     <button
       type="button"
       className="app-attention"
       onClick={onActivate}
-      aria-label={`Attention: ${count} item${count === 1 ? '' : 's'} requiring review`}
+      aria-label={t('attention.aria', { count })}
     >
       <Bell size={16} weight="bold" aria-hidden="true" />
       <span className="app-attention__count">{count}</span>
@@ -117,6 +120,7 @@ export function UserMenu({
   user: ShellUser | null
   onSignOut?: () => void
 }) {
+  const { t } = useLanguage()
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
 
@@ -137,7 +141,7 @@ export function UserMenu({
   }, [open])
 
   if (!user) {
-    return <span className="app-user-chip">Not signed in</span>
+    return <span className="app-user-chip">{t('shell.notSignedIn')}</span>
   }
 
   return (
@@ -156,7 +160,11 @@ export function UserMenu({
         <CaretDown size={12} weight="bold" aria-hidden="true" />
       </button>
       {open && (
-        <div className="app-user__menu" role="menu" aria-label="Account">
+        <div
+          className="app-user__menu"
+          role="menu"
+          aria-label={t('shell.account')}
+        >
           <div className="app-user__menu-header">
             <span className="app-user__name">{user.displayName}</span>
             {user.roleLabel && (
@@ -171,7 +179,7 @@ export function UserMenu({
               onClick={onSignOut}
             >
               <SignOut size={16} aria-hidden="true" />
-              Sign out
+              {t('shell.signOut')}
             </button>
           )}
         </div>

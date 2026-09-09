@@ -136,7 +136,7 @@ describe('Exceptions & reconciliation workspace', () => {
     expect(screen.getByText('Rejected')).toBeInTheDocument()
     expect(
       screen.getByText(
-        /remains visible as a historical decision and applied no inventory, debt, or settlement effect/,
+        /remains visible as a historical decision and applied no stock, debt, or settlement effect/,
       ),
     ).toBeInTheDocument()
     expect(screen.queryByText('Completed — Fully returned')).toBeNull()

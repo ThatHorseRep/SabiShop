@@ -247,7 +247,7 @@ export function HistorySection({
   return (
     <div className="inventory-section">
       <Panel
-        title="Inventory history"
+        title="Stock history"
         description="Every stock change is attributable and reconstructable. This is an investigation record, not a spreadsheet."
       >
         <div className="inventory-filter-bar">

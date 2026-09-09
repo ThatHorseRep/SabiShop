@@ -125,7 +125,7 @@ describe('AppShell', () => {
     await user.click(screen.getByRole('button', { name: 'More' }))
     expect(screen.getByRole('heading', { name: 'More' })).toBeInTheDocument()
     expect(
-      screen.getAllByRole('button', { name: 'Products & Inventory' }).length,
+      screen.getAllByRole('button', { name: 'Products & Stock' }).length,
     ).toBeGreaterThan(1)
   })
 })
@@ -146,7 +146,7 @@ describe('SystemStateIndicator', () => {
         state={{ online: true, pendingCount: 3, conflictCount: 0 }}
       />,
     )
-    expect(screen.getByText('Sync pending · 3')).toBeInTheDocument()
+    expect(screen.getByText('Waiting to sync · 3')).toBeInTheDocument()
   })
 
   it('elevates conflicts above routine sync status', () => {
@@ -155,7 +155,7 @@ describe('SystemStateIndicator', () => {
         state={{ online: true, pendingCount: 3, conflictCount: 1 }}
       />,
     )
-    expect(screen.getByText('Conflict · 1')).toBeInTheDocument()
+    expect(screen.getByText('Two versions · 1')).toBeInTheDocument()
   })
 
   it('shows offline as an operating mode, not an error', () => {

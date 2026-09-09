@@ -39,16 +39,16 @@ describe('management dashboard', () => {
       screen.getByText(/Management dashboards are restricted/i),
     ).toBeInTheDocument()
     expect(
-      screen.queryByText('Net recognized selling value'),
+      screen.queryByText('Total sales after discount'),
     ).not.toBeInTheDocument()
     expect(screen.queryByText('₦170,500.00')).not.toBeInTheDocument()
     expect(screen.queryByRole('tab', { name: 'Sales' })).not.toBeInTheDocument()
   })
 
-  it('shows the canonical business performance summary for the event-time period', async () => {
+  it('shows the business performance summary for the selected period', async () => {
     await renderWorkspace()
 
-    expect(screen.getByText('Net recognized selling value')).toBeInTheDocument()
+    expect(screen.getByText('Total sales after discount')).toBeInTheDocument()
     expect(screen.getByText('₦170,500.00')).toBeInTheDocument()
     expect(screen.getByText('Tax (VAT)')).toBeInTheDocument()
     expect(screen.getByText('₦975.00')).toBeInTheDocument()
@@ -57,16 +57,20 @@ describe('management dashboard', () => {
     expect(screen.getByText('₦1,200.00')).toBeInTheDocument()
     expect(screen.getByText('₦149,500.00')).toBeInTheDocument()
     expect(
-      screen.getByText(/event-time basis · \d+ source records traced/),
+      screen.getByText(
+        /based on when each event happened · \d+ records checked/,
+      ),
     ).toBeInTheDocument()
     expect(screen.getByText(/Cash is not profit/i)).toBeInTheDocument()
   })
 
-  it('keeps gross profit exactly net recognized selling value minus COGS', async () => {
+  it('keeps profit before expenses as sales after discount minus stock cost', async () => {
     await renderWorkspace()
 
     expect(
-      screen.getByText(/Net recognized selling value − COGS = ₦35,300.00/),
+      screen.getByText(
+        /Total sales after discount − Cost of stock sold = ₦35,300\.00/,
+      ),
     ).toBeInTheDocument()
   })
 
@@ -185,7 +189,7 @@ describe('management dashboard', () => {
 
   it('shows stock health from the inventory ledger including the negative-stock exception', async () => {
     const { user } = await renderWorkspace()
-    await openTab(user, 'Inventory')
+    await openTab(user, 'Stock')
 
     expect(screen.getByText('Rice — 50kg bag')).toBeInTheDocument()
     expect(screen.getByText('Cooking oil — 5 litres')).toBeInTheDocument()

@@ -1,16 +1,16 @@
 # Sabi Shop Build Status
 
-**As of:** 2026-09-08
+**As of:** 2026-09-09
 
 ## Overall
 
 The engineering foundation, the application shell/design system, the POS
 selling workspace, the inventory/purchasing workspace, the customer/credit
 workspace, the exceptions/reconciliation workspace, the management dashboard
-workspace, the staff dashboard workspace, the public landing page, and the
-implemented domain slices are verified. Persistence,
-authentication/authorization integration, the remaining domain screens, and
-the remaining modules are still downstream work.
+workspace, the staff dashboard workspace, the public landing page, the
+English/Nigerian Pidgin content foundation, and the implemented domain slices
+are verified. Persistence, authentication/authorization integration, the
+remaining domain screens, and the remaining modules are still downstream work.
 
 ## Verified foundation
 
@@ -492,6 +492,55 @@ exercised interactively, scroll reveals and tagline words activate through
 IntersectionObserver, and the Geist typeface and shared button system render
 as designed. Screenshots are archived under `work/`.
 
+## Implemented language and Nigerian Pidgin content slice
+
+**Module:** M14 — English/Nigerian Pidgin language and content infrastructure
+**Status:** IMPLEMENTED FOUNDATION; native/experienced Pidgin review and domain-surface migration pending
+**Handoff:** `docs/build/HANDOFFS/25-language-pidgin.md`
+
+Implemented a typed semantic message catalogue and React language layer for
+English and Nigerian Pidgin. The catalogue covers confirmations, errors,
+loading, empty, permissions, authorization, offline, sync pending, sync
+conflict, correction, payment states, debt, inventory, cash, and reporting.
+Consequential confirmations state the actual business outcome, errors state
+what happened/what was saved/what to do next, and financial concepts remain
+distinct.
+
+A reviewer-led plain-language pass is also applied. English uses **Stock**
+consistently for stock/inventory language, while Nigerian Pidgin uses
+**Goods**. English reporting labels now use plain wording such as “Total sales
+after discount,” “Cost of stock sold,” and “Profit before expenses.” Internal
+technical wording such as “reference session adapter” is kept out of main UI
+copy.
+
+Pre-publish defects were also fixed: duplicate Customers & Credit dialog keys,
+invalid DataTable empty-state nesting, the production bundle-size warning, and
+the two moderate Vitest audit findings.
+
+The application shell, shared state components, overlays, confirmation reason
+copy, loading labels, toasts, navigation, system-state indicator, Home
+foundation copy, and POS abandon-sale guard now consume the language provider
+and expose a two-language selector. Domain workspaces also received a plain-
+English pass, but their copy is not yet fully migrated to the shared language
+keys. No domain rule or calculation changed. Nigerian Pidgin production release
+remains gated on native/experienced-speaker sign-off.
+
+Validation on 2026-09-09:
+
+```text
+npm ci                                     PASS (253 packages; 0 vulnerabilities)
+npm run format:check                       PASS
+npm test                                    PASS (241 tests, 24 files)
+npm run lint                                PASS (0 errors, 0 warnings)
+npm run build                               PASS
+npx tsc -b --pretty false                   PASS
+npx prettier --check <language/UI changes>  PASS
+git diff --check                            PASS
+```
+
+The final validation has no React key warnings, no DataTable HTML-nesting
+warning, no Vitest audit findings, and no bundle-size warning.
+
 ## Verified canonical reporting slice
 
 **Module:** M12 - business performance and management visibility
@@ -622,6 +671,7 @@ Implemented:
 | M12 management dashboard UX                  | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/management/`, `docs/build/HANDOFFS/22-management-dashboard.md`                 |
 | Staff Home / staff dashboard UX              | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/staff/`, `docs/build/HANDOFFS/23-staff-dashboard.md`                           |
 | Public landing page (C05)                    | IMPLEMENTED MARKETING PAGE; acquisition path pending   | `landing.html`, `src/landing/`, `docs/build/HANDOFFS/24-landing-page.md`            |
+| M14 English/Nigerian Pidgin content          | IMPLEMENTED FOUNDATION; review/migration pending       | `src/language/`, `docs/build/HANDOFFS/25-language-pidgin.md`                        |
 | M15 V1 integration/acceptance                | BLOCKED                                                | dependent modules and unresolved technical decisions                                |
 
 ## Locked integration invariants

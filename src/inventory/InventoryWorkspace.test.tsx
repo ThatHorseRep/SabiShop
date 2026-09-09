@@ -102,7 +102,7 @@ describe('inventory and purchasing workspace', () => {
     expect(feedback).toBeInTheDocument()
     expect(
       screen.getByText(
-        /Inventory increased and supplier payable is now ₦4,399\.96/i,
+        /Stock increased and supplier payable is now ₦4,399\.96/i,
       ),
     ).toBeInTheDocument()
   })

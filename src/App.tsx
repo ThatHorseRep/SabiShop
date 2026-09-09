@@ -8,12 +8,16 @@ import {
   type ErrorInfo,
   type ReactNode,
 } from 'react'
+import { LanguageProvider, useLanguage } from './language'
 import type { SyncOperation } from './sync/offlineSync'
 import { activateUpdate } from './pwa'
 import { AppShell } from './shell/AppShell'
 import { PageHeader } from './shell/PageHeader'
-import { findDestination, navigationFor } from './shell/navigation'
-import type { NavDestinationId } from './shell/navigation'
+import {
+  useDestinationCopy,
+  useNavigationFor,
+  type NavDestinationId,
+} from './shell/navigation'
 import { Alert } from './ui/Feedback'
 import { Drawer } from './ui/Overlays'
 import { Button } from './ui/Button'
@@ -42,6 +46,25 @@ import { StaffWorkspace } from './staff/StaffWorkspace'
 type ErrorBoundaryProps = { children: ReactNode }
 type ErrorBoundaryState = { hasError: boolean }
 
+function AppErrorState() {
+  const { t } = useLanguage()
+  return (
+    <main className="app-workspace" role="alert">
+      <section className="ui-state ui-state--danger">
+        <h1 className="ui-state__title">{t('error.unhandled.title')}</h1>
+        <p className="ui-state__description">
+          {t('error.unhandled.description')}
+        </p>
+        <div className="ui-state__actions">
+          <Button onClick={() => window.location.reload()}>
+            {t('common.reload')}
+          </Button>
+        </div>
+      </section>
+    </main>
+  )
+}
+
 class AppErrorBoundary extends Component<
   ErrorBoundaryProps,
   ErrorBoundaryState
@@ -58,22 +81,7 @@ class AppErrorBoundary extends Component<
 
   render() {
     if (this.state.hasError) {
-      return (
-        <main className="app-workspace" role="alert">
-          <section className="ui-state ui-state--danger">
-            <h1 className="ui-state__title">Something went wrong</h1>
-            <p className="ui-state__description">
-              Reload the app and try again. Your data should not be treated as
-              saved until the operation confirms.
-            </p>
-            <div className="ui-state__actions">
-              <Button onClick={() => window.location.reload()}>
-                Reload app
-              </Button>
-            </div>
-          </section>
-        </main>
-      )
+      return <AppErrorState />
     }
 
     return this.props.children
@@ -108,81 +116,77 @@ function HomePage({
   onSell: () => void
   onOpenManagement?: () => void
 }) {
+  const { t } = useLanguage()
   return (
     <>
       <PageHeader
-        title="Home"
-        description="Daily overview, attention, and system state."
+        title={t('home.title')}
+        description={t('home.description')}
         actions={
           <>
             {onOpenManagement && (
               <Button variant="secondary" onClick={onOpenManagement}>
-                Open Management
+                {t('home.openManagement')}
               </Button>
             )}
-            <Button onClick={onSell}>Start selling</Button>
+            <Button onClick={onSell}>{t('home.startSelling')}</Button>
           </>
         }
       />
       {!online && <OfflineState />}
       <section className="home-section" aria-labelledby="foundation-status">
         <h2 className="ui-text-h3" id="foundation-status">
-          Foundation status
+          {t('home.foundationStatus')}
         </h2>
         <p className="ui-text-body ui-text-secondary">
-          The application shell, design system, and POS selling workspace are in
-          place. Further feature modules arrive behind explicit business and
-          authorization boundaries.
+          {t('home.foundationDescription')}
         </p>
         <div className="home-statuses">
           <Status
             tone="success"
-            label="Shell ready"
-            description="Strict TypeScript checks and error recovery are active."
+            label={t('home.shellReady')}
+            description={t('home.shellReadyDescription')}
           />
           <Status
             tone="offline"
             label={
               pendingCount > 0
-                ? `Sync pending · ${pendingCount}`
-                : 'Nothing waiting to sync'
+                ? t('home.syncPendingCount', { count: pendingCount })
+                : t('home.nothingWaiting')
             }
             description={
               pendingCount > 0
-                ? 'Recorded on this device.'
-                : 'No local operations are waiting.'
+                ? t('home.recordedOnDevice')
+                : t('home.noLocalOperations')
             }
           />
         </div>
       </section>
       <section className="home-section" aria-labelledby="access-status">
         <h2 className="ui-text-h3" id="access-status">
-          Identity and access
+          {t('home.identityAndAccess')}
         </h2>
-        <AuthorizationRequiredState message="Selling currently runs on the reference session adapter. The authoritative provider will take over this boundary without changing the POS workflow." />
+        <AuthorizationRequiredState message={t('home.referenceSession')} />
         <p className="ui-text-body-sm ui-text-secondary">
-          Actions are authorized by active user, device, business membership,
-          role, permission, operation state, and approval requirements on the
-          service boundary.
+          {t('home.authorizationBoundary')}
         </p>
       </section>
       {update && (
         <Alert
           tone="info"
-          title="Update available"
+          title={t('home.updateAvailable')}
           action={
             <Button size="sm" onClick={() => activateUpdate(update)}>
-              Update now
+              {t('home.updateNow')}
             </Button>
           }
         >
-          A new version of Sabi Shop has been downloaded and is ready to use.
+          {t('home.updateDescription')}
         </Alert>
       )}
       {storageUnavailable && (
-        <Alert tone="warning" title="Sync storage unavailable">
-          This browser is not saving local sync data. Work recorded here may not
-          be recoverable after the app closes.
+        <Alert tone="warning" title={t('home.storageUnavailable')}>
+          {t('home.storageUnavailableDescription')}
         </Alert>
       )}
     </>
@@ -190,7 +194,8 @@ function HomePage({
 }
 
 function ModulePendingScreen({ area }: { area: NavDestinationId }) {
-  const destination = findDestination(area)
+  const { t } = useLanguage()
+  const destination = useDestinationCopy(area)
   return (
     <>
       <PageHeader
@@ -198,8 +203,8 @@ function ModulePendingScreen({ area }: { area: NavDestinationId }) {
         description={destination.description}
       />
       <EmptyState
-        title="Arrives in a later module"
-        description="This area is specified in the corpus but its screen is built in a later module. Selling is available now from Sell."
+        title={t('home.arrivesLaterTitle')}
+        description={t('home.arrivesLaterDescription')}
       />
     </>
   )
@@ -216,37 +221,45 @@ function SystemStatePanel({
   conflictCount: number
   storageUnavailable: boolean
 }) {
+  const { t } = useLanguage()
   return (
     <div className="system-panel">
       {online ? (
-        <Status tone="success" label="Online" description="Connected." />
+        <Status
+          tone="success"
+          label={t('system.online')}
+          description={t('system.connected')}
+        />
       ) : (
         <OfflineState />
       )}
       {conflictCount > 0 && (
-        <SyncConflictState description="One or more records changed in more than one place. An authorized person must review both versions before the accepted state is decided." />
+        <SyncConflictState description={t('system.conflictDescription')} />
       )}
       {pendingCount > 0 && (
-        <Alert tone="pending" title={`Sync pending · ${pendingCount}`}>
-          These operations were recorded on this device and will upload when
-          synchronization is available.
+        <Alert
+          tone="pending"
+          title={t('sync.pendingCount', { count: pendingCount })}
+        >
+          {t('system.pendingDescription')}
         </Alert>
       )}
       {storageUnavailable && (
-        <Alert tone="warning" title="Sync storage unavailable">
-          This browser is not saving local sync data.
+        <Alert tone="warning" title={t('system.storageUnavailable')}>
+          {t('home.storageUnavailableDescription')}
         </Alert>
       )}
       {online && pendingCount === 0 && conflictCount === 0 && (
         <p className="ui-text-body-sm ui-text-secondary">
-          Everything recorded on this device is synchronized.
+          {t('system.allSynchronized')}
         </p>
       )}
     </div>
   )
 }
 
-function App() {
+function AppContent() {
+  const { t } = useLanguage()
   const [online, setOnline] = useState(() => navigator.onLine)
   const [update, setUpdate] = useState<ServiceWorkerRegistration | null>(null)
   const [operations, setOperations] = useState<SyncOperation[]>([])
@@ -267,10 +280,7 @@ function App() {
   const controller = controllerRef.current
 
   const session = useMemo(() => sessionForActor(findActor(actorId)), [actorId])
-  const navigation = useMemo(
-    () => navigationFor(session.permissions),
-    [session],
-  )
+  const navigation = useNavigationFor(session.permissions)
 
   const refreshOperations = useCallback(() => {
     setOperations(controller.listOperations())
@@ -407,7 +417,7 @@ function App() {
       <Drawer
         open={systemPanelOpen}
         onClose={() => setSystemPanelOpen(false)}
-        title="System state"
+        title={t('system.state')}
       >
         <SystemStatePanel
           online={online}
@@ -437,4 +447,10 @@ function App() {
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
+  )
+}

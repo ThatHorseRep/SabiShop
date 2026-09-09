@@ -1,3 +1,5 @@
+import { useLanguage } from '../language'
+
 export function Skeleton({
   variant = 'text',
   width,
@@ -19,6 +21,7 @@ export function Skeleton({
  * does not cause layout shift (C03 section 35).
  */
 export function SkeletonList({ rows = 3 }: { rows?: number }) {
+  const { t } = useLanguage()
   return (
     <div
       style={{
@@ -28,7 +31,7 @@ export function SkeletonList({ rows = 3 }: { rows?: number }) {
         width: '100%',
       }}
       role="status"
-      aria-label="Loading"
+      aria-label={t('loading.generic')}
     >
       <Skeleton variant="title" />
       {Array.from({ length: rows }, (_, index) => (

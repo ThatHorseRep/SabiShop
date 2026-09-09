@@ -76,6 +76,19 @@
   gap: var(--space-8);
 }
 
+.app-language-switch {
+  min-height: 36px;
+  padding: 0 var(--space-8);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-pill);
+  color: var(--text-primary);
+  background: var(--surface-primary);
+  font: inherit;
+  font-size: var(--text-body-sm-size);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+}
+
 .app-system-state {
   display: inline-flex;
   align-items: center;

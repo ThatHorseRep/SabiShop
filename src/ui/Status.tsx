@@ -1,4 +1,5 @@
 import { ArrowsClockwise, Prohibit } from '@phosphor-icons/react'
+import { useLanguage } from '../language'
 import { statusIconFor } from './statusIcons'
 import type { ReactNode } from 'react'
 import type { StatusTone } from './tones'
@@ -56,23 +57,27 @@ export function Badge({
 
 /** Pending-sync presentation for locally recorded work (C03 section 38). */
 export function SyncPendingStatus({ count }: { count?: number }) {
+  const { t } = useLanguage()
   return (
     <Status
       tone="offline"
       icon={<ArrowsClockwise size={16} weight="bold" aria-hidden="true" />}
-      label={count ? `Sync pending · ${count}` : 'Sync pending'}
-      description="Recorded on this device"
+      label={
+        count ? t('sync.pendingCount', { count }) : t('sync.pending.title')
+      }
+      description={t('offline.recorded')}
     />
   )
 }
 
 /** Cancelled / blocked outcome that applied no business effect. */
-export function CancelledStatus({ label = 'Cancelled' }: { label?: string }) {
+export function CancelledStatus({ label }: { label?: string }) {
+  const { t } = useLanguage()
   return (
     <Status
       tone="danger"
       icon={<Prohibit size={16} weight="bold" aria-hidden="true" />}
-      label={label}
+      label={label ?? t('common.cancelled')}
     />
   )
 }

@@ -580,7 +580,7 @@ export class ManagementController {
         consequence:
           'COGS for the unsourced quantity is provisional until stock is received or the record is corrected.',
         whereToResolve:
-          'Products & Inventory → Stock: investigate movements, receive the missing stock, or request a correction.',
+          'Products & Stock → investigate movements, receive the missing stock, or request a correction.',
         resolutionArea: 'products-inventory',
         recordId: productId,
         recordLabel: product?.sku ?? productId,
@@ -606,7 +606,7 @@ export class ManagementController {
           }`,
           whatHappened: `${actorName(record.requestedById)} requested a return on sale ${record.saleId}: ${record.reason}`,
           whyAttention:
-            'Until management verifies and approves it, no inventory, refund, or debt effect is applied.',
+            'Until management verifies and approves it, no stock, refund, or debt effect is applied.',
           consequence:
             'Stock stays unchanged, the refund stays unrecorded, and the sale keeps its original effect on performance.',
           whereToResolve:

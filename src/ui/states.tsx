@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react'
 import { LockKey, ShieldSlash } from '@phosphor-icons/react'
+import { useLanguage } from '../language'
 import { StateMessage } from './StateMessage'
 
 /**
@@ -7,13 +8,20 @@ import { StateMessage } from './StateMessage'
  * the shell and local context remain visible (C03 section 35, C04 section 56).
  */
 export function LoadingState({
-  title = 'Loading',
+  title,
   description,
 }: {
   title?: string
   description?: string
 }) {
-  return <StateMessage tone="neutral" title={title} description={description} />
+  const { t } = useLanguage()
+  return (
+    <StateMessage
+      tone="neutral"
+      title={title ?? t('loading.generic')}
+      description={description}
+    />
+  )
 }
 
 /** Empty state explaining the situation and the next action (C03 section 34). */
@@ -38,93 +46,83 @@ export function EmptyState({
 
 /** Actionable error preserving safe entered data (C03 section 36). */
 export function ErrorState({
-  title = 'Something went wrong',
+  title,
   description,
   action,
 }: {
   title?: string
-  description: string
+  description?: string
   action?: ReactNode
 }) {
+  const { t } = useLanguage()
   return (
     <StateMessage
       tone="danger"
-      title={title}
-      description={description}
+      title={title ?? t('error.generic.title')}
+      description={description ?? t('error.generic.description')}
       actions={action}
     />
   )
 }
 
 /** No session / no business context yet. */
-export function AuthorizationRequiredState({
-  message = 'Sign in and choose a business before continuing.',
-}: {
-  message?: string
-}) {
+export function AuthorizationRequiredState({ message }: { message?: string }) {
+  const { t } = useLanguage()
   return (
     <StateMessage
       tone="info"
       icon={<LockKey size={22} weight="bold" aria-hidden="true" />}
-      title="Authorization required"
-      description={message}
+      title={t('authorization.required.title')}
+      description={message ?? t('authorization.signInBusiness')}
     />
   )
 }
 
 /** The current user may not perform this operation (C04 section 45). */
-export function PermissionDeniedState({
-  message = 'You do not have permission to perform this operation. Ask a manager or the business owner when this work is needed.',
-}: {
-  message?: string
-}) {
+export function PermissionDeniedState({ message }: { message?: string }) {
+  const { t } = useLanguage()
   return (
     <StateMessage
       tone="warning"
       icon={<ShieldSlash size={22} weight="bold" aria-hidden="true" />}
-      title="Permission denied"
-      description={message}
+      title={t('error.permission.title')}
+      description={message ?? t('error.permission.description')}
     />
   )
 }
 
 /** Offline is a mode of operation, not a failure (C00 section 12). */
-export function OfflineState({
-  description = 'This device is offline. Supported work continues locally and will synchronize when the connection returns.',
-}: {
-  description?: string
-}) {
+export function OfflineState({ description }: { description?: string }) {
+  const { t } = useLanguage()
   return (
-    <StateMessage tone="offline" title="Offline" description={description} />
+    <StateMessage
+      tone="offline"
+      title={t('offline.title')}
+      description={description ?? t('offline.description')}
+    />
   )
 }
 
 /** Locally recorded work awaiting synchronization (C03 section 38). */
-export function SyncPendingState({
-  description = 'Recorded on this device. Synchronization is pending.',
-}: {
-  description?: string
-}) {
+export function SyncPendingState({ description }: { description?: string }) {
+  const { t } = useLanguage()
   return (
     <StateMessage
       tone="offline"
-      title="Recorded · Sync pending"
-      description={description}
+      title={`Recorded · ${t('sync.pending.title')}`}
+      description={description ?? t('sync.pending.description')}
     />
   )
 }
 
 /** Sync conflict: deliberate review, never casual overwrite (C03 section 39). */
-export function SyncConflictState({
-  description = 'This record changed in more than one place. An authorized person must review both versions before the accepted state is decided.',
-}: {
-  description?: string
-}) {
+export function SyncConflictState({ description }: { description?: string }) {
+  const { t } = useLanguage()
   return (
     <StateMessage
       tone="conflict"
-      title="Sync conflict"
-      description={description}
+      title={t('sync.conflict.title')}
+      description={description ?? t('sync.conflict.description')}
     />
   )
 }
@@ -135,44 +133,54 @@ export function CorrectionRequiredState({
 }: {
   description: string
 }) {
+  const { t } = useLanguage()
   return (
     <StateMessage
       tone="correction"
-      title="Correction required"
+      title={t('correction.required.title')}
       description={description}
     />
   )
 }
 
 /** Rejected decision; no corresponding business effect was applied (C02). */
-export function RejectedState({
-  description = 'This action was rejected. No corresponding business effect was applied.',
-}: {
-  description?: string
-}) {
+export function RejectedState({ description }: { description?: string }) {
+  const { t } = useLanguage()
   return (
-    <StateMessage tone="danger" title="Rejected" description={description} />
+    <StateMessage
+      tone="danger"
+      title={t('authorization.rejected.title')}
+      description={description ?? t('authorization.rejected.description')}
+    />
   )
 }
 
 /** Completed business state with optional derived presentation label. */
 export function CompletedState({
-  label = 'Completed',
+  label,
   description,
 }: {
   label?: string
   description?: string
 }) {
-  return <StateMessage tone="success" title={label} description={description} />
+  const { t } = useLanguage()
+  return (
+    <StateMessage
+      tone="success"
+      title={label ?? t('common.completed')}
+      description={description}
+    />
+  )
 }
 
 /** Cancelled task; nothing was committed. */
-export function CancelledState({
-  description = 'This action was cancelled. Nothing was committed.',
-}: {
-  description?: string
-}) {
+export function CancelledState({ description }: { description?: string }) {
+  const { t } = useLanguage()
   return (
-    <StateMessage tone="danger" title="Cancelled" description={description} />
+    <StateMessage
+      tone="danger"
+      title={t('common.cancelled')}
+      description={description ?? t('common.cancelledDescription')}
+    />
   )
 }

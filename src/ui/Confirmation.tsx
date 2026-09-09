@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react'
 import { ArrowRight } from '@phosphor-icons/react'
+import { useLanguage } from '../language'
 import { Button, type ButtonVariant } from './Button'
 import { Field, Textarea } from './inputs'
 
@@ -42,9 +43,10 @@ export function ConfirmationPanel({
   onCancel,
   busy = false,
 }: ConfirmationPanelProps) {
+  const { t } = useLanguage()
   const reasonRequired = Boolean(reasonLabel)
   const reasonMissing = reasonRequired && !reasonValue?.trim()
-  const reasonText = reasonLabel ?? 'Reason'
+  const reasonText = reasonLabel ?? t('correction.reasonLabel')
 
   return (
     <div className="ui-confirmation">
@@ -66,8 +68,8 @@ export function ConfirmationPanel({
       {reasonRequired && (
         <Field
           label={reasonText}
-          hint="The reason is recorded with the correction history."
-          error={reasonMissing ? 'A reason is required.' : undefined}
+          hint={t('correction.reasonHint')}
+          error={reasonMissing ? t('correction.reasonRequired') : undefined}
         >
           {({ id, describedBy, invalid }) => (
             <Textarea
@@ -82,7 +84,7 @@ export function ConfirmationPanel({
       )}
       <div className="ui-confirmation__actions">
         <Button variant="ghost" onClick={onCancel} disabled={busy}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button
           variant={confirmVariant}

@@ -60,7 +60,7 @@ export function OverviewSection({
     <div className="management-section">
       <Panel
         title="Business performance"
-        description="Canonical figures for the selected event-time period. Nothing here is recalculated by the dashboard."
+        description="Official figures for the selected period. The dashboard does not recalculate them."
         actions={
           <Button
             size="sm"
@@ -73,9 +73,9 @@ export function OverviewSection({
       >
         <dl className="management-metrics">
           <Metric
-            label="Net recognized selling value"
+            label="Total sales after discount"
             value={formatMoneyKobo(report.sales.netRecognizedSellingValueKobo)}
-            hint="Selling value after approved discounts, before tax."
+            hint="Sales after approved discounts, before tax."
           />
           <Metric
             label="Tax (VAT)"
@@ -83,16 +83,16 @@ export function OverviewSection({
             hint="First-class total, kept separate from selling value."
           />
           <Metric
-            label="Cost of goods sold"
+            label="Cost of stock sold"
             value={formatMoneyKobo(report.sales.cogsKobo)}
-            hint="Weighted-average cost of goods sold in the period."
+            hint="Weighted-average cost of stock sold in the period."
           />
           <Metric
-            label="Gross profit"
+            label="Profit before expenses"
             value={formatMoneyKobo(report.sales.grossProfitKobo)}
             hint={
               <span className="management-formula">
-                Net recognized selling value − COGS ={' '}
+                Total sales after discount − Cost of stock sold ={' '}
                 {formatMoneyKobo(
                   report.sales.netRecognizedSellingValueKobo -
                     report.sales.cogsKobo,
@@ -114,16 +114,16 @@ export function OverviewSection({
           />
         </dl>
         <TraceNote>
-          Period {formatDate(period.from)} → {formatDate(period.to)} ·
-          event-time basis · {snapshot.traceCount} source records traced (sales,
-          corrections, returns, inventory, cash, credit, expenses). Cash is not
-          profit: the drawer figure below is a separate reconciliation fact.
+          Period {formatDate(period.from)} → {formatDate(period.to)} · based on
+          when each event happened · {snapshot.traceCount} records checked
+          (sales, corrections, returns, stock, cash, credit, expenses). Cash is
+          not profit: the drawer figure below is a separate cash record.
         </TraceNote>
       </Panel>
 
       <Panel
         title={`Attention · ${snapshot.attention.length}`}
-        description="Unresolved work that changes business decisions. Each item states what happened, the consequence, and where it is resolved."
+        description="Unresolved work that affects business decisions. Each item says what happened, why it matters, and where to fix it."
       >
         {snapshot.attention.length === 0 ? (
           <p className="ui-text-body-sm ui-text-secondary">
@@ -151,7 +151,9 @@ export function OverviewSection({
                   <DetailRow label="What happened">
                     {item.whatHappened}
                   </DetailRow>
-                  <DetailRow label="Consequence">{item.consequence}</DetailRow>
+                  <DetailRow label="Why it matters">
+                    {item.consequence}
+                  </DetailRow>
                 </dl>
                 <div className="management-attention-item__actions">
                   <StateChip
@@ -174,8 +176,8 @@ export function OverviewSection({
       </Panel>
 
       <Panel
-        title="Position"
-        description="Balances and obligations derived from their owning records, not from the sales totals above."
+        title="Business position"
+        description="Balances come from their own records, not from the sales totals above."
         actions={
           <Button
             size="sm"
@@ -188,7 +190,7 @@ export function OverviewSection({
       >
         <dl className="management-metrics">
           <Metric
-            label="Inventory remaining"
+            label="Stock remaining"
             value={`${formatQuantity(report.inventory.remainingQuantity)} units`}
             hint={`Valued at ${formatMoneyKobo(
               report.inventory.valueKobo,
@@ -211,7 +213,7 @@ export function OverviewSection({
                 ? 'danger'
                 : 'success'
             }
-            hint="Negative stock keeps its exception visible; COGS for the unsourced quantity stays provisional."
+            hint="Negative stock stays visible. The cost for missing stock stays provisional until a receipt or correction explains it."
           />
           <Metric
             label="Cash in drawer"
@@ -233,20 +235,20 @@ export function OverviewSection({
             }
           />
           <Metric
-            label="Customer credit outstanding"
+            label="What customers still owe"
             value={formatMoneyKobo(report.credit.outstandingKobo)}
-            hint="Receivable derived from credit events; repayments reduce it."
+            hint="Credit sales minus repayments, approved returns, and write-offs."
           />
           <Metric
-            label="Supplier obligations"
+            label="What you still owe suppliers"
             value={formatMoneyKobo(report.suppliers.outstandingKobo)}
-            hint="Payables from purchases minus confirmed payments and applied supplier returns."
+            hint="Purchases minus confirmed payments and approved supplier returns."
           />
         </dl>
         <TraceNote>
           Every balance links to its records: use the tabs above to move from
-          these figures to the sales, cash, inventory, credit, and supplier
-          records that explain them.
+          these figures to the sales, cash, stock, credit, and supplier records
+          that explain them.
         </TraceNote>
       </Panel>
     </div>
@@ -258,7 +260,7 @@ function areaLabel(area: AttentionItemView['resolutionArea']): string {
     case 'money':
       return 'Money & Reconciliation'
     case 'products-inventory':
-      return 'Products & Inventory'
+      return 'Products & Stock'
     case 'customers-credit':
       return 'Customers & Credit'
     case 'suppliers-purchasing':
