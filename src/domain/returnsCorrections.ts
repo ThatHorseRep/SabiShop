@@ -274,6 +274,14 @@ const isManagement = (role: Role) => role === 'manager' || role === 'owner'
 const roundHalfUp = (value: number) =>
   value < 0 ? -Math.round(-value) : Math.round(value)
 
+const assertPositiveIntegerKobo = (value: number, field: string): void => {
+  if (!Number.isInteger(value) || value <= 0)
+    throw new IntegrityError(
+      'invalid_correction',
+      `${field} must be a positive integer number of kobo`,
+    )
+}
+
 const minutesBetween = (start: string, end: string) =>
   (Date.parse(end) - Date.parse(start)) / 60_000
 
@@ -420,6 +428,27 @@ export class ReturnsCorrectionsEngine {
     )
     const inventoryEvents: InventoryEvent[] = []
     let creditEvent: CreditHistoryEvent | undefined
+    const creditCorrectionRequired =
+      sale.creditKobo > 0 && corrected.creditKobo !== original.creditKobo
+
+    if (creditCorrectionRequired && (!input.customerId || !input.debtId))
+      throw new IntegrityError(
+        'invalid_correction',
+        'A correction that changes a credit sale requires the customer and debt identifiers',
+      )
+    if (creditCorrectionRequired)
+      this.domains.credit.validateCreditSaleCorrection({
+        businessId: input.businessId,
+        customerId: input.customerId!,
+        debtId: input.debtId!,
+        amountMinor: BigInt(original.creditKobo),
+        correctedAmountMinor: BigInt(corrected.creditKobo),
+        actorId: input.actorId,
+        actorRole: input.actorRole,
+        reason: input.reason,
+        clientEventId: `${input.clientEventId}:credit`,
+        occurredAt,
+      })
 
     if (input.change.field === 'quantity') {
       const change = input.change
@@ -459,16 +488,11 @@ export class ReturnsCorrectionsEngine {
       )
     }
 
-    if (
-      sale.creditKobo > 0 &&
-      corrected.creditKobo !== original.creditKobo &&
-      input.customerId &&
-      input.debtId
-    ) {
+    if (creditCorrectionRequired) {
       creditEvent = this.domains.credit.correctCreditSale({
         businessId: input.businessId,
-        customerId: input.customerId,
-        debtId: input.debtId,
+        customerId: input.customerId!,
+        debtId: input.debtId!,
         amountMinor: BigInt(original.creditKobo),
         correctedAmountMinor: BigInt(corrected.creditKobo),
         actorId: input.actorId,
@@ -560,6 +584,24 @@ export class ReturnsCorrectionsEngine {
 
     const original = snapshotSale(sale)
     const occurredAt = input.occurredAt ?? now()
+    const creditReversalRequired = sale.creditKobo > 0
+    if (creditReversalRequired && (!input.customerId || !input.debtId))
+      throw new IntegrityError(
+        'invalid_correction',
+        'Reversing a credit sale requires the customer and debt identifiers',
+      )
+    if (creditReversalRequired)
+      this.domains.credit.validateCreditSaleReversal({
+        businessId: input.businessId,
+        customerId: input.customerId!,
+        debtId: input.debtId!,
+        amountMinor: BigInt(sale.creditKobo),
+        actorId: input.actorId,
+        actorRole: input.actorRole,
+        reason: input.reason,
+        clientEventId: `${input.clientEventId}:credit`,
+        occurredAt,
+      })
     this.domains.sales.reverse(
       input.businessId,
       input.saleId,
@@ -568,11 +610,11 @@ export class ReturnsCorrectionsEngine {
     )
 
     let creditEvent: CreditHistoryEvent | undefined
-    if (sale.creditKobo > 0 && input.customerId && input.debtId) {
+    if (creditReversalRequired) {
       creditEvent = this.domains.credit.reverseCreditSale({
         businessId: input.businessId,
-        customerId: input.customerId,
-        debtId: input.debtId,
+        customerId: input.customerId!,
+        debtId: input.debtId!,
         amountMinor: BigInt(sale.creditKobo),
         actorId: input.actorId,
         actorRole: input.actorRole,
@@ -1159,6 +1201,10 @@ export class ReturnsCorrectionsEngine {
       return corrected
     }
     if (change.field === 'payment_amount') {
+      assertPositiveIntegerKobo(
+        change.correctedAmountKobo,
+        'Corrected payment amount',
+      )
       const payment = corrected.payments.find(
         (candidate) => candidate.id === change.paymentId,
       )
@@ -1181,6 +1227,14 @@ export class ReturnsCorrectionsEngine {
     )
     if (!line)
       throw new IntegrityError('invalid_correction', 'Sale line was not found')
+    if (
+      !Number.isInteger(change.correctedQuantity) ||
+      change.correctedQuantity <= 0
+    )
+      throw new IntegrityError(
+        'invalid_correction',
+        'Corrected quantity must be a positive integer',
+      )
     const oldLineTotal = line.unitPriceKobo * line.quantity
     const newLineTotal = line.unitPriceKobo * change.correctedQuantity
     const proportion = change.correctedQuantity / line.quantity
@@ -1202,6 +1256,11 @@ export class ReturnsCorrectionsEngine {
     line.quantity = change.correctedQuantity
 
     if (change.correctedPayments) {
+      for (const payment of change.correctedPayments)
+        assertPositiveIntegerKobo(
+          payment.amountKobo,
+          'Corrected payment amount',
+        )
       corrected.payments = change.correctedPayments.map((payment) => ({
         id: payment.id,
         method: payment.method,

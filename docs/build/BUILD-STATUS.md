@@ -1,6 +1,6 @@
 # Sabi Shop Build Status
 
-**As of:** 2026-09-09
+**As of:** 2026-09-10
 
 ## Overall
 
@@ -8,10 +8,60 @@ The engineering foundation, the application shell/design system, the POS
 selling workspace, the inventory/purchasing workspace, the customer/credit
 workspace, the exceptions/reconciliation workspace, the management dashboard
 workspace, the staff dashboard workspace, the public landing page, the
-English/Nigerian Pidgin content foundation, the implemented domain slices, and
-the cross-domain integration journeys are verified. Persistence,
-authentication/authorization integration, the remaining domain screens, and
-the remaining modules are still downstream work.
+English/Nigerian Pidgin content foundation, the implemented domain slices, the
+cross-domain integration journeys, and the failure-injection suite are
+verified. Persistence, authentication/authorization integration, the remaining
+domain screens, and the remaining modules are still downstream work.
+
+## Verified failure-injection suite
+
+**Module:** Cross-cutting domain, authorization, offline sync, local recovery and reporting reliability
+**Status:** VERIFIED FAILURE-INJECTION SUITE; durable runtime/backup gates pending
+**Handoff:** `docs/build/HANDOFFS/28-failure-testing.md`
+
+Implemented:
+
+- Adversarial tests for network loss, partial synchronization, timeout after
+  server acceptance, duplicate delivery (including concurrent in-flight
+  delivery), app restart, stale authorization, reordered causal events,
+  simultaneous inventory edits, conflicting debt changes, conflicting
+  corrections, invalid corrected values, and corrupt local state with WAL
+  recovery.
+- Six reliability fixes: credit corrections prevalidate debt effects before
+  inventory changes; credit corrections/reversals require customer/debt
+  lineage; impossible corrected quantities/payments fail closed; a valid WAL
+  recovers corrupt main local state; concurrent duplicate server delivery joins
+  one in-flight operation; stale offline authority is denied and escalated to
+  management review.
+- The exceptions composition adapter now passes credit lineage into corrections
+  and reversals, preventing contradictory sale/debt state.
+- Prompt-book triage on 2026-09-10 confirmed that backup/restore, production
+  API/auth integration, runtime database execution, and final acceptance
+  belong to future M14/M15 conversations. The past database-contract gap and
+  unowned stale-authority safety gap were fixed in this follow-up.
+- `migrations/003_sync_durability.sql` now persists immutable operation
+  fingerprints, payloads, dependencies, responses, sequences, and append-only
+  effect links; `tests/database/003_sync_durability.sql` prepares tamper,
+  duplicate, accepted-effect, and rollback checks.
+- Server authorization denial for an offline operation now blocks execution and
+  escalates the local operation to management review.
+
+Validation on 2026-09-10:
+
+```text
+npm test                                      PASS (27 files, 275 tests)
+npm run lint                                  PASS
+npm run build                                 PASS
+npx tsc -b --pretty false                     PASS
+npx prettier --check <changed source files>   PASS
+git diff --check                              PASS
+tests/database/003_sync_durability.sql        NOT RUN — PostgreSQL/psql unavailable
+```
+
+Known release blockers remain explicit in Handoff 28: no runtime PostgreSQL
+adapter executing the prepared transaction/effect contract, no backup/restore
+test, no production API/auth/device revocation adapter, and formal H11 Q24
+sign-off for the implemented fail-closed stale-permission default.
 
 ## Verified cross-domain integration suite
 
@@ -731,33 +781,34 @@ Implemented:
 - Controlled reversal, dependent-event blocking, duplicate/offline idempotency,
   and explicit local/pending/accepted synchronization states.
 
-| Area                                         | Status                                                 | Evidence                                                                            |
-| -------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| Product vision and V1 boundary               | BUILD-READY                                            | `01-product-vision.md`, `50-mvp-scope.md`                                           |
-| Locked business decisions                    | BUILD-READY                                            | `00-final-decision-register.md` and reconciled specifications                       |
-| Business invariants and state rules          | BUILD-READY                                            | `03`–`10`, `27`, `28`, `55`, H01–H02                                                |
-| Application foundation                       | VERIFIED                                               | `docs/build/HANDOFFS/01-foundation.md`                                              |
-| Application shell and design system          | IMPLEMENTED FOUNDATION                                 | `docs/build/HANDOFFS/17-application-shell-design-system.md`                         |
-| Tenant/database foundation                   | IMPLEMENTED; execution environment pending             | `migrations/001_foundation.sql`, `docs/build/HANDOFFS/02-database-tenancy.md`       |
-| M08 inventory/costing                        | VERIFIED DOMAIN SLICE                                  | `src/domain/inventory.ts`, `src/domain/inventory.test.ts`                           |
-| M09 purchasing/supplier liabilities/returns  | VERIFIED DOMAIN SLICE; integration pending             | `src/domain/purchasing.ts`, `docs/build/HANDOFFS/08-purchasing-suppliers.md`        |
-| M08/M09 inventory & purchasing UX            | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/inventory/`, `docs/build/HANDOFFS/19-inventory-purchasing-ux.md`               |
-| M07 sales/payments/credit/receipts           | IMPLEMENTED DOMAIN SLICE; integration pending          | `src/domain/sales.ts`, `docs/build/HANDOFFS/09-sales.md`                            |
-| M07 POS selling workspace (C06)              | IMPLEMENTED WORKSPACE; persistence integration pending | `src/pos/`, `docs/build/HANDOFFS/18-pos-ux.md`                                      |
-| M06 customers and customer credit            | VERIFIED DOMAIN SLICE; integration pending             | `src/domain/customersCredit.ts`, `docs/build/HANDOFFS/10-customers-credit.md`       |
-| M06/M07 customer & credit UX (C08)           | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/customers/`, `docs/build/HANDOFFS/20-customer-credit-ux.md`                    |
-| M05 catalogue/pricing/search                 | BUILD-READY; integration pending                       | `37-catalog-and-search.md`                                                          |
-| M10 customer returns/refunds/corrections     | IMPLEMENTED DOMAIN SLICE; integration pending          | `src/domain/returnsCorrections.ts`, `docs/build/HANDOFFS/11-returns-corrections.md` |
-| M13 offline sync/conflicts                   | IMPLEMENTED REFERENCE BOUNDARY; integration pending    | `src/sync/offlineSync.ts`, `docs/build/HANDOFFS/14-offline-sync.md`                 |
-| M11 cash/reconciliation                      | VERIFIED DOMAIN SLICE; integration pending             | `src/domain/cashReconciliation.ts`, `docs/build/HANDOFFS/12-cash-reconciliation.md` |
-| M10/M11 exceptions & reconciliation UX (C09) | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/exceptions/`, `docs/build/HANDOFFS/21-exceptions-reconciliation-ux.md`         |
-| M12 management dashboard UX                  | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/management/`, `docs/build/HANDOFFS/22-management-dashboard.md`                 |
-| Staff Home / staff dashboard UX              | IMPLEMENTED WORKSPACE; API/persistence pending         | `src/staff/`, `docs/build/HANDOFFS/23-staff-dashboard.md`                           |
-| Public landing page (C05)                    | IMPLEMENTED MARKETING PAGE; acquisition path pending   | `landing.html`, `src/landing/`, `docs/build/HANDOFFS/24-landing-page.md`            |
-| M14 English/Nigerian Pidgin content          | IMPLEMENTED FOUNDATION; review/migration pending       | `src/language/`, `docs/build/HANDOFFS/25-language-pidgin.md`                        |
-| Cross-domain verification suite              | VERIFIED TEST SUITE                                    | `src/domain/domainVerification.test.ts`, `docs/build/HANDOFFS/26-domain-testing.md` |
-| Cross-domain integration suite               | VERIFIED TEST SUITE                                    | `src/domain/integration.test.ts`, `docs/build/HANDOFFS/27-integration-testing.md`   |
-| M15 V1 integration/acceptance                | BLOCKED                                                | dependent modules and unresolved technical decisions                                |
+| Area                                         | Status                                                    | Evidence                                                                            |
+| -------------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Product vision and V1 boundary               | BUILD-READY                                               | `01-product-vision.md`, `50-mvp-scope.md`                                           |
+| Locked business decisions                    | BUILD-READY                                               | `00-final-decision-register.md` and reconciled specifications                       |
+| Business invariants and state rules          | BUILD-READY                                               | `03`–`10`, `27`, `28`, `55`, H01–H02                                                |
+| Application foundation                       | VERIFIED                                                  | `docs/build/HANDOFFS/01-foundation.md`                                              |
+| Application shell and design system          | IMPLEMENTED FOUNDATION                                    | `docs/build/HANDOFFS/17-application-shell-design-system.md`                         |
+| Tenant/database foundation                   | IMPLEMENTED; execution environment pending                | `migrations/001_foundation.sql`, `docs/build/HANDOFFS/02-database-tenancy.md`       |
+| M08 inventory/costing                        | VERIFIED DOMAIN SLICE                                     | `src/domain/inventory.ts`, `src/domain/inventory.test.ts`                           |
+| M09 purchasing/supplier liabilities/returns  | VERIFIED DOMAIN SLICE; integration pending                | `src/domain/purchasing.ts`, `docs/build/HANDOFFS/08-purchasing-suppliers.md`        |
+| M08/M09 inventory & purchasing UX            | IMPLEMENTED WORKSPACE; API/persistence pending            | `src/inventory/`, `docs/build/HANDOFFS/19-inventory-purchasing-ux.md`               |
+| M07 sales/payments/credit/receipts           | IMPLEMENTED DOMAIN SLICE; integration pending             | `src/domain/sales.ts`, `docs/build/HANDOFFS/09-sales.md`                            |
+| M07 POS selling workspace (C06)              | IMPLEMENTED WORKSPACE; persistence integration pending    | `src/pos/`, `docs/build/HANDOFFS/18-pos-ux.md`                                      |
+| M06 customers and customer credit            | VERIFIED DOMAIN SLICE; integration pending                | `src/domain/customersCredit.ts`, `docs/build/HANDOFFS/10-customers-credit.md`       |
+| M06/M07 customer & credit UX (C08)           | IMPLEMENTED WORKSPACE; API/persistence pending            | `src/customers/`, `docs/build/HANDOFFS/20-customer-credit-ux.md`                    |
+| M05 catalogue/pricing/search                 | BUILD-READY; integration pending                          | `37-catalog-and-search.md`                                                          |
+| M10 customer returns/refunds/corrections     | IMPLEMENTED DOMAIN SLICE; integration pending             | `src/domain/returnsCorrections.ts`, `docs/build/HANDOFFS/11-returns-corrections.md` |
+| M13 offline sync/conflicts                   | IMPLEMENTED REFERENCE BOUNDARY; integration pending       | `src/sync/offlineSync.ts`, `docs/build/HANDOFFS/14-offline-sync.md`                 |
+| M11 cash/reconciliation                      | VERIFIED DOMAIN SLICE; integration pending                | `src/domain/cashReconciliation.ts`, `docs/build/HANDOFFS/12-cash-reconciliation.md` |
+| M10/M11 exceptions & reconciliation UX (C09) | IMPLEMENTED WORKSPACE; API/persistence pending            | `src/exceptions/`, `docs/build/HANDOFFS/21-exceptions-reconciliation-ux.md`         |
+| M12 management dashboard UX                  | IMPLEMENTED WORKSPACE; API/persistence pending            | `src/management/`, `docs/build/HANDOFFS/22-management-dashboard.md`                 |
+| Staff Home / staff dashboard UX              | IMPLEMENTED WORKSPACE; API/persistence pending            | `src/staff/`, `docs/build/HANDOFFS/23-staff-dashboard.md`                           |
+| Public landing page (C05)                    | IMPLEMENTED MARKETING PAGE; acquisition path pending      | `landing.html`, `src/landing/`, `docs/build/HANDOFFS/24-landing-page.md`            |
+| M14 English/Nigerian Pidgin content          | IMPLEMENTED FOUNDATION; review/migration pending          | `src/language/`, `docs/build/HANDOFFS/25-language-pidgin.md`                        |
+| Cross-domain verification suite              | VERIFIED TEST SUITE                                       | `src/domain/domainVerification.test.ts`, `docs/build/HANDOFFS/26-domain-testing.md` |
+| Cross-domain integration suite               | VERIFIED TEST SUITE                                       | `src/domain/integration.test.ts`, `docs/build/HANDOFFS/27-integration-testing.md`   |
+| Failure-injection suite                      | VERIFIED TEST SUITE; durable runtime/backup gates pending | `src/domain/failureTesting.test.ts`, `docs/build/HANDOFFS/28-failure-testing.md`    |
+| M15 V1 integration/acceptance                | BLOCKED                                                   | dependent modules and unresolved technical decisions                                |
 
 ## Locked integration invariants
 

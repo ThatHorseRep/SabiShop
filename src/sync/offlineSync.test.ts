@@ -234,7 +234,7 @@ describe('offline synchronization reliability', () => {
     )
   })
 
-  it('rechecks authorization at the server and records rejection', async () => {
+  it('rechecks authorization and escalates stale offline authority', async () => {
     const coordinator = new SyncCoordinator()
     const operation = coordinator.enqueue(input('operation-denied'))
     await coordinator.sync(
@@ -243,9 +243,18 @@ describe('offline synchronization reliability', () => {
     )
 
     const saved = coordinator.get('biz-1', operation.operationId)
-    expect(saved?.syncState).toBe('REJECTED')
+    expect(saved?.syncState).toBe('CONFLICT')
     expect(saved?.serverAcceptance).toBe('rejected')
     expect(saved?.error?.code).toBe('authorization_denied')
+    expect(saved?.conflict).toMatchObject({
+      code: 'authorization_denied_offline',
+      requiresHumanReview: true,
+      escalatedTo: 'management_review',
+    })
+    expect(coordinator.listConflicts('biz-1')).toHaveLength(1)
+    expect(() => coordinator.retry('biz-1', operation.operationId)).toThrow(
+      SyncIntegrityError,
+    )
   })
 
   it('bounds automatic retries and makes operator retry observable', async () => {

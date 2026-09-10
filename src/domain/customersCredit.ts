@@ -182,7 +182,7 @@ type RepaymentInput = {
   occurredAt?: string
 }
 
-type DebtAmountInput = {
+export type DebtAmountInput = {
   businessId: string
   customerId: string
   debtId: string
@@ -194,7 +194,7 @@ type DebtAmountInput = {
   occurredAt?: string
 }
 
-type CorrectionInput = DebtAmountInput & {
+export type CorrectionInput = DebtAmountInput & {
   correctedAmountMinor: bigint
 }
 
@@ -556,9 +556,81 @@ export class CustomersCreditEngine {
     )
   }
 
+  validateCreditSaleCorrection(input: CorrectionInput): void {
+    this.creditCorrectionContext(input)
+  }
+
   correctCreditSale(input: CorrectionInput): CreditHistoryEvent {
+    const context = this.creditCorrectionContext(input)
+    if (context.duplicate) return this.cloneEvent(context.duplicate)
+    const delta = input.correctedAmountMinor - context.priorEffectiveObligation
+    return this.append({
+      type: 'credit.correction.recorded',
+      businessId: input.businessId,
+      customerId: input.customerId,
+      actorId: input.actorId,
+      actorRole: input.actorRole,
+      occurredAt: input.occurredAt ?? now(),
+      clientEventId: input.clientEventId,
+      debtId: input.debtId,
+      saleId: context.debt.saleId,
+      amountMinor: delta < 0n ? -delta : delta,
+      correctedAmountMinor: input.correctedAmountMinor,
+      correctionIncreaseMinor: delta > 0n ? delta : 0n,
+      correctionReductionMinor: delta < 0n ? -delta : 0n,
+      resultingOutstandingMinor:
+        input.correctedAmountMinor - context.nonCorrectionReductions,
+      reason: input.reason,
+    })
+  }
+
+  validateCreditSaleReversal(input: DebtAmountInput): void {
+    this.creditReversalContext(input)
+  }
+
+  reverseCreditSale(input: DebtAmountInput): CreditHistoryEvent {
+    const context = this.creditReversalContext(input)
+    if (context.duplicate) return this.cloneEvent(context.duplicate)
+    const outstanding = this.getOutstandingForDebt(
+      input.businessId,
+      input.customerId,
+      input.debtId,
+    ).minor
+    context.debt.saleReversed = true
+    return this.append({
+      type: 'credit.sale.reversed',
+      businessId: input.businessId,
+      customerId: input.customerId,
+      actorId: input.actorId,
+      actorRole: input.actorRole,
+      occurredAt: input.occurredAt ?? now(),
+      clientEventId: input.clientEventId,
+      debtId: input.debtId,
+      saleId: context.debt.saleId,
+      amountMinor: outstanding,
+      resultingOutstandingMinor: 0n,
+      reason: input.reason,
+    })
+  }
+
+  private creditCorrectionContext(input: CorrectionInput): {
+    duplicate?: CreditHistoryEvent
+    debt: CreditDebt
+    priorEffectiveObligation: bigint
+    nonCorrectionReductions: bigint
+  } {
     const duplicate = this.findDuplicate(input.businessId, input.clientEventId)
-    if (duplicate) return this.cloneEvent(duplicate)
+    if (duplicate)
+      return {
+        duplicate,
+        debt: this.getDebtRecord(
+          input.businessId,
+          input.customerId,
+          input.debtId,
+        ),
+        priorEffectiveObligation: 0n,
+        nonCorrectionReductions: 0n,
+      }
     this.assertManagement(
       input.actorRole,
       'Only management may correct a credit sale',
@@ -609,31 +681,23 @@ export class CustomersCreditEngine {
         'INVALID_CORRECTION',
         'The corrected obligation cannot be reduced below repayments, returns and write-offs',
       )
-    const delta = input.correctedAmountMinor - priorEffectiveObligation
-    const event = this.append({
-      type: 'credit.correction.recorded',
-      businessId: input.businessId,
-      customerId: input.customerId,
-      actorId: input.actorId,
-      actorRole: input.actorRole,
-      occurredAt: input.occurredAt ?? now(),
-      clientEventId: input.clientEventId,
-      debtId: input.debtId,
-      saleId: debt.saleId,
-      amountMinor: delta < 0n ? -delta : delta,
-      correctedAmountMinor: input.correctedAmountMinor,
-      correctionIncreaseMinor: delta > 0n ? delta : 0n,
-      correctionReductionMinor: delta < 0n ? -delta : 0n,
-      resultingOutstandingMinor:
-        input.correctedAmountMinor - nonCorrectionReductions,
-      reason: input.reason,
-    })
-    return event
+    return { debt, priorEffectiveObligation, nonCorrectionReductions }
   }
 
-  reverseCreditSale(input: DebtAmountInput): CreditHistoryEvent {
+  private creditReversalContext(input: DebtAmountInput): {
+    duplicate?: CreditHistoryEvent
+    debt: CreditDebt
+  } {
     const duplicate = this.findDuplicate(input.businessId, input.clientEventId)
-    if (duplicate) return this.cloneEvent(duplicate)
+    if (duplicate)
+      return {
+        duplicate,
+        debt: this.getDebtRecord(
+          input.businessId,
+          input.customerId,
+          input.debtId,
+        ),
+      }
     this.assertManagement(
       input.actorRole,
       'Only management may reverse a credit sale',
@@ -653,26 +717,7 @@ export class CustomersCreditEngine {
         'DEBT_ALREADY_REVERSED',
         'The credit sale has already been reversed',
       )
-    const outstanding = this.getOutstandingForDebt(
-      input.businessId,
-      input.customerId,
-      input.debtId,
-    ).minor
-    debt.saleReversed = true
-    return this.append({
-      type: 'credit.sale.reversed',
-      businessId: input.businessId,
-      customerId: input.customerId,
-      actorId: input.actorId,
-      actorRole: input.actorRole,
-      occurredAt: input.occurredAt ?? now(),
-      clientEventId: input.clientEventId,
-      debtId: input.debtId,
-      saleId: debt.saleId,
-      amountMinor: outstanding,
-      resultingOutstandingMinor: 0n,
-      reason: input.reason,
-    })
+    return { debt }
   }
 
   recordDispute(input: DisputeInput): CreditHistoryEvent {
