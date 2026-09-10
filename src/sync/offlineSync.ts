@@ -256,20 +256,39 @@ export class LocalStorageStore implements DurableStore {
   ) {}
 
   load(): SyncOperation[] {
-    const main = this.storage.getItem(this.key)
-    const writeAhead = this.storage.getItem(`${this.key}.wal`)
-    if (main === null && writeAhead === null) return []
+    const mainRaw = this.storage.getItem(this.key)
+    const writeAheadRaw = this.storage.getItem(`${this.key}.wal`)
+    if (mainRaw === null && writeAheadRaw === null) return []
 
-    const mainOperations = this.parse(main, 'main')
+    let mainOperations: SyncOperation[] | null = null
+    let mainError: unknown
+    if (mainRaw !== null) {
+      try {
+        mainOperations = this.parse(mainRaw, 'main')
+      } catch (error) {
+        if (
+          !(error instanceof SyncStorageError) ||
+          error.code !== 'corrupt_local_state'
+        )
+          throw error
+        mainError = error
+      }
+    }
+
     const writeAheadOperations =
-      writeAhead === null ? null : this.parse(writeAhead, 'wal')
+      writeAheadRaw === null ? null : this.parse(writeAheadRaw, 'wal')
 
-    if (writeAhead !== null && writeAheadOperations !== null) {
-      this.storage.setItem(this.key, writeAhead)
+    if (writeAheadOperations !== null) {
+      this.storage.setItem(this.key, writeAheadRaw!)
       this.storage.removeItem(`${this.key}.wal`)
       return writeAheadOperations
     }
-    return mainOperations
+    if (mainOperations !== null) return mainOperations
+    if (mainError !== undefined) throw mainError
+    throw new SyncStorageError(
+      'Corrupt local synchronization state was preserved.',
+      'corrupt_local_state',
+    )
   }
 
   save(operation: SyncOperation): void {
@@ -347,6 +366,7 @@ export interface SyncServer {
 type StoredRequest = {
   fingerprint: string
   response?: Extract<ServerAcceptance, { kind: 'accepted' | 'rejected' }>
+  processing?: Promise<ServerAcceptance>
 }
 
 /** Reference server: idempotency, authority, and causal checks are explicit. */
@@ -380,9 +400,23 @@ export class InMemorySyncServer implements SyncServer {
     }
     if (prior?.response) return structuredClone(prior.response)
 
+    if (prior?.processing) return structuredClone(await prior.processing)
+
     const stored: StoredRequest = prior ?? { fingerprint }
     this.requests.set(operation.operationId, stored)
+    const processing = this.process(operation, stored)
+    stored.processing = processing
+    try {
+      return await processing
+    } finally {
+      stored.processing = undefined
+    }
+  }
 
+  private async process(
+    operation: SyncOperation,
+    stored: StoredRequest,
+  ): Promise<ServerAcceptance> {
     const authorized = this.options.authorize
       ? await this.options.authorize(operation)
       : true
@@ -639,6 +673,14 @@ export class SyncCoordinator {
             message: response.message,
             attempts: (operation.error?.attempts ?? 0) + 1,
             retryCount: operation.error?.retryCount ?? 0,
+          }
+          if (response.code === 'authorization_denied') {
+            operation.syncState = 'CONFLICT'
+            operation.conflict = managementConflict(
+              'authorization_denied_offline',
+              'The server denied authority for this offline operation. Management review is required before it is superseded or discarded.',
+              [operation.operationId],
+            )
           }
         } else {
           operation.syncState = 'CONFLICT'

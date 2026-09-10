@@ -2,8 +2,9 @@
 
 **Module:** M01 platform/domain primitives and the M02 identity boundary  
 **Status:** Foundation implemented; application CI checks pass; database execution pending PostgreSQL test environment
-**Migration:** `migrations/001_foundation.sql`  
-**Verification:** `tests/database/001_foundation_isolation.sql`
+**Migrations:** `migrations/001_foundation.sql`, `migrations/003_sync_durability.sql`
+
+**Verification:** `tests/database/001_foundation_isolation.sql`, `tests/database/003_sync_durability.sql`
 
 ## Outcome
 
@@ -16,6 +17,10 @@ business ownership boundary:
 - device identity scoped through `(business_id, membership_id)`;
 - append-only audit evidence;
 - idempotent sync operation identity scoped by business;
+- immutable operation fingerprints, payloads, dependency arrays, server
+  responses, and server sequences for accepted synchronization requests;
+- an append-only `sync_operation_effects` link table that can record the
+  authoritative effects committed with an accepted operation;
 - composite foreign keys that reject cross-business relationships;
 - indexes for membership lookup, device lookup, audit history, and pending sync;
 - database-enforced row-level security for every foundation table.
@@ -60,34 +65,40 @@ corrections; soft deletion must not hide historical truth.
 
 ## Traceability
 
-| Decision                                                           | Implementation                                                          |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| H04 §1–§4: business is the ownership boundary                      | `business_id` on all foundation-owned records and RLS                   |
-| H04 §6: switching re-establishes context                           | transaction-local `app.user_id`; service cache invalidation requirement |
-| H04 §7: security failures remain evidence                          | append-only `audit_events`                                              |
-| D02 §5.2–§5.6: opaque IDs, timestamps, actors, FKs, deletion rules | UUIDs, `timestamptz`, actor membership, restrictive FKs                 |
-| D02 §47–§49: reproducible migrations and deterministic conventions | numbered transactional migration and this handoff                       |
-| D02 §55: authoritative evidence vs derived state                   | no sales/inventory/reporting projections are introduced here            |
-| H08: cross-business access, audit deletion, sync replay controls   | RLS, composite FKs, scoped sync idempotency key                         |
+| Decision                                                           | Implementation                                                           |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| H04 §1–§4: business is the ownership boundary                      | `business_id` on all foundation-owned records and RLS                    |
+| H04 §6: switching re-establishes context                           | transaction-local `app.user_id`; service cache invalidation requirement  |
+| H04 §7: security failures remain evidence                          | append-only `audit_events`                                               |
+| D02 §5.2–§5.6: opaque IDs, timestamps, actors, FKs, deletion rules | UUIDs, `timestamptz`, actor membership, restrictive FKs                  |
+| D02 §47–§49: reproducible migrations and deterministic conventions | numbered transactional migration and this handoff                        |
+| D02 §55: authoritative evidence vs derived state                   | no sales/inventory/reporting projections are introduced here             |
+| H08: cross-business access, audit deletion, sync replay controls   | RLS, composite FKs, scoped sync idempotency key                          |
+| H06 §4–§5: idempotency and one accepted effect                     | scoped operation identity, fingerprint, response, sequence, effect links |
 
 ## Validation record
 
-| Check                                  | Result                                       | Evidence                                                                                                                             |
-| -------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Normal foundation workflow             | PASS by inspection                           | User → business → membership → device/audit/sync relationships are represented with required foreign keys                            |
-| Unauthorized reads and writes          | PASS by inspection; executable run pending   | RLS policies and isolation cases are in `tests/database/001_foundation_isolation.sql`                                                |
-| Saved data and history                 | PASS by inspection                           | UUID keys, timestamps, restrictive foreign keys, immutable business creator, append-only audit trigger                               |
-| Offline/retry/failure behavior         | PASS by inspection; domain execution pending | Business-scoped sync idempotency key and explicit received/accepted/rejected/conflicted states                                       |
-| Reports and related modules            | NOT APPLICABLE to this slice                 | No sales, inventory, credit, reporting, or UI workflows were added                                                                   |
-| Existing build/type/lint/test commands | PASS                                         | `npm run lint`, `npm run test` (1 test), and `npm run build` (TypeScript + Vite)                                                     |
-| Formatting validation                  | PASS in CI-equivalent mode                   | Staged LF `BUILD-STATUS.md` passes Prettier; Windows working-tree CRLF conversion makes the broad local check report false positives |
-| Static repository validation           | PASS                                         | `git diff --check`; migration/test/handoff files are present and scope-limited                                                       |
+| Check                                  | Result                                       | Evidence                                                                                                                                                                                                             |
+| -------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Normal foundation workflow             | PASS by inspection                           | User → business → membership → device/audit/sync relationships are represented with required foreign keys                                                                                                            |
+| Unauthorized reads and writes          | PASS by inspection; executable run pending   | RLS policies and isolation cases are in `tests/database/001_foundation_isolation.sql`                                                                                                                                |
+| Saved data and history                 | PASS by inspection                           | UUID keys, timestamps, restrictive foreign keys, immutable business creator, append-only audit trigger                                                                                                               |
+| Offline/retry/failure behavior         | PASS by inspection; domain execution pending | Business-scoped sync idempotency key and explicit received/accepted/rejected/conflicted states                                                                                                                       |
+| Sync durability                        | PASS by inspection; executable run pending   | `migrations/003_sync_durability.sql` and `tests/database/003_sync_durability.sql` cover fingerprint/payload immutability, response immutability, effect uniqueness, accepted-effect gating, and transaction rollback |
+| Reports and related modules            | NOT APPLICABLE to this slice                 | No sales, inventory, credit, reporting, or UI workflows were added                                                                                                                                                   |
+| Existing build/type/lint/test commands | PASS                                         | `npm run lint`, `npm run test` (1 test), and `npm run build` (TypeScript + Vite)                                                                                                                                     |
+| Formatting validation                  | PASS in CI-equivalent mode                   | Staged LF `BUILD-STATUS.md` passes Prettier; Windows working-tree CRLF conversion makes the broad local check report false positives                                                                                 |
+| Static repository validation           | PASS                                         | `git diff --check`; migration/test/handoff files are present and scope-limited                                                                                                                                       |
 
 The isolation script is pgTAP-style SQL and must run as a non-owner database
 role so PostgreSQL RLS is exercised. It proves read isolation, mutation
 isolation, device isolation, append-only audit behavior, and cross-tenant
 foreign-key rejection. It has not been executed in this repository because
 the required PostgreSQL test tooling is not installed.
+
+The sync durability script is likewise prepared for a disposable PostgreSQL
+environment with pgTAP. It has not been executed locally because `psql` and
+the required database test tooling are not installed.
 
 ## Known limitations and unresolved decisions
 

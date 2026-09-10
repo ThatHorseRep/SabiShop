@@ -1547,10 +1547,14 @@ describe('Sabi Shop cross-domain integration journeys', () => {
           candidate.operationId === 'sale-complete:request:sale-offline-2',
       )
     expect(rejected).toMatchObject({
-      syncState: 'REJECTED',
+      syncState: 'CONFLICT',
       serverAcceptance: 'rejected',
     })
     expect(rejected?.error?.code).toBe('authorization_denied')
+    expect(rejected?.conflict).toMatchObject({
+      code: 'authorization_denied_offline',
+      escalatedTo: 'management_review',
+    })
     expect(
       authoritative.sales.getSale(BUSINESS, 'sale-offline-2'),
     ).toBeUndefined()

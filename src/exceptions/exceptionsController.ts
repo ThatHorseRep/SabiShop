@@ -631,6 +631,7 @@ export class ExceptionsController {
         reason: input.reason,
         change: input.change,
         approval: input.approval,
+        ...(this.creditLinks.get(input.saleId) ?? {}),
       }),
     )
     const event = this.returnsCorrections
@@ -657,6 +658,7 @@ export class ExceptionsController {
         actorRole: actor.role,
         reason: input.reason,
         approval: input.approval,
+        ...(this.creditLinks.get(input.saleId) ?? {}),
       }),
     )
     const event = this.returnsCorrections
