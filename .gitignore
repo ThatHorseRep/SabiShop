@@ -2,6 +2,9 @@ node_modules
 dist
 coverage
 work
+.playwright
+test-results
+playwright-report
 .env
 .env.*
 !.env.example
