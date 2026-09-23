@@ -1,6 +1,6 @@
 # Sabi Shop Build Status
 
-**As of:** 2026-09-10
+**As of:** 2026-09-23
 
 ## Overall
 
@@ -9,9 +9,64 @@ selling workspace, the inventory/purchasing workspace, the customer/credit
 workspace, the exceptions/reconciliation workspace, the management dashboard
 workspace, the staff dashboard workspace, the public landing page, the
 English/Nigerian Pidgin content foundation, the implemented domain slices, the
-cross-domain integration journeys, and the failure-injection suite are
-verified. Persistence, authentication/authorization integration, the remaining
-domain screens, and the remaining modules are still downstream work.
+cross-domain integration journeys, the failure-injection suite, and the
+Playwright role-journey E2E suite are verified. Persistence,
+authentication/authorization integration, business onboarding/configuration,
+user/permission administration, the remaining domain screens, and the remaining
+modules are still downstream work.
+
+## Verified end-to-end role-journey suite
+
+**Module:** M15 — Browser E2E verification across Owner, Manager, and Staff journeys
+**Status:** VERIFIED BROWSER/COMPOSITION E2E SUITE; production runtime gaps pending
+**Handoff:** `docs/build/HANDOFFS/29-e2e.md`
+
+Implemented:
+
+- Playwright 1.63 Chromium suite with a Vite web server, 17 tests, and a
+  dedicated 390 × 844 mobile-viewport journey.
+- Owner, Manager, and Staff journeys covering performance, exceptions, stock,
+  staff activity, returns, corrections, reconciliation/reopening, normal sales,
+  payment methods, authorized credit, offline operation, and role-specific
+  reconciliation boundaries.
+- Failure/security journeys for permission denial, cross-tenant denial, failed
+  payment, correction, return, sync-conflict escalation, and mobile layout.
+- Business-truth assertions for stock reduction, customer debt, report formula,
+  return settlement, correction history, cash variance, sync state, and failed
+  payment effects — not merely navigation or button clicks.
+
+Validation on 2026-09-23 (branch `thathorserep-e2e`):
+
+```text
+npm run test:e2e                               PASS (17 tests, 6.1 m)
+npm test                                       PASS (27 files, 275 tests)
+npm run lint                                   PASS
+npm run build                                  PASS
+npx tsc -b --pretty false                      PASS
+npm run format:check                           PASS
+npx prettier --check <changed code files>      PASS
+git diff --check                               PASS
+```
+
+Environment notes for this validation: `npm ci` was not runnable because
+`origin/master` deleted `package-lock.json` in `fdad956` while this work was in
+flight (npm ci has no lockfile to install from; an `npm install` into the
+existing tree produced the working install used for the checks above), and this
+Windows machine held file locks on `node_modules/@phosphor-icons` from another
+local process. The
+Playwright per-test timeout was raised to 180 s in `playwright.config.ts`
+because journeys take 23–57 s each under two parallel workers on this machine
+(a first run failed 9 of 17 tests purely on the 30 s default, with zero
+assertion failures). A first `npm test` run recorded one 15 s timeout in
+`src/exceptions/ExceptionsWorkspace.test.tsx` under full-machine contention;
+that file passes in isolation and no product code changed.
+
+Known limitations remain explicit in Handoff 29: the app still uses reference
+sessions and in-memory engines; business creation/configuration and user
+permission mutation are not implemented; cross-tenant enforcement is tested at
+the composition boundary rather than a production API; and the browser conflict
+test injects conflict state into a genuinely created offline operation because
+no second-device backend exists.
 
 ## Verified failure-injection suite
 
@@ -781,34 +836,35 @@ Implemented:
 - Controlled reversal, dependent-event blocking, duplicate/offline idempotency,
   and explicit local/pending/accepted synchronization states.
 
-| Area                                         | Status                                                    | Evidence                                                                            |
-| -------------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Product vision and V1 boundary               | BUILD-READY                                               | `01-product-vision.md`, `50-mvp-scope.md`                                           |
-| Locked business decisions                    | BUILD-READY                                               | `00-final-decision-register.md` and reconciled specifications                       |
-| Business invariants and state rules          | BUILD-READY                                               | `03`–`10`, `27`, `28`, `55`, H01–H02                                                |
-| Application foundation                       | VERIFIED                                                  | `docs/build/HANDOFFS/01-foundation.md`                                              |
-| Application shell and design system          | IMPLEMENTED FOUNDATION                                    | `docs/build/HANDOFFS/17-application-shell-design-system.md`                         |
-| Tenant/database foundation                   | IMPLEMENTED; execution environment pending                | `migrations/001_foundation.sql`, `docs/build/HANDOFFS/02-database-tenancy.md`       |
-| M08 inventory/costing                        | VERIFIED DOMAIN SLICE                                     | `src/domain/inventory.ts`, `src/domain/inventory.test.ts`                           |
-| M09 purchasing/supplier liabilities/returns  | VERIFIED DOMAIN SLICE; integration pending                | `src/domain/purchasing.ts`, `docs/build/HANDOFFS/08-purchasing-suppliers.md`        |
-| M08/M09 inventory & purchasing UX            | IMPLEMENTED WORKSPACE; API/persistence pending            | `src/inventory/`, `docs/build/HANDOFFS/19-inventory-purchasing-ux.md`               |
-| M07 sales/payments/credit/receipts           | IMPLEMENTED DOMAIN SLICE; integration pending             | `src/domain/sales.ts`, `docs/build/HANDOFFS/09-sales.md`                            |
-| M07 POS selling workspace (C06)              | IMPLEMENTED WORKSPACE; persistence integration pending    | `src/pos/`, `docs/build/HANDOFFS/18-pos-ux.md`                                      |
-| M06 customers and customer credit            | VERIFIED DOMAIN SLICE; integration pending                | `src/domain/customersCredit.ts`, `docs/build/HANDOFFS/10-customers-credit.md`       |
-| M06/M07 customer & credit UX (C08)           | IMPLEMENTED WORKSPACE; API/persistence pending            | `src/customers/`, `docs/build/HANDOFFS/20-customer-credit-ux.md`                    |
-| M05 catalogue/pricing/search                 | BUILD-READY; integration pending                          | `37-catalog-and-search.md`                                                          |
-| M10 customer returns/refunds/corrections     | IMPLEMENTED DOMAIN SLICE; integration pending             | `src/domain/returnsCorrections.ts`, `docs/build/HANDOFFS/11-returns-corrections.md` |
-| M13 offline sync/conflicts                   | IMPLEMENTED REFERENCE BOUNDARY; integration pending       | `src/sync/offlineSync.ts`, `docs/build/HANDOFFS/14-offline-sync.md`                 |
-| M11 cash/reconciliation                      | VERIFIED DOMAIN SLICE; integration pending                | `src/domain/cashReconciliation.ts`, `docs/build/HANDOFFS/12-cash-reconciliation.md` |
-| M10/M11 exceptions & reconciliation UX (C09) | IMPLEMENTED WORKSPACE; API/persistence pending            | `src/exceptions/`, `docs/build/HANDOFFS/21-exceptions-reconciliation-ux.md`         |
-| M12 management dashboard UX                  | IMPLEMENTED WORKSPACE; API/persistence pending            | `src/management/`, `docs/build/HANDOFFS/22-management-dashboard.md`                 |
-| Staff Home / staff dashboard UX              | IMPLEMENTED WORKSPACE; API/persistence pending            | `src/staff/`, `docs/build/HANDOFFS/23-staff-dashboard.md`                           |
-| Public landing page (C05)                    | IMPLEMENTED MARKETING PAGE; acquisition path pending      | `landing.html`, `src/landing/`, `docs/build/HANDOFFS/24-landing-page.md`            |
-| M14 English/Nigerian Pidgin content          | IMPLEMENTED FOUNDATION; review/migration pending          | `src/language/`, `docs/build/HANDOFFS/25-language-pidgin.md`                        |
-| Cross-domain verification suite              | VERIFIED TEST SUITE                                       | `src/domain/domainVerification.test.ts`, `docs/build/HANDOFFS/26-domain-testing.md` |
-| Cross-domain integration suite               | VERIFIED TEST SUITE                                       | `src/domain/integration.test.ts`, `docs/build/HANDOFFS/27-integration-testing.md`   |
-| Failure-injection suite                      | VERIFIED TEST SUITE; durable runtime/backup gates pending | `src/domain/failureTesting.test.ts`, `docs/build/HANDOFFS/28-failure-testing.md`    |
-| M15 V1 integration/acceptance                | BLOCKED                                                   | dependent modules and unresolved technical decisions                                |
+| Area                                         | Status                                                       | Evidence                                                                            |
+| -------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| Product vision and V1 boundary               | BUILD-READY                                                  | `01-product-vision.md`, `50-mvp-scope.md`                                           |
+| Locked business decisions                    | BUILD-READY                                                  | `00-final-decision-register.md` and reconciled specifications                       |
+| Business invariants and state rules          | BUILD-READY                                                  | `03`–`10`, `27`, `28`, `55`, H01–H02                                                |
+| Application foundation                       | VERIFIED                                                     | `docs/build/HANDOFFS/01-foundation.md`                                              |
+| Application shell and design system          | IMPLEMENTED FOUNDATION                                       | `docs/build/HANDOFFS/17-application-shell-design-system.md`                         |
+| Tenant/database foundation                   | IMPLEMENTED; execution environment pending                   | `migrations/001_foundation.sql`, `docs/build/HANDOFFS/02-database-tenancy.md`       |
+| M08 inventory/costing                        | VERIFIED DOMAIN SLICE                                        | `src/domain/inventory.ts`, `src/domain/inventory.test.ts`                           |
+| M09 purchasing/supplier liabilities/returns  | VERIFIED DOMAIN SLICE; integration pending                   | `src/domain/purchasing.ts`, `docs/build/HANDOFFS/08-purchasing-suppliers.md`        |
+| M08/M09 inventory & purchasing UX            | IMPLEMENTED WORKSPACE; API/persistence pending               | `src/inventory/`, `docs/build/HANDOFFS/19-inventory-purchasing-ux.md`               |
+| M07 sales/payments/credit/receipts           | IMPLEMENTED DOMAIN SLICE; integration pending                | `src/domain/sales.ts`, `docs/build/HANDOFFS/09-sales.md`                            |
+| M07 POS selling workspace (C06)              | IMPLEMENTED WORKSPACE; persistence integration pending       | `src/pos/`, `docs/build/HANDOFFS/18-pos-ux.md`                                      |
+| M06 customers and customer credit            | VERIFIED DOMAIN SLICE; integration pending                   | `src/domain/customersCredit.ts`, `docs/build/HANDOFFS/10-customers-credit.md`       |
+| M06/M07 customer & credit UX (C08)           | IMPLEMENTED WORKSPACE; API/persistence pending               | `src/customers/`, `docs/build/HANDOFFS/20-customer-credit-ux.md`                    |
+| M05 catalogue/pricing/search                 | BUILD-READY; integration pending                             | `37-catalog-and-search.md`                                                          |
+| M10 customer returns/refunds/corrections     | IMPLEMENTED DOMAIN SLICE; integration pending                | `src/domain/returnsCorrections.ts`, `docs/build/HANDOFFS/11-returns-corrections.md` |
+| M13 offline sync/conflicts                   | IMPLEMENTED REFERENCE BOUNDARY; integration pending          | `src/sync/offlineSync.ts`, `docs/build/HANDOFFS/14-offline-sync.md`                 |
+| M11 cash/reconciliation                      | VERIFIED DOMAIN SLICE; integration pending                   | `src/domain/cashReconciliation.ts`, `docs/build/HANDOFFS/12-cash-reconciliation.md` |
+| M10/M11 exceptions & reconciliation UX (C09) | IMPLEMENTED WORKSPACE; API/persistence pending               | `src/exceptions/`, `docs/build/HANDOFFS/21-exceptions-reconciliation-ux.md`         |
+| M12 management dashboard UX                  | IMPLEMENTED WORKSPACE; API/persistence pending               | `src/management/`, `docs/build/HANDOFFS/22-management-dashboard.md`                 |
+| Staff Home / staff dashboard UX              | IMPLEMENTED WORKSPACE; API/persistence pending               | `src/staff/`, `docs/build/HANDOFFS/23-staff-dashboard.md`                           |
+| Public landing page (C05)                    | IMPLEMENTED MARKETING PAGE; acquisition path pending         | `landing.html`, `src/landing/`, `docs/build/HANDOFFS/24-landing-page.md`            |
+| M14 English/Nigerian Pidgin content          | IMPLEMENTED FOUNDATION; review/migration pending             | `src/language/`, `docs/build/HANDOFFS/25-language-pidgin.md`                        |
+| Cross-domain verification suite              | VERIFIED TEST SUITE                                          | `src/domain/domainVerification.test.ts`, `docs/build/HANDOFFS/26-domain-testing.md` |
+| Cross-domain integration suite               | VERIFIED TEST SUITE                                          | `src/domain/integration.test.ts`, `docs/build/HANDOFFS/27-integration-testing.md`   |
+| Failure-injection suite                      | VERIFIED TEST SUITE; durable runtime/backup gates pending    | `src/domain/failureTesting.test.ts`, `docs/build/HANDOFFS/28-failure-testing.md`    |
+| End-to-end role-journey suite                | VERIFIED BROWSER/COMPOSITION E2E; production runtime pending | `tests/e2e/`, `docs/build/HANDOFFS/29-e2e.md`                                       |
+| M15 V1 integration/acceptance                | BLOCKED                                                      | dependent modules and unresolved technical decisions                                |
 
 ## Locked integration invariants
 
