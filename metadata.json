@@ -1,0 +1,6 @@
+{
+  "name": "Sabi Shop",
+  "description": "A resilient, mobile-first shop operations app for POS, inventory, customer credit, and cash reconciliation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

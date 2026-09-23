@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc -b && vite build",
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0 --port 3000",
     "format": "prettier --write package.json tsconfig*.json vite.config.ts vitest.config.ts eslint.config.js prettier.config.js index.html src docs/DEVELOPMENT.md docs/build/BUILD-STATUS.md docs/build/HANDOFFS/01-foundation.md .github/workflows/ci.yml",
     "format:check": "prettier --check src/domain/purchasing.ts src/domain/purchasing.test.ts src/auth/types.ts src/auth/policy.ts src/auth/auth.test.ts docs/build/BUILD-STATUS.md docs/build/HANDOFFS/08-purchasing-suppliers.md",
     "lint": "eslint .",

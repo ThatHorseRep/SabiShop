@@ -48,10 +48,12 @@ npx prettier --check <changed code files>      PASS
 git diff --check                               PASS
 ```
 
-Environment notes for this validation: `npm ci` could not complete on this
-Windows checkout because another local process held locks on
-`node_modules/@phosphor-icons` (`ENOTEMPTY`/`EPERM`); an `npm install` into the
-existing tree produced a working install used for the checks above. The
+Environment notes for this validation: `npm ci` was not runnable because
+`origin/master` deleted `package-lock.json` in `fdad956` while this work was in
+flight (npm ci has no lockfile to install from; an `npm install` into the
+existing tree produced the working install used for the checks above), and this
+Windows machine held file locks on `node_modules/@phosphor-icons` from another
+local process. The
 Playwright per-test timeout was raised to 180 s in `playwright.config.ts`
 because journeys take 23–57 s each under two parallel workers on this machine
 (a first run failed 9 of 17 tests purely on the 30 s default, with zero
