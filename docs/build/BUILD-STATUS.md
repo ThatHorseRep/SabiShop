@@ -4,7 +4,31 @@
 
 ## Overall
 
-The engineering foundation, application shell/design system, POS selling, inventory/purchasing, customer/credit, exceptions/reconciliation, management dashboard, staff dashboard, public landing page, English/Nigerian Pidgin content, domain slices, cross-domain journeys, failure-injection suite, Playwright role-journey E2E suite, and UX redesign/quality audit are verified.
+The engineering foundation, application shell/design system, POS selling, inventory/purchasing, customer/credit, exceptions/reconciliation, management dashboard, staff dashboard, public landing page, English/Nigerian Pidgin content, domain slices, cross-domain journeys, failure-injection suite, Playwright role-journey E2E suite, UX redesign/quality audit, and security audit are verified.
+
+## Verified security audit
+
+**Module:** Conversation 31 — Security Audit
+**Status:** VERIFIED SECURITY AUDIT; ALL CONTROLS PASS
+**Audit Document:** `docs/build/AUDITS/31-security-audit.md`
+
+Implemented & Verified:
+
+- Strict tenant isolation enforced across application and database layers (SEC-01/SEC-02).
+- Zero self-approval for consequential operations (`self_approval_forbidden`).
+- Whitelisted offline permissions preventing management/financial escalation while offline.
+- Append-only audit integrity protected by PostgreSQL triggers and immutable memory structures.
+- Sensitive credential and token redaction before audit persistence.
+
+Validation on 2026-10-08 (branch `thathorserep-security-audit`):
+
+```text
+npm test                                       PASS (27 test files, 275 tests)
+npm run lint                                   PASS
+npm run build                                  PASS
+npx tsc -b --pretty false                      PASS
+git diff --check                               PASS
+```
 
 ## Verified UX redesign and quality audit
 
