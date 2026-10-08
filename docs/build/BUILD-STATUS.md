@@ -4,7 +4,31 @@
 
 ## Overall
 
-The engineering foundation, application shell/design system, POS selling, inventory/purchasing, customer/credit, exceptions/reconciliation, management dashboard, staff dashboard, public landing page, English/Nigerian Pidgin content, domain slices, cross-domain journeys, failure-injection suite, Playwright role-journey E2E suite, UX redesign/quality audit, and security audit are verified.
+The engineering foundation, application shell/design system, POS selling, inventory/purchasing, customer/credit, exceptions/reconciliation, management dashboard, staff dashboard, public landing page, English/Nigerian Pidgin content, domain slices, cross-domain journeys, failure-injection suite, Playwright role-journey E2E suite, UX redesign/quality audit, security audit, and financial integrity audit are verified.
+
+## Verified financial integrity audit
+
+**Module:** Conversation 32 — Financial Integrity Audit
+**Status:** VERIFIED FINANCIAL INTEGRITY AUDIT; ALL METRICS RECONCILED
+**Audit Document:** `docs/build/AUDITS/32-financial-integrity.md`
+
+Implemented & Verified:
+
+- Absolute zero floating-point representation in financial domain (integer minor kobo and exact rational fractions).
+- Deterministic half-up rounding across tax, COGS, discounts, and weighted-average unit cost.
+- Additive lineage preservation on returns, repayments, debt corrections, and cash variances.
+- Canonical reporting projections trace strictly to immutable domain events.
+- Zero automatic incentive payouts in catalog/pricing/sales (strictly compliant with AGENTS.md).
+
+Validation on 2026-10-08 (branch `thathorserep-financial-integrity-audit`):
+
+```text
+npm test                                       PASS (27 test files, 275 tests)
+npm run lint                                   PASS
+npm run build                                  PASS
+npx tsc -b --pretty false                      PASS
+git diff --check                               PASS
+```
 
 ## Verified security audit
 
