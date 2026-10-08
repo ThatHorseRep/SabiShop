@@ -4,7 +4,31 @@
 
 ## Overall
 
-The engineering foundation, application shell/design system, POS selling, inventory/purchasing, customer/credit, exceptions/reconciliation, management dashboard, staff dashboard, public landing page, English/Nigerian Pidgin content, domain slices, cross-domain journeys, failure-injection suite, Playwright role-journey E2E suite, UX redesign/quality audit, security audit, and financial integrity audit are verified.
+The engineering foundation, application shell/design system, POS selling, inventory/purchasing, customer/credit, exceptions/reconciliation, management dashboard, staff dashboard, public landing page, English/Nigerian Pidgin content, domain slices, cross-domain journeys, failure-injection suite, Playwright role-journey E2E suite, UX redesign/quality audit, security audit, financial integrity audit, and offline integrity audit are verified.
+
+## Verified offline integrity audit
+
+**Module:** Conversation 33 — Offline Integrity Audit
+**Status:** VERIFIED OFFLINE INTEGRITY AUDIT; ALL FAILURE MODES PASS
+**Audit Document:** `docs/build/AUDITS/33-offline-integrity.md`
+
+Implemented & Verified:
+
+- Cryptographic canonical JSON payload fingerprinting preventing duplicate sync deliveries.
+- Strict causal dependency resolution blocking out-of-order child event application.
+- Immutable human-review conflict escalation doctrine (no silent last-write-wins).
+- Durable Write-Ahead Logging (WAL) with automatic recovery from local storage corruption.
+- Offline authority whitelisting preventing unauthorized management actions.
+
+Validation on 2026-10-08 (branch `thathorserep-offline-integrity-audit`):
+
+```text
+npm test                                       PASS (27 test files, 275 tests)
+npm run lint                                   PASS
+npm run build                                  PASS
+npx tsc -b --pretty false                      PASS
+git diff --check                               PASS
+```
 
 ## Verified financial integrity audit
 
