@@ -1,19 +1,35 @@
 # Sabi Shop Build Status
 
-**As of:** 2026-09-23
+**As of:** 2026-10-08
 
 ## Overall
 
-The engineering foundation, the application shell/design system, the POS
-selling workspace, the inventory/purchasing workspace, the customer/credit
-workspace, the exceptions/reconciliation workspace, the management dashboard
-workspace, the staff dashboard workspace, the public landing page, the
-English/Nigerian Pidgin content foundation, the implemented domain slices, the
-cross-domain integration journeys, the failure-injection suite, and the
-Playwright role-journey E2E suite are verified. Persistence,
-authentication/authorization integration, business onboarding/configuration,
-user/permission administration, the remaining domain screens, and the remaining
-modules are still downstream work.
+The engineering foundation, application shell/design system, POS selling, inventory/purchasing, customer/credit, exceptions/reconciliation, management dashboard, staff dashboard, public landing page, English/Nigerian Pidgin content, domain slices, cross-domain journeys, failure-injection suite, Playwright role-journey E2E suite, and UX redesign/quality audit are verified.
+
+## Verified UX redesign and quality audit
+
+**Module:** Conversation 30 — UX Redesign & Quality Audit
+**Status:** VERIFIED UX REDESIGN & QUALITY AUDIT; P0/P1 ITEMS RESOLVED
+**Audit Document:** `docs/build/AUDITS/30-ux-audit.md`
+
+Implemented & Verified:
+
+- Comprehensive UX audit across C00–C11 against locked business rules and usability contracts.
+- Navigation, information architecture, and adaptive shell validated across desktop, tablet, and mobile.
+- Consequential workflow protection and mandatory reason/dual-approval guards verified.
+- Error, empty, loading, operational, and bilingual Nigerian Pidgin states verified.
+- Touch target expansion for `.ui-button--sm` under coarse touch pointers (`@media (pointer: coarse)`).
+- Zero unresolved P0/P1 UX defects.
+
+Validation on 2026-10-08 (branch `thathorserep-ux-audit`):
+
+```text
+npm test                                       PASS (27 test files, 275 tests)
+npm run lint                                   PASS
+npm run build                                  PASS
+npx tsc -b --pretty false                      PASS
+git diff --check                               PASS
+```
 
 ## Verified end-to-end role-journey suite
 

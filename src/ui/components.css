@@ -97,6 +97,12 @@
   font-size: var(--text-body-size);
   line-height: var(--text-body-line);
 }
+@media (pointer: coarse) {
+  .ui-button--sm {
+    min-height: var(--touch-target);
+    padding: var(--space-8) var(--space-12);
+  }
+}
 
 .ui-button--primary {
   color: var(--text-on-primary);
