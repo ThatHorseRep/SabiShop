@@ -167,10 +167,20 @@ describe('sales transaction lifecycle', () => {
     expect(inclusive.totalDueKobo).toBe(1800)
     expect(inclusive.taxKobo).toBe(164)
 
-    const sale = sales.complete(
-      base([confirmed('p', 'cash', 1980)], { taxRateBasisPoints: 1000n }),
+    const inclusiveSale = sales.complete(
+      base([confirmed('p-inc', 'cash', 1800)], {
+        id: 's-inc',
+        clientRequestId: 'req-inc',
+        taxRateBasisPoints: 1000n,
+        taxMode: 'inclusive',
+      }),
     )
-    expect(sale.totalDueKobo).toBe(exclusive.totalDueKobo)
+    expect(inclusiveSale.totalDueKobo).toBe(1800)
+    expect(inclusiveSale.taxKobo).toBe(164)
+    expect(inclusiveSale.cogsKobo).toBe(800)
+    // Net recognized selling value is 1800 - 164 = 1636.
+    // Gross profit is Net Recognized Selling Value - COGS = 1636 - 800 = 836.
+    expect(inclusiveSale.grossProfitKobo).toBe(836)
   })
 
   it('completes an approved fully-free sale with no payment components', () => {

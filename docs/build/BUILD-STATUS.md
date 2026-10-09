@@ -94,11 +94,12 @@ Implemented & Verified:
 - Additive lineage preservation on returns, repayments, debt corrections, and cash variances.
 - Canonical reporting projections trace strictly to immutable domain events.
 - Zero automatic incentive payouts in catalog/pricing/sales (strictly compliant with AGENTS.md).
+- Inclusive VAT and Gross Profit invariance verified (Net Recognized Selling Value - COGS).
 
-Validation on 2026-10-08 (branch `thathorserep-financial-integrity-audit`):
+Validation on 2026-10-09 (branch `thathorserep-financial-integrity`):
 
 ```text
-npm test                                       PASS (27 test files, 275 tests)
+npm test                                       PASS (29 test files, 302 tests)
 npm run lint                                   PASS
 npm run build                                  PASS
 npx tsc -b --pretty false                      PASS
