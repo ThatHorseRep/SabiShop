@@ -1,0 +1,121 @@
+.activity-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+  max-width: 1040px;
+}
+
+.activity-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  align-items: center;
+}
+
+.activity-filter-btn {
+  padding: var(--space-6) var(--space-12);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-neutral);
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  font-size: var(--type-body-s);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.activity-filter-btn:hover {
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+}
+
+.activity-filter-btn--active {
+  background: var(--primary-subtle);
+  border-color: var(--primary-base);
+  color: var(--primary-base);
+  font-weight: 600;
+}
+
+.activity-search-bar {
+  display: flex;
+  gap: var(--space-12);
+  margin-top: var(--space-4);
+}
+
+.activity-search-input {
+  flex: 1;
+  max-width: 420px;
+}
+
+.activity-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.activity-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-16);
+  background: var(--surface-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: border-color var(--duration-fast);
+}
+
+.activity-card:hover {
+  border-color: var(--border-neutral);
+}
+
+.activity-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.activity-card__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  font-weight: 600;
+  font-size: var(--type-body-s);
+}
+
+.activity-card__time {
+  font-size: var(--type-caption);
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+.activity-card__summary {
+  font-size: var(--type-body);
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.activity-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-16);
+  font-size: var(--type-caption);
+  color: var(--text-secondary);
+  padding-top: var(--space-6);
+  border-top: 1px dashed var(--border-subtle);
+}
+
+.activity-card__meta-item {
+  display: inline-flex;
+  gap: var(--space-4);
+}
+
+.activity-card__meta-label {
+  color: var(--text-tertiary);
+}
+
+.activity-card__meta-value {
+  font-family: var(--font-mono);
+  font-weight: 500;
+}

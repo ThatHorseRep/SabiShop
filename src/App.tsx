@@ -42,6 +42,8 @@ import { CustomerCreditWorkspace } from './customers/CustomerCreditWorkspace'
 import { ExceptionsWorkspace } from './exceptions/ExceptionsWorkspace'
 import { ManagementWorkspace } from './management/ManagementWorkspace'
 import { StaffWorkspace } from './staff/StaffWorkspace'
+import { ActivityWorkspace } from './activity/ActivityWorkspace'
+import { SettingsWorkspace } from './settings/SettingsWorkspace'
 
 type ErrorBoundaryProps = { children: ReactNode }
 type ErrorBoundaryState = { hasError: boolean }
@@ -409,6 +411,16 @@ function AppContent() {
             actorId={actorId}
             onActorChange={setActorId}
             onOpenArea={setActiveArea}
+          />
+        ) : activeArea === 'activity' ? (
+          <ActivityWorkspace actorId={actorId} />
+        ) : activeArea === 'settings' ? (
+          <SettingsWorkspace
+            actorId={actorId}
+            online={online}
+            pendingCount={pending}
+            conflictCount={conflicts}
+            onCheckUpdate={update ? () => activateUpdate(update) : undefined}
           />
         ) : (
           <ModulePendingScreen area={activeArea} />
