@@ -68,19 +68,20 @@ The evaluation confirmed that Sabi Shop enforces absolute event durability, caus
 | SYNC-33-01 | **Low** (Informational) | Queue Fingerprints | Canonical JSON serialization sorts object keys alphabetically to guarantee byte-identical fingerprints across browsers. | **VERIFIED CORRECT** |
 | SYNC-33-02 | **Low** (Hardening)     | Conflict Protocol  | Conflict records mandate `requiresHumanReview: true` and escalate to management review; no automated heuristics.        | **VERIFIED CORRECT** |
 | SYNC-33-03 | **Low** (Durability)    | Database Migration | `003_sync_durability.sql` enforces append-only operation logging with cryptographic payload hashes.                     | **VERIFIED CORRECT** |
+| SYNC-33-04 | **Critical** (P0-1)     | Operation ID Scope | Audit log deduplication indexes on `businessId:operationId`, strictly preventing cross-tenant operation ID collision.   | **VERIFIED & TESTED** |
 
 ---
 
 ## 4. Verification Evidence
 
-Validation commands executed on branch `thathorserep-offline-integrity-audit`:
+Validation commands executed on branch `thathorserep-offline-integrity`:
 
 ```text
-npm test                                       PASS (27 test files, 275 tests)
-npm run lint                                   PASS
-npm run build                                  PASS
+npm test                                       PASS (29 test files, 303 tests)
+npm run lint                                   PASS (0 errors, 0 warnings)
+npm run build                                  PASS (tsc -b && vite build in 17.55s)
 npx tsc -b --pretty false                      PASS
-git diff --check                               PASS
+git diff --check                               PASS (0 whitespace or boundary errors)
 ```
 
 ---

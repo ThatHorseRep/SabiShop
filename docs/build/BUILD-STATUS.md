@@ -70,11 +70,12 @@ Implemented & Verified:
 - Immutable human-review conflict escalation doctrine (no silent last-write-wins).
 - Durable Write-Ahead Logging (WAL) with automatic recovery from local storage corruption.
 - Offline authority whitelisting preventing unauthorized management actions.
+- Operation ID collision isolation scoped by business tenant identity in audit trail.
 
-Validation on 2026-10-08 (branch `thathorserep-offline-integrity-audit`):
+Validation on 2026-10-09 (branch `thathorserep-offline-integrity`):
 
 ```text
-npm test                                       PASS (27 test files, 275 tests)
+npm test                                       PASS (29 test files, 303 tests)
 npm run lint                                   PASS
 npm run build                                  PASS
 npx tsc -b --pretty false                      PASS
