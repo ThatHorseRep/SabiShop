@@ -80,9 +80,9 @@ All 35 architectural slices, domain modules, user journeys, and technical audits
 ### 3.1 Unit, Integration & Domain Verification Suite
 
 ```text
-Test Files:  27 passed (27)
-Tests:       275 passed (275)
-Duration:    171.89s
+Test Files:  29 passed (29)
+Tests:       303 passed (303)
+Duration:    174.20s
 Exit Code:   0
 ```
 
@@ -92,22 +92,22 @@ Coverage breakdown:
 - Management Workspace: 12 tests passed
 - Staff Workspace: 6 tests passed
 - Public Landing Page: 8 tests passed
-- UI Components & Confirmation Panels: 18 tests passed
-- Localization & Pidgin: 9 tests passed
+- UI Components & Confirmation Panels: 26 tests passed
+- Localization & Pidgin: 10 tests passed
 - Domain Integration & Scenarios: 10 tests passed
 - Failure Injection & Edge Cases: 12 tests passed
 - Offline Sync & Idempotency: 14 tests passed
 - Domain Verification & Invariants: 11 tests passed
-- Authorization & Permissions: 9 tests passed
+- Authorization & Permissions: 16 tests passed
 - Returns & Corrections: 13 tests passed
 - Canonical Reporting: 4 tests passed
 - Customer Debt & Credit Limits: 9 tests passed
 - Sales & POS: 7 tests passed
 - Purchasing & Receiving: 6 tests passed
 - Inventory Ledger & Valuations: 8 tests passed
-- Audit Triggers: 7 tests passed
+- Audit Triggers: 8 tests passed
 - Catalog & Pricing: 10 tests passed
-- Finance & VAT: 8 tests passed
+- Finance & VAT: 9 tests passed
 - Cash Reconciliation: 6 tests passed
 - State Machines: 8 tests passed
 
