@@ -47,10 +47,10 @@ Implemented & Verified:
 - Linear O(N) single-pass projection passes for canonical business performance reporting.
 - Clean unmounting and subscriber cleanup preventing browser memory leaks.
 
-Validation on 2026-10-08 (branch `thathorserep-performance-audit`):
+Validation on 2026-10-09 (branch `thathorserep-performance-hardening`):
 
 ```text
-npm test                                       PASS (27 test files, 275 tests)
+npm test                                       PASS (29 test files, 303 tests)
 npm run lint                                   PASS
 npm run build                                  PASS
 npx tsc -b --pretty false                      PASS

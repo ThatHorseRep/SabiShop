@@ -67,14 +67,14 @@ The evaluation confirmed that Sabi Shop meets all performance targets:
 
 ## 4. Verification Evidence
 
-Validation commands executed on branch `thathorserep-performance-audit`:
+Validation commands executed on branch `thathorserep-performance-hardening`:
 
 ```text
-npm test                                       PASS (27 test files, 275 tests)
-npm run lint                                   PASS
-npm run build                                  PASS (built in 31.55s)
+npm test                                       PASS (29 test files, 303 tests)
+npm run lint                                   PASS (0 errors, 0 warnings)
+npm run build                                  PASS (built in 16.46s)
 npx tsc -b --pretty false                      PASS
-git diff --check                               PASS
+git diff --check                               PASS (0 whitespace or boundary errors)
 ```
 
 ---
