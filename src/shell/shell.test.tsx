@@ -1,3 +1,7 @@
+// @ts-expect-error node:fs is available in vitest environment
+import fs from 'node:fs'
+// @ts-expect-error node:path is available in vitest environment
+import path from 'node:path'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
@@ -8,7 +12,7 @@ import {
   navigationModel,
   type NavDestinationId,
 } from './navigation'
-import { SystemStateIndicator } from './indicators'
+import { AttentionIndicator, SystemStateIndicator } from './indicators'
 
 const staffPermissions = effectivePermissions({ roles: ['staff'] })
 const managerPermissions = effectivePermissions({ roles: ['manager'] })
@@ -128,6 +132,29 @@ describe('AppShell', () => {
       screen.getAllByRole('button', { name: 'Products & Stock' }).length,
     ).toBeGreaterThan(1)
   })
+
+  it('toggles rail collapse state and updates accessible labels', async () => {
+    const user = userEvent.setup()
+    renderShell()
+
+    const collapseButton = screen.getByRole('button', {
+      name: /Collapse navigation/i,
+    })
+    expect(collapseButton).toHaveAttribute('aria-expanded', 'true')
+
+    await user.click(collapseButton)
+
+    const expandButton = screen.getByRole('button', {
+      name: /Expand navigation/i,
+    })
+    expect(expandButton).toHaveAttribute('aria-expanded', 'false')
+
+    await user.click(expandButton)
+
+    expect(
+      screen.getByRole('button', { name: /Collapse navigation/i }),
+    ).toHaveAttribute('aria-expanded', 'true')
+  })
 })
 
 describe('SystemStateIndicator', () => {
@@ -165,5 +192,43 @@ describe('SystemStateIndicator', () => {
       />,
     )
     expect(screen.getByText('Offline')).toBeInTheDocument()
+  })
+})
+
+describe('AttentionIndicator', () => {
+  it('hides attention badge count from screen readers to prevent duplicate announcement', () => {
+    render(<AttentionIndicator count={4} />)
+    const button = screen.getByRole('button', {
+      name: 'Attention: 4 item(s) requiring review',
+    })
+    expect(button).toBeInTheDocument()
+    const badge = button.querySelector('.app-attention__count')
+    expect(badge).toHaveAttribute('aria-hidden', 'true')
+  })
+})
+
+describe('Shell Touch Targets and Motion', () => {
+  const cwd =
+    (globalThis as unknown as { process?: { cwd?: () => string } }).process?.cwd?.() ?? ''
+  const shellCss = fs.readFileSync(
+    path.resolve(cwd, 'src/shell/shell.css'),
+    'utf-8',
+  )
+
+  it('enforces coarse pointer touch targets for compact header controls', () => {
+    expect(shellCss).toContain('@media (pointer: coarse)')
+    expect(shellCss).toContain('.app-language-switch')
+    expect(shellCss).toContain('.app-system-state')
+    expect(shellCss).toContain('.app-user__button')
+    expect(shellCss).toContain('.app-attention')
+    expect(shellCss).toContain('.app-user__menu-item')
+    expect(shellCss).toContain('min-height: var(--touch-target);')
+  })
+
+  it('provides menu dropdown entrance and attention badge pop animation', () => {
+    expect(shellCss).toContain('animation: app-dropdown-in')
+    expect(shellCss).toContain('@keyframes app-dropdown-in')
+    expect(shellCss).toContain('animation: ui-badge-pop')
+    expect(shellCss).toContain('@keyframes ui-badge-pop')
   })
 })

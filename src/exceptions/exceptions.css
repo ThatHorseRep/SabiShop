@@ -394,6 +394,12 @@ button.exceptions-record:hover {
   font: inherit;
   text-align: right;
 }
+@media (pointer: coarse) {
+  .exceptions-qty-input {
+    min-height: var(--touch-target);
+    font-size: var(--text-body-lg-size);
+  }
+}
 
 /* Case lists (returns, supplier returns, review) */
 

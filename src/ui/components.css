@@ -263,6 +263,8 @@
 }
 .ui-input-group:focus-within {
   border-color: var(--color-primary);
+  outline: var(--focus-outline) solid var(--focus-color);
+  outline-offset: var(--focus-offset);
 }
 .ui-input-group .ui-input {
   border: 0;
@@ -674,8 +676,32 @@ dialog.ui-dialog {
   box-shadow: var(--shadow-overlay);
   overflow: hidden;
 }
+dialog.ui-dialog[open] {
+  animation: ui-dialog-in var(--modal-open-dur) var(--modal-ease);
+}
 dialog.ui-dialog::backdrop {
   background: rgb(22 48 43 / 48%);
+}
+dialog.ui-dialog[open]::backdrop {
+  animation: ui-backdrop-in var(--modal-open-dur) var(--ease-out);
+}
+@keyframes ui-dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(var(--modal-scale));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes ui-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .ui-dialog__panel,
 .ui-drawer__panel {
@@ -718,8 +744,24 @@ dialog.ui-drawer {
   color: var(--text-primary);
   box-shadow: var(--shadow-overlay);
 }
+dialog.ui-drawer[open] {
+  animation: ui-drawer-in var(--panel-open-dur) var(--panel-ease);
+}
 dialog.ui-drawer::backdrop {
   background: rgb(22 48 43 / 40%);
+}
+dialog.ui-drawer[open]::backdrop {
+  animation: ui-backdrop-in var(--panel-open-dur) var(--ease-out);
+}
+@keyframes ui-drawer-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--space-24));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 @media (max-width: 767px) {
   dialog.ui-drawer {
@@ -727,6 +769,19 @@ dialog.ui-drawer::backdrop {
     max-height: 80dvh;
     margin: auto 0 0;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  dialog.ui-drawer[open] {
+    animation-name: ui-drawer-in-mobile;
+  }
+  @keyframes ui-drawer-in-mobile {
+    from {
+      opacity: 0;
+      transform: translateY(var(--space-24));
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 
@@ -906,4 +961,44 @@ dialog.ui-drawer::backdrop {
 }
 .ui-money--negative {
   color: var(--color-danger);
+}
+
+/* Card and container resize utilities (transitions-dev / 01-card-resize) */
+.t-resize,
+.ui-card--expandable,
+.ui-collapsible {
+  transition:
+    width var(--resize-dur) var(--resize-ease),
+    height var(--resize-dur) var(--resize-ease),
+    max-height var(--resize-dur) var(--resize-ease);
+  will-change: width, height;
+}
+
+/* Error state shake (transitions-dev / 12-error-state-shake) */
+.ui-input[aria-invalid='true'].is-shaking,
+.ui-field[data-invalid='true'] .ui-input,
+.ui-error-shake {
+  animation: ui-error-shake var(--shake-dur) cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+@keyframes ui-error-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+/* Strict reduced motion overrides for components */
+@media (prefers-reduced-motion: reduce) {
+  dialog.ui-dialog[open],
+  dialog.ui-dialog[open]::backdrop,
+  dialog.ui-drawer[open],
+  dialog.ui-drawer[open]::backdrop,
+  .ui-toast,
+  .t-resize,
+  .ui-card--expandable,
+  .ui-collapsible,
+  .ui-input[aria-invalid='true'].is-shaking,
+  .ui-error-shake {
+    animation: none !important;
+    transition: none !important;
+  }
 }

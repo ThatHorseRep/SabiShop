@@ -505,6 +505,12 @@ button.customers-row.selected {
   font: inherit;
   font-variant-numeric: tabular-nums;
 }
+@media (pointer: coarse) {
+  .customers-allocation-input {
+    min-height: var(--touch-target);
+    font-size: var(--text-body-lg-size);
+  }
+}
 
 .customers-component-row {
   display: grid;

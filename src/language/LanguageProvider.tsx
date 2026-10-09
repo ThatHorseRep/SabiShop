@@ -44,6 +44,9 @@ export function LanguageProvider({
     } catch {
       /* language preference persistence is best-effort */
     }
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = language
+    }
   }, [language])
 
   const t = useCallback<Translate>(

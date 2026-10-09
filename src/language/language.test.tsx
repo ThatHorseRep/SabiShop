@@ -88,6 +88,30 @@ describe('language provider', () => {
     ).toBeInTheDocument()
     expect(window.localStorage.getItem('sabi-shop:language')).toBe('pcm')
   })
+
+  it('synchronizes document.documentElement.lang with the active language', async () => {
+    const user = userEvent.setup()
+    render(
+      <LanguageProvider>
+        <LanguageSwitcher />
+        <LanguageHarness />
+      </LanguageProvider>,
+    )
+
+    expect(document.documentElement.lang).toBe('en')
+
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Language' }),
+      'pcm',
+    )
+    expect(document.documentElement.lang).toBe('pcm')
+
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Language' }),
+      'en',
+    )
+    expect(document.documentElement.lang).toBe('en')
+  })
 })
 
 describe('message content contracts', () => {

@@ -224,6 +224,16 @@
 .pos-line__price:hover {
   background: var(--surface-sunken);
 }
+@media (pointer: coarse) {
+  .pos-line__qty .ui-icon-button {
+    width: var(--touch-target);
+    height: var(--touch-target);
+  }
+  .pos-line__price {
+    min-height: var(--touch-target);
+    padding: var(--space-8) var(--space-12);
+  }
+}
 .pos-line__total {
   min-width: 88px;
   text-align: right;
