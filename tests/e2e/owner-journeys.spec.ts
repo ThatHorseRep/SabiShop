@@ -51,7 +51,8 @@ test.describe('Owner business journey', () => {
     ).toHaveCount(0)
 
     await navigate(page, 'Settings')
-    await expect(page.getByText('Coming in a later module')).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: 'Settings' })).toBeVisible()
+    await expect(page.locator('#main-content').getByText('Nkechi Hardware')).toBeVisible()
   })
 
   test('OWNER-02 reconciles a discrepancy, closes the day, and reopens it without rewriting history', async ({
