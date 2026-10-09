@@ -80,19 +80,20 @@ The verification proved that Sabi Shop enforces deterministic, auditable, and im
 | FIN-32-01  | **Low** (Informational) | Money Types         | All money math uses integer kobo / bigint; floats completely absent from domain engines.                                                   | **VERIFIED CORRECT** |
 | FIN-32-02  | **Low** (Hardening)     | Cash Reconciliation | Missing physical counts in running totals evaluate to `undefined` rather than 0, preventing accidental suppression of variance exceptions. | **VERIFIED CORRECT** |
 | FIN-32-03  | **Low** (Compliance)    | Incentive Engine    | Salesperson performance is reported without automated incentive payout execution, strictly conforming to the AGENTS.md mandate.            | **VERIFIED CORRECT** |
+| FIN-32-04  | **Critical** (P0-9)     | Tax & Gross Profit  | Inclusive VAT calculation preserves exact Net Recognized Selling Value without double tax deduction in both sales engine and reporting.     | **VERIFIED & TESTED** |
 
 ---
 
 ## 4. Verification Evidence
 
-Validation commands executed on branch `thathorserep-financial-integrity-audit`:
+Validation commands executed on branch `thathorserep-financial-integrity`:
 
 ```text
-npm test                                       PASS (27 test files, 275 tests)
-npm run lint                                   PASS
-npm run build                                  PASS
+npm test                                       PASS (29 test files, 302 tests)
+npm run lint                                   PASS (0 errors, 0 warnings)
+npm run build                                  PASS (tsc -b && vite build in 18.21s)
 npx tsc -b --pretty false                      PASS
-git diff --check                               PASS
+git diff --check                               PASS (0 whitespace or boundary errors)
 ```
 
 ---

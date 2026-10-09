@@ -6,6 +6,7 @@ import {
   formatMoney,
   money,
   quantity,
+  subtractMoney,
   supplierOutstanding,
   taxFromNet,
   taxFromTotal,
@@ -106,5 +107,34 @@ describe('financial primitives', () => {
         inventory: { quantity: quantity('1'), cost: money('NGN', '0') },
       }),
     ).toThrow()
+  })
+
+  it('correctly calculates inclusive VAT and gross profit without double-tax deduction', () => {
+    // ₦10,000 gross with 7.5% (750 bps) VAT inclusive
+    const financials = calculateSaleFinancials({
+      currency: 'NGN',
+      unitSellingPrice: money('NGN', '10000'),
+      quantity: quantity('1'),
+      approvedDiscount: money('NGN', '0'),
+      taxRateBasisPoints: 750n,
+      taxMode: 'inclusive',
+      inventory: {
+        quantity: quantity('10'),
+        cost: money('NGN', '60000'), // ₦6,000 unit cost
+      },
+    })
+    // In inclusive mode: total = ₦10,000
+    // Tax = 10000 * 750 / 10750 = 697.67 -> 698 kobo (₦6.98) if 10000 kobo,
+    // For ₦10,000.00 (1,000,000 kobo):
+    // Tax = roundHalfUp(1,000,000 * 750 / 10,750) = 69,767 kobo = ₦697.67
+    expect(formatMoney(financials.totalDue)).toBe('NGN 10000.00')
+    expect(formatMoney(financials.tax)).toBe('NGN 697.67')
+    // Net recognized selling value is total minus tax:
+    // 1,000,000 - 69,767 = 930,233 kobo = ₦9,302.33
+    const net = subtractMoney(financials.totalDue, financials.tax)
+    expect(formatMoney(net)).toBe('NGN 9302.33')
+    expect(formatMoney(financials.cogs)).toBe('NGN 6000.00')
+    // Gross profit = Net Recognized Selling Value - COGS = ₦9,302.33 - ₦6,000.00 = ₦3,302.33
+    expect(formatMoney(subtractMoney(net, financials.cogs))).toBe('NGN 3302.33')
   })
 })
