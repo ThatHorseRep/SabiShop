@@ -129,29 +129,33 @@ npx tsc -b --pretty false                      PASS
 git diff --check                               PASS
 ```
 
-## Verified UX redesign and quality audit
+## Verified UX redesign, hardening, and quality audit
 
-**Module:** Conversation 30 — UX Redesign & Quality Audit
-**Status:** VERIFIED UX REDESIGN & QUALITY AUDIT; P0/P1 ITEMS RESOLVED
+**Module:** Conversation 30 — UX Redesign, Hardening & Quality Audit
+**Status:** VERIFIED UX HARDENING & TRANSITIONS POLISH; ALL GATES PASSED
 **Audit Document:** `docs/build/AUDITS/30-ux-audit.md`
 
 Implemented & Verified:
 
 - Comprehensive UX audit across C00–C11 against locked business rules and usability contracts.
-- Navigation, information architecture, and adaptive shell validated across desktop, tablet, and mobile.
-- Consequential workflow protection and mandatory reason/dual-approval guards verified.
-- Error, empty, loading, operational, and bilingual Nigerian Pidgin states verified.
-- Touch target expansion for `.ui-button--sm` under coarse touch pointers (`@media (pointer: coarse)`).
+- Transitions-dev semantic motion tokens (--modal-open-dur, --panel-open-dur, --dropdown-open-dur, --badge-pop-dur, --ease-smooth-out, --ease-bounce) added to tokens.css.
+- Overlay entrance animations added for dialog (scale 0.96->1.0 in 200ms) and drawer (slide 24px in 320ms; mobile translateY 24px in 320ms) with backdrop fade in components.css.
+- Card resize utilities (.t-resize, .ui-card--expandable, .ui-collapsible), error shake utility, and focus outline for .ui-input-group:focus-within.
+- Touch target expansion to 44px min-height on coarse pointers (@media (pointer: coarse)) across compact shell header controls (.app-language-switch, .app-system-state, .app-attention, .app-user__button, .app-user__menu-item), POS qty/price buttons, exception qty inputs, and customer allocation inputs.
+- Moved .visually-hidden into base.css for global application.
+- Strict @media (prefers-reduced-motion: reduce) overrides across all motion and overlay components.
+- Bilingual DOM language synchronization (document.documentElement.lang = language) in LanguageProvider.
+- Navigation rail collapse/expand accessible label toggling and aria-hidden attributes for decorative icons and notification badge counter.
 - Zero unresolved P0/P1 UX defects.
 
-Validation on 2026-10-08 (branch `thathorserep-ux-audit`):
+Validation on 2026-10-09 (branch `thathorserep-ux-hardening`):
 
 ```text
-npm test                                       PASS (27 test files, 275 tests)
-npm run lint                                   PASS
-npm run build                                  PASS
-npx tsc -b --pretty false                      PASS
-git diff --check                               PASS
+npm test                                       PASS (29 test files, 294 tests)
+npm run lint                                   PASS (0 warnings, 0 errors)
+npm run build                                  PASS (built in 54.76s)
+npx tsc -b --pretty false                      PASS (clean compilation)
+git diff --check                               PASS (0 whitespace issues)
 ```
 
 ## Verified end-to-end role-journey suite

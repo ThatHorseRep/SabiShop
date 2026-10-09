@@ -1,3 +1,7 @@
+// @ts-expect-error node:fs is available in vitest environment
+import fs from 'node:fs'
+// @ts-expect-error node:path is available in vitest environment
+import path from 'node:path'
 import { useState } from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -198,6 +202,28 @@ describe('Overlays', () => {
     await user.click(screen.getByRole('button', { name: 'Close panel' }))
     expect(onClose).toHaveBeenCalledTimes(1)
   })
+
+  it('renders a dialog with native open state and ui-dialog class', () => {
+    render(
+      <Dialog open onClose={() => {}} title="Approve return">
+        body
+      </Dialog>,
+    )
+    const dialog = screen.getByRole('dialog', { name: 'Approve return' })
+    expect(dialog).toHaveClass('ui-dialog')
+    expect(dialog).toHaveAttribute('open')
+  })
+
+  it('renders a drawer with native open state and ui-drawer class', () => {
+    render(
+      <Drawer open onClose={() => {}} title="Record history">
+        body
+      </Drawer>,
+    )
+    const drawer = screen.getByRole('dialog', { name: 'Record history' })
+    expect(drawer).toHaveClass('ui-drawer')
+    expect(drawer).toHaveAttribute('open')
+  })
 })
 
 describe('ConfirmationPanel', () => {
@@ -318,5 +344,97 @@ describe('Toasts', () => {
       screen.getByRole('button', { name: 'Dismiss notification' }),
     )
     expect(screen.queryByText('Customer saved')).toBeNull()
+  })
+})
+
+describe('Motion and Transitions Design System', () => {
+  const cwd =
+    (globalThis as unknown as { process?: { cwd?: () => string } }).process?.cwd?.() ?? ''
+  const tokensCss = fs.readFileSync(
+    path.resolve(cwd, 'src/ui/tokens.css'),
+    'utf-8',
+  )
+  const componentsCss = fs.readFileSync(
+    path.resolve(cwd, 'src/ui/components.css'),
+    'utf-8',
+  )
+  const baseCss = fs.readFileSync(
+    path.resolve(cwd, 'src/ui/base.css'),
+    'utf-8',
+  )
+  const posCss = fs.readFileSync(
+    path.resolve(cwd, 'src/pos/pos.css'),
+    'utf-8',
+  )
+  const exceptionsCss = fs.readFileSync(
+    path.resolve(cwd, 'src/exceptions/exceptions.css'),
+    'utf-8',
+  )
+  const customersCss = fs.readFileSync(
+    path.resolve(cwd, 'src/customers/customers.css'),
+    'utf-8',
+  )
+
+  it('defines transitions-dev motion tokens compliant with C03', () => {
+    expect(tokensCss).toContain('--modal-open-dur: 200ms;')
+    expect(tokensCss).toContain('--panel-open-dur: 320ms;')
+    expect(tokensCss).toContain('--dropdown-open-dur: 140ms;')
+    expect(tokensCss).toContain('--badge-pop-dur: 140ms;')
+    expect(tokensCss).toContain('--ease-smooth-out:')
+    expect(tokensCss).toContain('--ease-bounce:')
+  })
+
+  it('declares entrance animations for dialog and drawer overlays', () => {
+    expect(componentsCss).toContain('dialog.ui-dialog[open]')
+    expect(componentsCss).toContain(
+      'animation: ui-dialog-in var(--modal-open-dur)',
+    )
+    expect(componentsCss).toContain('@keyframes ui-dialog-in')
+    expect(componentsCss).toContain('dialog.ui-drawer[open]')
+    expect(componentsCss).toContain(
+      'animation: ui-drawer-in var(--panel-open-dur)',
+    )
+    expect(componentsCss).toContain('@keyframes ui-drawer-in')
+    expect(componentsCss).toContain('@keyframes ui-drawer-in-mobile')
+  })
+
+  it('enforces strict prefers-reduced-motion overrides to suppress decorative motion', () => {
+    expect(baseCss).toContain('@media (prefers-reduced-motion: reduce)')
+    expect(baseCss).toContain('animation-duration: 0.01ms !important;')
+    expect(componentsCss).toContain('@media (prefers-reduced-motion: reduce)')
+    expect(componentsCss).toContain('dialog.ui-dialog[open]')
+    expect(componentsCss).toContain('animation: none !important;')
+    expect(componentsCss).toContain('transition: none !important;')
+  })
+
+  it('provides card resize and error shake utility classes', () => {
+    expect(componentsCss).toContain('.t-resize')
+    expect(componentsCss).toContain('.ui-card--expandable')
+    expect(componentsCss).toContain('.ui-error-shake')
+    expect(componentsCss).toContain('@keyframes ui-error-shake')
+  })
+
+  it('ensures input groups have visible focus indicators', () => {
+    expect(componentsCss).toContain('.ui-input-group:focus-within')
+    expect(componentsCss).toContain(
+      'outline: var(--focus-outline) solid var(--focus-color);',
+    )
+  })
+
+  it('enforces coarse pointer touch target expansion for buttons and inputs', () => {
+    expect(componentsCss).toContain('@media (pointer: coarse)')
+    expect(componentsCss).toContain('min-height: var(--touch-target);')
+
+    expect(posCss).toContain('@media (pointer: coarse)')
+    expect(posCss).toContain('.pos-line__qty .ui-icon-button')
+    expect(posCss).toContain('.pos-line__price')
+
+    expect(exceptionsCss).toContain('@media (pointer: coarse)')
+    expect(exceptionsCss).toContain('.exceptions-qty-input')
+    expect(exceptionsCss).toContain('min-height: var(--touch-target);')
+
+    expect(customersCss).toContain('@media (pointer: coarse)')
+    expect(customersCss).toContain('.customers-allocation-input')
+    expect(customersCss).toContain('min-height: var(--touch-target);')
   })
 })

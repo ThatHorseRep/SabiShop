@@ -186,9 +186,11 @@ export function AppShell({
             onClick={() => setCollapsed((value) => !value)}
             aria-expanded={!collapsed}
           >
-            {collapsed ? '»' : '«'}
+            <span aria-hidden="true">{collapsed ? '»' : '«'}</span>
             <span className={collapsed ? 'visually-hidden' : undefined}>
-              {t('shell.collapseNavigation')}
+              {collapsed
+                ? t('shell.expandNavigation')
+                : t('shell.collapseNavigation')}
             </span>
           </button>
         </nav>

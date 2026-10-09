@@ -102,7 +102,9 @@ export function AttentionIndicator({
       aria-label={t('attention.aria', { count })}
     >
       <Bell size={16} weight="bold" aria-hidden="true" />
-      <span className="app-attention__count">{count}</span>
+      <span className="app-attention__count" aria-hidden="true">
+        {count}
+      </span>
     </button>
   )
 }

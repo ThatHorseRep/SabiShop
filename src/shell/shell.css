@@ -153,6 +153,17 @@ button.app-system-state:hover {
   font-weight: var(--weight-semibold);
   line-height: 16px;
   text-align: center;
+  animation: ui-badge-pop var(--badge-pop-dur) var(--badge-pop-ease);
+}
+@keyframes ui-badge-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .app-user-chip {
@@ -198,6 +209,18 @@ button.app-system-state:hover {
   border-radius: var(--radius-md);
   background: var(--surface-primary);
   box-shadow: var(--shadow-overlay);
+  transform-origin: top right;
+  animation: app-dropdown-in var(--dropdown-open-dur) var(--dropdown-ease);
+}
+@keyframes app-dropdown-in {
+  from {
+    opacity: 0;
+    transform: scale(var(--dropdown-pre-scale)) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 .app-user__menu-header {
   display: flex;
@@ -521,4 +544,30 @@ button.app-system-state:hover {
   display: flex;
   flex-direction: column;
   gap: var(--space-16);
+}
+
+/* Coarse pointer touch target expansion for header controls (C03 §47 / C04 §18) */
+@media (pointer: coarse) {
+  .app-language-switch,
+  .app-system-state,
+  .app-user__button {
+    min-height: var(--touch-target);
+    padding: var(--space-8) var(--space-12);
+  }
+  .app-attention {
+    width: var(--touch-target);
+    height: var(--touch-target);
+  }
+  .app-user__menu-item {
+    min-height: var(--touch-target);
+  }
+}
+
+/* Reduced motion guards for shell */
+@media (prefers-reduced-motion: reduce) {
+  .app-user__menu,
+  .app-attention__count {
+    animation: none !important;
+    transition: none !important;
+  }
 }
