@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
   authorize,
+  effectivePermissions,
   executeAuthorized,
   type AuditSink,
   type AuthSession,
+  type Permission,
 } from './index'
 
 const session = (overrides: Partial<AuthSession> = {}): AuthSession => ({
@@ -157,5 +159,173 @@ describe('authorization boundary', () => {
         100,
       ),
     ).toMatchObject({ allowed: false, reason: 'session_expired' })
+  })
+
+  it('P0-2: allows a salesperson to create a sale in the active business', () => {
+    const spSession = session({
+      user: { userId: 'sales-1', displayName: 'Emeka', active: true },
+      memberships: [
+        { businessId: 'business-a', roles: ['salesperson'], active: true },
+      ],
+    })
+
+    expect(
+      authorize(spSession, {
+        permission: 'sale:create',
+        businessId: 'business-a',
+      }),
+    ).toMatchObject({ allowed: true, reason: 'allowed' })
+  })
+
+  it('P0-2: denies a salesperson from approving a return, purchasing, or managing memberships', () => {
+    const spSession = session({
+      user: { userId: 'sales-1', displayName: 'Emeka', active: true },
+      memberships: [
+        { businessId: 'business-a', roles: ['salesperson'], active: true },
+      ],
+    })
+
+    const restrictedPermissions: Permission[] = [
+      'return:approve',
+      'purchase:record',
+      'membership:manage',
+      'business-day:close',
+      'cash:reconcile',
+      'inventory:adjust',
+    ]
+
+    for (const permission of restrictedPermissions) {
+      expect(
+        authorize(spSession, {
+          permission,
+          businessId: 'business-a',
+        }),
+      ).toMatchObject({ allowed: false, reason: 'permission_denied' })
+    }
+  })
+
+  it('P0-2: computes effectivePermissions for salesperson without throwing and yields exactly 7 routine permissions', () => {
+    expect(() => {
+      effectivePermissions({ roles: ['salesperson'] })
+    }).not.toThrow()
+
+    const perms = effectivePermissions({ roles: ['salesperson'] })
+    expect(perms.size).toBe(7)
+    expect(perms.has('sale:create')).toBe(true)
+    expect(perms.has('payment:record')).toBe(true)
+    expect(perms.has('repayment:record')).toBe(true)
+    expect(perms.has('credit:request')).toBe(true)
+    expect(perms.has('correction:request')).toBe(true)
+    expect(perms.has('business:work')).toBe(true)
+    expect(perms.has('business:switch')).toBe(true)
+    expect(perms.has('return:approve')).toBe(false)
+  })
+
+  it('P0-2: executeAuthorized() runs for salesperson and records actorRole salesperson in audit log', async () => {
+    const spSession = session({
+      user: { userId: 'sales-1', displayName: 'Emeka', active: true },
+      memberships: [
+        { businessId: 'business-a', roles: ['salesperson'], active: true },
+      ],
+    })
+    const auditLog = audit()
+    let executed = false
+
+    await executeAuthorized({
+      session: spSession,
+      request: {
+        permission: 'payment:record',
+        businessId: 'business-a',
+        targetRecordId: 'sale-99',
+      },
+      audit: auditLog,
+      perform: () => {
+        executed = true
+      },
+    })
+
+    expect(executed).toBe(true)
+    expect(auditLog.events).toHaveLength(1)
+    expect(auditLog.events[0]).toMatchObject({
+      eventType: 'authorization.decision',
+      result: 'allowed',
+      actorRole: 'salesperson',
+      businessId: 'business-a',
+    })
+  })
+
+  it('P0-5: denies approval when approver role is insufficient (salesperson cannot approve)', () => {
+    const spSession = session({
+      user: { userId: 'sales-1', displayName: 'Emeka', active: true },
+      memberships: [
+        { businessId: 'business-a', roles: ['salesperson'], active: true },
+      ],
+    })
+
+    const decision = authorize(spSession, {
+      permission: 'credit:request',
+      businessId: 'business-a',
+      requesterUserId: 'sales-1',
+      requiresApproval: true,
+      approval: {
+        approvalId: 'app-2',
+        businessId: 'business-a',
+        approverUserId: 'sales-2',
+        approverRoles: ['salesperson'],
+        approvedAt: 100,
+        verified: true,
+      },
+    })
+
+    expect(decision).toMatchObject({
+      allowed: false,
+      reason: 'approval_role_insufficient',
+    })
+  })
+
+  it('P0-5: allows valid dual-approval where salesperson requests and separate manager approves', () => {
+    const spSession = session({
+      user: { userId: 'sales-1', displayName: 'Emeka', active: true },
+      memberships: [
+        { businessId: 'business-a', roles: ['salesperson'], active: true },
+      ],
+    })
+
+    const decision = authorize(spSession, {
+      permission: 'credit:request',
+      businessId: 'business-a',
+      requesterUserId: 'sales-1',
+      requiresApproval: true,
+      approval: {
+        approvalId: 'app-valid',
+        businessId: 'business-a',
+        approverUserId: 'mgr-1',
+        approverRoles: ['manager'],
+        approvedAt: 100,
+        verified: true,
+      },
+    })
+
+    expect(decision).toMatchObject({
+      allowed: true,
+      reason: 'allowed',
+    })
+  })
+
+  it('SEC-01: multi-tenant error messages omit foreign tenant ID to prevent enumeration', () => {
+    const userSession = session({
+      activeBusinessId: 'business-a',
+    })
+
+    const decision = authorize(userSession, {
+      permission: 'sale:create',
+      businessId: 'business-b',
+    })
+
+    expect(decision).toMatchObject({
+      allowed: false,
+      reason: 'cross_business_access',
+    })
+    expect(decision.message).not.toContain('business-b')
   })
 })

@@ -1,4 +1,4 @@
-export type Role = 'staff' | 'manager' | 'owner'
+export type Role = 'staff' | 'salesperson' | 'manager' | 'owner'
 
 export type SaleState = 'draft' | 'pending_completion' | 'completed' | 'failed'
 

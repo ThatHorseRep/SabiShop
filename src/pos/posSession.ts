@@ -72,6 +72,8 @@ export function roleLabel(role: Role): string {
       return 'Owner'
     case 'manager':
       return 'Manager'
+    case 'salesperson':
+      return 'Salesperson'
     default:
       return 'Staff'
   }

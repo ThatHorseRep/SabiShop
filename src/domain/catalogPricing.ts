@@ -7,6 +7,7 @@ export type PricingAuthorization = {
   actorId: string
   role: Role
   approvedBy?: string
+  approverRole?: Role
   reason?: string
 }
 
@@ -310,27 +311,25 @@ export class CatalogPricing {
     const pricing = this.computeLinePricing(product, input)
     const belowFloor = pricing.belowFloor
 
+    const effectiveApproverRole =
+      input.authorization.approverRole ?? input.authorization.role
+    const hasManagementApproval =
+      Boolean(input.authorization.approvedBy) &&
+      managementRoles.includes(effectiveApproverRole) &&
+      input.authorization.approvedBy !== input.authorization.actorId
+
     if (
       belowFloor &&
       this.settings.belowFloorMode === 'block_until_authorized'
     ) {
-      if (
-        !input.authorization.approvedBy ||
-        !managementRoles.includes(input.authorization.role) ||
-        input.authorization.approvedBy === input.authorization.actorId
-      ) {
+      if (!hasManagementApproval) {
         throw new DomainError(
           'AUTHORIZATION_REQUIRED',
           'A below-floor sale requires Owner or Manager authorization',
         )
       }
     }
-    if (
-      pricing.actualUnitPriceKobo === 0 &&
-      (!input.authorization.approvedBy ||
-        !managementRoles.includes(input.authorization.role) ||
-        input.authorization.approvedBy === input.authorization.actorId)
-    ) {
+    if (pricing.actualUnitPriceKobo === 0 && !hasManagementApproval) {
       throw new DomainError(
         'AUTHORIZATION_REQUIRED',
         'A free sale requires Owner or Manager authorization',
