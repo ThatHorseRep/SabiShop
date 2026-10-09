@@ -59,6 +59,36 @@ describe('AuditLog', () => {
     expect(log.query('b')).toHaveLength(1)
   })
 
+  it('keeps identical operation IDs separate across distinct tenant boundaries', () => {
+    const log = new AuditLog()
+    const tenantA = log.record({
+      eventType: 'sale.completed',
+      businessId: 'tenant-a',
+      operationId: 'common-op-id',
+      targetType: 'sale',
+      targetId: 'sale-a',
+      result: 'accepted',
+      occurredAt: 100,
+      metadata: {},
+    })
+    const tenantB = log.record({
+      eventType: 'sale.completed',
+      businessId: 'tenant-b',
+      operationId: 'common-op-id',
+      targetType: 'sale',
+      targetId: 'sale-b',
+      result: 'accepted',
+      occurredAt: 101,
+      metadata: {},
+    })
+    expect(tenantA.businessId).toBe('tenant-a')
+    expect(tenantB.businessId).toBe('tenant-b')
+    expect(log.query('tenant-a')).toHaveLength(1)
+    expect(log.query('tenant-b')).toHaveLength(1)
+    expect(log.query('tenant-a')[0].targetId).toBe('sale-a')
+    expect(log.query('tenant-b')[0].targetId).toBe('sale-b')
+  })
+
   it('links corrections and recovery while preserving the original event', () => {
     const log = new AuditLog()
     log.record({
