@@ -108,7 +108,7 @@ git diff --check                               PASS
 ## Verified security audit
 
 **Module:** Conversation 31 — Security Audit
-**Status:** VERIFIED SECURITY AUDIT; ALL CONTROLS PASS
+**Status:** VERIFIED SECURITY AUDIT & HARDENING; ALL CONTROLS PASS
 **Audit Document:** `docs/build/AUDITS/31-security-audit.md`
 
 Implemented & Verified:
@@ -118,11 +118,13 @@ Implemented & Verified:
 - Whitelisted offline permissions preventing management/financial escalation while offline.
 - Append-only audit integrity protected by PostgreSQL triggers and immutable memory structures.
 - Sensitive credential and token redaction before audit persistence.
+- Resolved P0-2: Salesperson canonical role parity across `types.ts`, `policy.ts`, and controllers.
+- Resolved P0-5: Separated `approverRole` in `PricingAuthorization` to preserve seller identity and verify management authority.
 
-Validation on 2026-10-08 (branch `thathorserep-security-audit`):
+Validation on 2026-10-09 (branch `thathorserep-security-hardening`):
 
 ```text
-npm test                                       PASS (27 test files, 275 tests)
+npm test                                       PASS (29 test files, 301 tests)
 npm run lint                                   PASS
 npm run build                                  PASS
 npx tsc -b --pretty false                      PASS

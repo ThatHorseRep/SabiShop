@@ -293,8 +293,9 @@ export class PosController {
         pricingAuthorization: line.pricingApproval
           ? {
               actorId: input.actor.id,
-              role: line.pricingApproval.approverRole,
+              role: input.actor.role,
               approvedBy: line.pricingApproval.approverId,
+              approverRole: line.pricingApproval.approverRole,
               reason: line.pricingApproval.reason,
             }
           : undefined,

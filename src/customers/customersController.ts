@@ -5,6 +5,7 @@ import type {
   AuthorizationAuditEvent,
   AuthSession,
   Permission,
+  Role,
 } from '../auth/types'
 import {
   CustomersCreditEngine,
@@ -725,7 +726,7 @@ export class CustomerCreditController {
     return this.sessions.get(this.actorId)!.user.userId
   }
 
-  private actorRole(): 'owner' | 'manager' | 'staff' {
+  private actorRole(): Role {
     return this.getActor().role
   }
 

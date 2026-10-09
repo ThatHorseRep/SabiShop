@@ -76,23 +76,25 @@ All core security controls defined in `H03`, `H04`, and `H08` are strictly enfor
 | SEC-31-01  | **Low** (Informational)  | `src/auth/policy.ts` | Error message for `cross_business_access` intentionally hides tenant and entity IDs to prevent enumeration.                      | **VERIFIED** — Compliant with H04 and H08 threat specs.      |
 | SEC-31-02  | **Low** (Hardening)      | `migrations/`        | RLS policies use `FORCE ROW LEVEL SECURITY` ensuring even table owners cannot bypass tenant boundaries.                          | **VERIFIED** — Compliant with H04 §3.                        |
 | SEC-31-03  | **Medium** (Runtime Gap) | Database Client      | Production database connection pools must run as non-superuser role to ensure PostgreSQL RLS cannot be bypassed via `BYPASSRLS`. | **DOCUMENTED** — Tracked for production deployment pipeline. |
+| SEC-31-04  | **Critical** (P0-2)      | `src/auth/types.ts`  | Missing `'salesperson'` in canonical `Role` type caused `authorize()` crashes (`rolePermissions[role] is not iterable`).        | **REMEDIATED** — Added `'salesperson'` to `Role` and operational permissions in `rolePermissions`. |
+| SEC-31-05  | **Critical** (P0-5)      | `src/domain/catalogPricing.ts` | Dual-approval checked `input.authorization.role` instead of approver role, forcing POS to overwrite seller identity with approver role. | **REMEDIATED** — Separated `approverRole` in `PricingAuthorization` to preserve seller identity and verify management authority. |
 
 ---
 
 ## 4. Verification Evidence
 
-Validation commands executed on branch `thathorserep-security-audit`:
+Validation commands executed on branch `thathorserep-security-hardening`:
 
 ```text
-npm test                                       PASS (27 test files, 275 tests)
-npm run lint                                   PASS
-npm run build                                  PASS
+npm test                                       PASS (29 test files, 301 tests)
+npm run lint                                   PASS (0 errors, 0 warnings)
+npm run build                                  PASS (tsc -b && vite build in 19.63s)
 npx tsc -b --pretty false                      PASS
-git diff --check                               PASS
+git diff --check                               PASS (0 whitespace or boundary errors)
 ```
 
 ---
 
 ## 5. Handoff to Slice 32 (Financial Integrity Audit)
 
-The security architecture and access control foundation are fully verified. Execution proceeds to Slice 32 (Financial Integrity Audit).
+The security architecture and access control foundation are fully verified. All P0 issues have been cleanly resolved and verified with 7 dedicated regression tests. Execution proceeds to Slice 32 (Financial Integrity Audit).

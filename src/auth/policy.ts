@@ -17,6 +17,15 @@ const rolePermissions: Record<Role, readonly Permission[]> = {
     'credit:request',
     'correction:request',
   ],
+  salesperson: [
+    'business:work',
+    'business:switch',
+    'sale:create',
+    'payment:record',
+    'repayment:record',
+    'credit:request',
+    'correction:request',
+  ],
   manager: [
     'business:work',
     'business:switch',
@@ -109,7 +118,8 @@ export const effectivePermissions = (
 ): ReadonlySet<Permission> => {
   const result = new Set<Permission>(membership.permissions ?? [])
   for (const role of membership.roles) {
-    for (const permission of rolePermissions[role]) result.add(permission)
+    const permissions = rolePermissions[role] ?? []
+    for (const permission of permissions) result.add(permission)
   }
   return result
 }
