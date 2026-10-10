@@ -4,28 +4,24 @@ import {
   useRef,
   useState,
   type CSSProperties,
-  type ReactNode,
   type RefObject,
 } from 'react'
 import {
-  BellRinging,
-  ChartLine,
-  Clock,
-  CurrencyNgn,
-  Fingerprint,
-  HandCoins,
-  Link as LinkIcon,
-  NotePencil,
-  Package,
-  Receipt,
-  ShieldCheck,
+  ArrowCounterClockwise,
+  CheckCircle,
+  Plus,
   Storefront,
-  Truck,
   Users,
-  Wallet,
+  WifiHigh,
   WifiSlash,
   type Icon,
 } from '@phosphor-icons/react'
+import {
+  landingContent,
+  type Feature,
+  type LandingCopy,
+  type LandingLanguage,
+} from './landingContent'
 
 /*
  * Public landing page (C05). One audience (small retail business owners),
@@ -42,206 +38,27 @@ import {
 
 const APP_HREF = '/'
 
-type Faq = { question: string; answer: string }
-
-const faqs: readonly Faq[] = [
-  {
-    question: 'What is Sabi Shop?',
-    answer:
-      'Sabi Shop is a lightweight shop operations app for small retail businesses. It records sales, stock, money, customer credit, and staff activity, and turns them into a clear picture of the business.',
-  },
-  {
-    question: 'Who is Sabi Shop for?',
-    answer:
-      'Small physical goods retail businesses, including shops selling parts, equipment, tools, and similar products, where the owner needs to know what is happening without personally doing every transaction.',
-  },
-  {
-    question: 'Does it work offline?',
-    answer:
-      'Yes, for supported workflows. Sales and other daily work can continue locally when connectivity drops, and records synchronize when connectivity returns. Conflicts are surfaced for review rather than silently overwritten.',
-  },
-  {
-    question: 'Can my staff use it?',
-    answer:
-      'Yes. The selling interface is designed for fast everyday shop work, and each staff member sees what their role allows. Staff record sales, repayments, and cash movements, while approval and review controls stay with management.',
-  },
-  {
-    question: 'Can I track customer credit?',
-    answer:
-      'Yes. Credit sales, repayments, and outstanding debt are tracked per customer, with credit limits and approval rules you control.',
-  },
-  {
-    question: 'Can I track stock?',
-    answer:
-      'Yes. Stock received, sold, returned, and adjusted is tracked per product, and low stock and out of stock items are surfaced for attention.',
-  },
-  {
-    question: 'Can I record different payment methods?',
-    answer:
-      'Yes. Cash, transfer, POS or card payments, and credit are supported, including split payments across methods.',
-  },
-  {
-    question: 'What happens when a sale needs correction?',
-    answer:
-      'Corrections are controlled and traceable. The original record is preserved, the correction carries a reason, and consequential changes follow your approval rules. Mistakes are corrected without pretending they never happened.',
-  },
-  {
-    question: 'Can Sabi Shop work for more than one business?',
-    answer:
-      "Each business keeps its own separate records. Sabi Shop is built so one business's data is never mixed with another's.",
-  },
-  {
-    question: 'How do I get started?',
-    answer:
-      'Choose Get Started to open the working product. Account setup and onboarding are being finalized, so today the button opens the product workspace directly.',
-  },
-]
-
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: faqs.map((faq) => ({
-    '@type': 'Question',
-    name: faq.question,
-    acceptedAnswer: { '@type': 'Answer', text: faq.answer },
-  })),
+interface SimulatorItem {
+  id: string
+  name: string
+  quantity: number
+  unitPriceKobo: number
 }
 
-type Feature = { icon: Icon; title: string; detail: string }
-
-const outcomes: readonly Feature[] = [
-  {
-    icon: Receipt,
-    title: 'Know your sales',
-    detail:
-      'What sold, when, at what price, and who recorded it. Every sale stays explainable.',
-  },
-  {
-    icon: Package,
-    title: 'Know your stock',
-    detail:
-      'What you have, what came in, what moved out, and what needs restocking.',
-  },
-  {
-    icon: CurrencyNgn,
-    title: 'Know your money',
-    detail:
-      'Cash, transfers, and card payments kept distinct, with expenses, owner funding, and withdrawals traceable.',
-  },
-  {
-    icon: HandCoins,
-    title: 'Know who owes you',
-    detail:
-      'Credit sales, repayments, and outstanding obligations, so debt never becomes a guess.',
-  },
-  {
-    icon: BellRinging,
-    title: 'Know what needs attention',
-    detail:
-      'Discrepancies, approvals, returns, and stock exceptions surface for review instead of staying hidden.',
-  },
+const DEFAULT_SIMULATOR_ITEMS: readonly SimulatorItem[] = [
+  { id: 'spark-plug', name: 'Spark Plug NGK', quantity: 4, unitPriceKobo: 85000 },
+  { id: 'engine-oil', name: 'Engine Oil 4L SAE 40', quantity: 1, unitPriceKobo: 1250000 },
+  { id: 'air-filter', name: 'Air Filter Toyota Corolla', quantity: 2, unitPriceKobo: 680000 },
 ]
 
-const productAreas: readonly Feature[] = [
-  {
-    icon: Storefront,
-    title: 'Sell',
-    detail:
-      'Record sales quickly, with discounts and split payments handled clearly.',
-  },
-  {
-    icon: Package,
-    title: 'Products & Stock',
-    detail: 'Track what came in, what moved, and what remains.',
-  },
-  {
-    icon: Users,
-    title: 'Customers & Credit',
-    detail: 'Follow who owes you and what has been repaid.',
-  },
-  {
-    icon: Truck,
-    title: 'Suppliers & Purchasing',
-    detail:
-      'Keep purchases, supplier obligations, and received stock connected.',
-  },
-  {
-    icon: Wallet,
-    title: 'Money',
-    detail: 'See cash, transfers, expenses, and reconciliation in one place.',
-  },
-  {
-    icon: Clock,
-    title: 'Activity',
-    detail: 'Every important action leaves a traceable record.',
-  },
-  {
-    icon: ChartLine,
-    title: 'Management',
-    detail: 'Review performance, exceptions, and what needs decisions.',
-  },
+const EXTRA_CATALOG_ITEMS: readonly SimulatorItem[] = [
+  { id: 'brake-pads', name: 'Brake Pads Front (Corolla)', quantity: 1, unitPriceKobo: 950000 },
+  { id: 'oil-filter', name: 'Oil Filter Toyota Genuine', quantity: 1, unitPriceKobo: 320000 },
 ]
 
-const trustItems: readonly Feature[] = [
-  {
-    icon: Fingerprint,
-    title: 'Traceable activity',
-    detail:
-      'Important actions record who did what and when, so questions have answers.',
-  },
-  {
-    icon: NotePencil,
-    title: 'Controlled corrections',
-    detail:
-      'Mistakes can be corrected without pretending they never happened. Corrections keep their reasons and their history.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Clear authority',
-    detail:
-      'Price overrides, credit, and consequential corrections follow the permissions you set.',
-  },
-  {
-    icon: WifiSlash,
-    title: 'Offline support',
-    detail:
-      'Keep working when connectivity is unreliable. Supported workflows continue locally and synchronize when connectivity returns.',
-  },
-]
-
-const problemLines = [
-  'Sales happen all day, at the counter and on the phone.',
-  'Stock moves with every sale, delivery, and return.',
-  'Customers buy on credit and repay on their own schedule.',
-  'Money arrives as cash, transfers, and card payments, and leaves for expenses and restocking.',
-  'Staff keep the shop moving while the owner is away.',
-]
-
-const taglineWords = ['Run', 'the', 'shop.', 'See', 'the', 'business.']
-
-const audienceExamples = [
-  'Retail shops',
-  'Parts shops',
-  'Equipment shops',
-  'Hardware and tool shops',
-  'Similar physical goods businesses',
-]
-
-const headerLinks = [
-  { href: '#how-it-works', label: 'How it works' },
-  { href: '#what-it-covers', label: 'What it covers' },
-  { href: '#faq', label: 'FAQ' },
-]
-
-function GetStartedLink({ className }: { className?: string }) {
-  return (
-    <a
-      className={`ui-button ui-button--primary ${className ?? ''}`.trim()}
-      href={APP_HREF}
-    >
-      Get Started
-    </a>
-  )
+function formatNaira(kobo: number): string {
+  const naira = kobo / 100
+  return `₦${naira.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 function SectionIcon({ icon: Icon }: { icon: Icon }) {
@@ -252,16 +69,44 @@ function SectionIcon({ icon: Icon }: { icon: Icon }) {
   )
 }
 
+function GetStartedLink({
+  className,
+  label = 'Get Started',
+}: {
+  className?: string
+  label?: string
+}) {
+  return (
+    <a
+      className={`ui-button ui-button--primary ${className ?? ''}`.trim()}
+      href={APP_HREF}
+    >
+      {label}
+    </a>
+  )
+}
+
 /**
- * One conversion objective, one primary CTA. The header keeps a single Get
- * Started action; Sign in is the subordinate secondary path (C05 sections
- * 6, 9). The temporary destination is the working product because onboarding
- * does not exist yet, and no fake signup is presented.
+ * Floating glass pill navigation with language switcher (EN / Nigerian Pidgin).
  */
-function LandingHeader() {
+function LandingHeader({
+  copy,
+  language,
+  onLanguageChange,
+}: {
+  copy: LandingCopy
+  language: LandingLanguage
+  onLanguageChange: (lang: LandingLanguage) => void
+}) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+
+  const headerLinks = [
+    { href: '#how-it-works', label: copy.nav.howItWorks },
+    { href: '#what-it-covers', label: copy.nav.whatItCovers },
+    { href: '#faq', label: copy.nav.faq },
+  ]
 
   useEffect(() => {
     if (!menuOpen) return
@@ -325,10 +170,31 @@ function LandingHeader() {
           ))}
         </nav>
         <div className="landing-header__actions">
+          <div className="landing-lang-toggle" role="group" aria-label="Language selection">
+            <button
+              type="button"
+              className={`landing-lang-btn ${language === 'en' ? 'is-active' : ''}`}
+              aria-pressed={language === 'en'}
+              onClick={() => onLanguageChange('en')}
+            >
+              EN
+            </button>
+            <button
+              type="button"
+              className={`landing-lang-btn ${language === 'pcm' ? 'is-active' : ''}`}
+              aria-pressed={language === 'pcm'}
+              onClick={() => onLanguageChange('pcm')}
+            >
+              Pidgin
+            </button>
+          </div>
           <a className="landing-header__sign-in" href={APP_HREF}>
-            Sign in
+            {copy.nav.signIn}
           </a>
-          <GetStartedLink className="ui-button--sm landing-header__cta" />
+          <GetStartedLink
+            label={copy.nav.getStarted}
+            className="ui-button--sm landing-header__cta"
+          />
         </div>
         <button
           ref={menuButtonRef}
@@ -367,14 +233,38 @@ function LandingHeader() {
             ))}
           </nav>
           <div className="landing-menu__actions">
+            <div className="landing-lang-toggle" role="group" aria-label="Language selection mobile">
+              <button
+                type="button"
+                className={`landing-lang-btn ${language === 'en' ? 'is-active' : ''}`}
+                aria-pressed={language === 'en'}
+                onClick={() => {
+                  onLanguageChange('en')
+                  setMenuOpen(false)
+                }}
+              >
+                English
+              </button>
+              <button
+                type="button"
+                className={`landing-lang-btn ${language === 'pcm' ? 'is-active' : ''}`}
+                aria-pressed={language === 'pcm'}
+                onClick={() => {
+                  onLanguageChange('pcm')
+                  setMenuOpen(false)
+                }}
+              >
+                Nigerian Pidgin
+              </button>
+            </div>
             <a
               className="landing-menu__link"
               href={APP_HREF}
               style={{ '--i': headerLinks.length } as CSSProperties}
             >
-              Sign in
+              {copy.nav.signIn}
             </a>
-            <GetStartedLink className="landing-menu__cta" />
+            <GetStartedLink label={copy.nav.getStarted} className="landing-menu__cta" />
           </div>
         </div>
       )}
@@ -384,26 +274,74 @@ function LandingHeader() {
 
 /**
  * Representative sale workspace built from the application's design language
- * and seed catalogue. It is labelled as representative: figures are example
- * data, never performance claims (C05 sections 12, 46, 57).
+ * and seed catalogue. It is interactive so visitors can feel the tactile
+ * split payments, offline protection, and instant calculations, while remaining
+ * labelled as representative with example data (C05 sections 12, 46, 57).
  */
-function SaleWorkspaceVisual() {
+function SaleWorkspaceVisual({ copy }: { copy: LandingCopy }) {
+  const [isOffline, setIsOffline] = useState(true)
+  const [items, setItems] = useState<SimulatorItem[]>([...DEFAULT_SIMULATOR_ITEMS])
+  const [saleCompleted, setSaleCompleted] = useState(false)
+
+  const totalKobo = items.reduce(
+    (sum, item) => sum + item.quantity * item.unitPriceKobo,
+    0,
+  )
+
+  // Split payment ratio proportional to standard representative total
+  const cashKobo = Math.min(2000000, totalKobo)
+  const transferKobo = Math.max(0, totalKobo - cashKobo)
+
+  const handleAddItem = (extraItem: SimulatorItem) => {
+    setSaleCompleted(false)
+    setItems((current) => {
+      const existing = current.find((i) => i.id === extraItem.id)
+      if (existing) {
+        return current.map((i) =>
+          i.id === extraItem.id ? { ...i, quantity: i.quantity + 1 } : i,
+        )
+      }
+      return [...current, { ...extraItem }]
+    })
+  }
+
+  const handleReset = () => {
+    setItems([...DEFAULT_SIMULATOR_ITEMS])
+    setIsOffline(true)
+    setSaleCompleted(false)
+  }
+
   return (
     <figure className="landing-visual" data-reveal>
       <div className="landing-visual__frame">
         <div className="landing-visual__bar">
-          <span className="landing-visual__title">New sale</span>
-          <span className="ui-badge ui-badge--offline">
-            <WifiSlash size={12} weight="bold" aria-hidden="true" />
-            Offline · saved on device
-          </span>
+          <span className="landing-visual__title">{copy.simulator.title}</span>
+          <button
+            type="button"
+            className="landing-sim__network-toggle"
+            onClick={() => setIsOffline((prev) => !prev)}
+            aria-label={isOffline ? 'Switch to online simulation' : 'Switch to offline simulation'}
+            title="Click to simulate offline / online connection"
+          >
+            {isOffline ? (
+              <span className="ui-badge ui-badge--offline">
+                <WifiSlash size={12} weight="bold" aria-hidden="true" />
+                {copy.simulator.offlineBadge}
+              </span>
+            ) : (
+              <span className="ui-badge ui-badge--success">
+                <WifiHigh size={12} weight="bold" aria-hidden="true" />
+                {copy.simulator.onlineBadge}
+              </span>
+            )}
+          </button>
         </div>
-        <p className="landing-visual__customer">
-          Customer · Ada Obi · credit allowed
-        </p>
+
+        <p className="landing-visual__customer">{copy.simulator.customer}</p>
+
         <table className="landing-visual__items">
           <caption className="visually-hidden">
-            Example sale with three line items
+            Example sale with line items
           </caption>
           <thead>
             <tr>
@@ -413,85 +351,126 @@ function SaleWorkspaceVisual() {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <th scope="row">Spark Plug NGK</th>
-              <td className="numeric">4 × ₦850.00</td>
-              <td className="numeric">₦3,400.00</td>
-            </tr>
-            <tr>
-              <th scope="row">Engine Oil 4L SAE 40</th>
-              <td className="numeric">1 × ₦12,500.00</td>
-              <td className="numeric">₦12,500.00</td>
-            </tr>
-            <tr>
-              <th scope="row">Air Filter Toyota Corolla</th>
-              <td className="numeric">2 × ₦6,800.00</td>
-              <td className="numeric">₦13,600.00</td>
-            </tr>
+            {items.map((item) => (
+              <tr key={item.id}>
+                <th scope="row">{item.name}</th>
+                <td className="numeric">
+                  {item.quantity} × {formatNaira(item.unitPriceKobo)}
+                </td>
+                <td className="numeric">
+                  {formatNaira(item.quantity * item.unitPriceKobo)}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
-        <div className="landing-visual__payment">
-          <span className="ui-badge ui-badge--neutral">Cash · ₦20,000.00</span>
-          <span className="ui-badge ui-badge--neutral">
-            Transfer · ₦9,500.00
-          </span>
+
+        {/* Interactive Quick Add Toolbar */}
+        <div className="landing-sim__toolbar" aria-label="Sample items to add">
+          <span className="landing-sim__toolbar-label">Try adding:</span>
+          {EXTRA_CATALOG_ITEMS.map((extra) => (
+            <button
+              key={extra.id}
+              type="button"
+              className="landing-sim__quick-btn"
+              onClick={() => handleAddItem(extra)}
+            >
+              <Plus size={12} weight="bold" aria-hidden="true" />
+              {extra.name.split(' ')[0]} {formatNaira(extra.unitPriceKobo)}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="landing-sim__reset-btn"
+            onClick={handleReset}
+            title={copy.simulator.reset}
+            aria-label={copy.simulator.reset}
+          >
+            <ArrowCounterClockwise size={13} weight="bold" aria-hidden="true" />
+          </button>
         </div>
+
+        <div className="landing-visual__payment">
+          <span className="ui-badge ui-badge--neutral">
+            Cash · {formatNaira(cashKobo)}
+          </span>
+          {transferKobo > 0 && (
+            <span className="ui-badge ui-badge--neutral">
+              Transfer · {formatNaira(transferKobo)}
+            </span>
+          )}
+        </div>
+
         <div className="landing-visual__footer">
           <span className="ui-badge ui-badge--neutral">
             Air Filter Toyota Corolla · 12 in stock
           </span>
           <p className="landing-visual__total">
-            <span className="landing-visual__total-label">Total</span>
-            <span className="numeric">₦29,500.00</span>
+            <span className="landing-visual__total-label">{copy.simulator.total}</span>
+            <span className="numeric">{formatNaira(totalKobo)}</span>
           </p>
+        </div>
+
+        {/* Action Completion Simulation */}
+        <div className="landing-sim__actions">
+          {saleCompleted ? (
+            <div className="landing-sim__stamp" role="status">
+              <CheckCircle size={16} weight="fill" aria-hidden="true" />
+              <span>{copy.simulator.saleCompleted}</span>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="ui-button ui-button--secondary landing-sim__complete-btn"
+              onClick={() => setSaleCompleted(true)}
+            >
+              {copy.simulator.completeSale}
+            </button>
+          )}
         </div>
       </div>
       <figcaption className="landing-visual__caption">
-        Representative view of the Sabi Shop sale workspace with example data.
+        {copy.simulator.caption}
       </figcaption>
     </figure>
   )
 }
 
-function Hero() {
+function Hero({ copy }: { copy: LandingCopy }) {
   return (
     <section className="landing-hero" aria-labelledby="hero-title">
+      {/* Wan2GP Ambient Motion Layer */}
+      <div className="landing-hero__ambient" aria-hidden="true">
+        <div className="landing-hero__ambient-radial" />
+      </div>
+
       <div className="landing-container landing-hero__grid">
         <div className="landing-hero__copy">
           <p className="landing-eyebrow">
             <span className="landing-eyebrow__dot" aria-hidden="true" />
-            Shop operations for small retail businesses
+            {copy.hero.eyebrow}
           </p>
           <h1 className="landing-hero__title" id="hero-title">
-            Know what is happening
+            {copy.hero.titleLine1}
             <br />
-            in your shop.
+            {copy.hero.titleLine2}
           </h1>
-          <p className="landing-hero__sub">
-            Sabi Shop records daily sales, stock, money, and customer credit in
-            one connected picture, so you can see what happened, what you still
-            have, and what needs attention.
-          </p>
+          <p className="landing-hero__sub">{copy.hero.subtitle}</p>
           <div className="landing-hero__actions">
-            <GetStartedLink />
+            <GetStartedLink label={copy.hero.ctaPrimary} />
             <a className="ui-button ui-button--secondary" href="#how-it-works">
-              See how it works
+              {copy.hero.ctaSecondary}
             </a>
           </div>
-          {/* Proof sits with the claim it supports, as an honest capability
-              statement rather than fabricated social proof (C05 section 35). */}
-          <p className="landing-hero__proof">
-            Built for real shop conditions: multiple staff, cash and transfers,
-            customer credit, negotiated prices, and unreliable connectivity.
-          </p>
+          <p className="landing-hero__proof">{copy.hero.proof}</p>
         </div>
-        <SaleWorkspaceVisual />
+        <SaleWorkspaceVisual copy={copy} />
       </div>
     </section>
   )
 }
 
-function Problem() {
+function Problem({ copy }: { copy: LandingCopy }) {
   return (
     <section
       className="landing-section landing-section--sunken"
@@ -499,23 +478,20 @@ function Problem() {
     >
       <div className="landing-container landing-section__head">
         <h2 className="landing-section__title" id="problem-title" data-reveal>
-          The shop does not pause for paperwork.
+          {copy.problem.title}
         </h2>
         <p className="landing-section__lead" data-reveal>
-          A small retail business generates records all day, whether or not
-          anyone is writing them down.
+          {copy.problem.lead}
         </p>
         <ul className="landing-problem__list">
-          {problemLines.map((line) => (
+          {copy.problem.lines.map((line) => (
             <li key={line} data-reveal>
               {line}
             </li>
           ))}
         </ul>
         <p className="landing-problem__transition" data-reveal>
-          At the end of the day, you still need to know what happened. Sabi Shop
-          turns that daily activity into a clear business record as it happens,
-          so you are not reconstructing the week from memory.
+          {copy.problem.transition}
         </p>
       </div>
     </section>
@@ -534,14 +510,21 @@ function FeatureTile({
   if (variant === 'on-brand') classes.push('landing-tile--on-brand')
   return (
     <article className={classes.join(' ')} data-reveal>
-      <SectionIcon icon={feature.icon} />
+      <div className="landing-tile__head">
+        <SectionIcon icon={feature.icon} />
+        {feature.metricBadge && (
+          <span className="ui-badge ui-badge--neutral landing-tile__badge">
+            {feature.metricBadge}
+          </span>
+        )}
+      </div>
       <h3 className="landing-tile__title">{feature.title}</h3>
       <p className="landing-tile__detail">{feature.detail}</p>
     </article>
   )
 }
 
-function Outcomes() {
+function Outcomes({ copy }: { copy: LandingCopy }) {
   return (
     <section className="landing-section" aria-labelledby="outcomes-title">
       <div className="landing-container">
@@ -551,14 +534,14 @@ function Outcomes() {
             id="outcomes-title"
             data-reveal
           >
-            Know your shop
+            {copy.outcomesTitle}
           </h2>
           <p className="landing-section__lead" data-reveal>
-            Sabi Shop keeps the questions that matter answerable.
+            {copy.outcomesLead}
           </p>
         </div>
         <div className="landing-grid landing-grid--outcomes">
-          {outcomes.map((outcome) => (
+          {copy.outcomes.map((outcome) => (
             <FeatureTile key={outcome.title} feature={outcome} />
           ))}
         </div>
@@ -570,12 +553,13 @@ function Outcomes() {
 /**
  * Tagline reveal (landing-page-design B11): a separate large-type moment
  * where each word activates individually in reading order as it crosses the
- * viewport. Words render at full colour whenever scripting or observers are
- * unavailable, and reduced-motion preferences remove the animation.
+ * viewport.
  */
 function TaglineReveal({
+  copy,
   sectionRef,
 }: {
+  copy: LandingCopy
   sectionRef: RefObject<HTMLElement | null>
 }) {
   useEffect(() => {
@@ -602,14 +586,14 @@ function TaglineReveal({
     <section className="landing-tagline" ref={sectionRef} aria-label="Tagline">
       <div className="landing-container">
         <p className="landing-tagline__statement">
-          {taglineWords.map((word, index) => (
+          {copy.tagline.words.map((word, index) => (
             <span
               key={`${word}-${index}`}
               className="landing-tagline__word"
               style={{ transitionDelay: `${index * 90}ms` }}
             >
               {word}
-              {index < taglineWords.length - 1 ? ' ' : ''}
+              {index < copy.tagline.words.length - 1 ? ' ' : ''}
             </span>
           ))}
         </p>
@@ -621,27 +605,7 @@ function TaglineReveal({
   )
 }
 
-function HowItWorks() {
-  const steps: readonly { icon: Icon; title: string; detail: ReactNode }[] = [
-    {
-      icon: NotePencil,
-      title: 'Record the work',
-      detail:
-        'Sales, payments, stock received, customer credit, repayments, and money activity are recorded as they happen, online or offline.',
-    },
-    {
-      icon: LinkIcon,
-      title: 'Keep the picture connected',
-      detail:
-        'Each sale stays linked to its payment, customer, and stock movement, and to any later return or correction, so records explain each other.',
-    },
-    {
-      icon: BellRinging,
-      title: 'See what needs attention',
-      detail:
-        'Cash differences, outstanding debt, low stock, approvals, and corrections are surfaced for review. Sabi Shop shows you what happened; you decide what to do.',
-    },
-  ]
+function HowItWorks({ copy }: { copy: LandingCopy }) {
   return (
     <section
       id="how-it-works"
@@ -651,19 +615,18 @@ function HowItWorks() {
       <div className="landing-container">
         <div className="landing-section__head">
           <h2 className="landing-section__title" id="how-title" data-reveal>
-            How Sabi Shop works
+            {copy.howItWorks.title}
           </h2>
           <p className="landing-section__lead" data-reveal>
-            One operating model, from the counter to the business picture.
+            {copy.howItWorks.lead}
           </p>
         </div>
         <ol className="landing-steps">
-          {steps.map((step, index) => (
+          {copy.howItWorks.steps.map((step, index) => (
             <li key={step.title} className="landing-step" data-reveal>
               <span className="landing-step__number" aria-hidden="true">
                 {index + 1}
               </span>
-              <SectionIcon icon={step.icon} />
               <h3 className="landing-tile__title">{step.title}</h3>
               <p className="landing-tile__detail">{step.detail}</p>
             </li>
@@ -674,7 +637,7 @@ function HowItWorks() {
   )
 }
 
-function ProductAreas() {
+function ProductAreas({ copy }: { copy: LandingCopy }) {
   return (
     <section
       id="what-it-covers"
@@ -684,15 +647,14 @@ function ProductAreas() {
       <div className="landing-container">
         <div className="landing-section__head">
           <h2 className="landing-section__title" id="areas-title" data-reveal>
-            One system for the whole shop
+            {copy.productAreas.title}
           </h2>
           <p className="landing-section__lead" data-reveal>
-            These areas share one connected record. A sale updates stock, a
-            repayment updates debt, and a correction keeps its history.
+            {copy.productAreas.lead}
           </p>
         </div>
         <div className="landing-grid landing-grid--areas">
-          {productAreas.map((area) => (
+          {copy.productAreas.items.map((area) => (
             <FeatureTile key={area.title} feature={area} variant="compact" />
           ))}
         </div>
@@ -701,7 +663,7 @@ function ProductAreas() {
   )
 }
 
-function Trust() {
+function Trust({ copy }: { copy: LandingCopy }) {
   return (
     <section
       className="landing-section landing-section--brand"
@@ -710,15 +672,14 @@ function Trust() {
       <div className="landing-container">
         <div className="landing-section__head">
           <h2 className="landing-section__title" id="trust-title" data-reveal>
-            Trustworthy where it matters
+            {copy.trust.title}
           </h2>
           <p className="landing-section__lead" data-reveal>
-            Sabi Shop records financially meaningful activity, so traceability
-            and control are part of the design, not an afterthought.
+            {copy.trust.lead}
           </p>
         </div>
         <div className="landing-grid landing-grid--trust">
-          {trustItems.map((item) => (
+          {copy.trust.items.map((item) => (
             <FeatureTile key={item.title} feature={item} variant="on-brand" />
           ))}
         </div>
@@ -727,7 +688,7 @@ function Trust() {
   )
 }
 
-function Audience() {
+function Audience({ copy }: { copy: LandingCopy }) {
   return (
     <section className="landing-section" aria-labelledby="audience-title">
       <div className="landing-container">
@@ -737,14 +698,13 @@ function Audience() {
             id="audience-title"
             data-reveal
           >
-            Built for small shops where the owner needs to know
+            {copy.audience.title}
           </h2>
           <p className="landing-section__lead" data-reveal>
-            Sabi Shop is designed for small physical goods retail businesses,
-            not only one product category.
+            {copy.audience.lead}
           </p>
           <ul className="landing-audience__examples" data-reveal>
-            {audienceExamples.map((example) => (
+            {copy.audience.examples.map((example) => (
               <li key={example} className="ui-badge ui-badge--neutral">
                 {example}
               </li>
@@ -755,7 +715,7 @@ function Audience() {
           <FeatureTile
             key="owner"
             feature={{
-              icon: ChartLine,
+              icon: Storefront,
               title: 'For you, the owner',
               detail:
                 'See sales, stock, money, and performance without standing at the counter. The shop keeps moving, and the record keeps up.',
@@ -776,7 +736,7 @@ function Audience() {
   )
 }
 
-function Faq() {
+function Faq({ copy }: { copy: LandingCopy }) {
   return (
     <section
       id="faq"
@@ -786,14 +746,14 @@ function Faq() {
       <div className="landing-container landing-container--narrow">
         <div className="landing-section__head">
           <h2 className="landing-section__title" id="faq-title" data-reveal>
-            Questions shop owners ask
+            {copy.faq.title}
           </h2>
           <p className="landing-section__lead" data-reveal>
-            Direct answers, without the technical dump.
+            {copy.faq.lead}
           </p>
         </div>
         <div className="landing-faq">
-          {faqs.map((faq) => (
+          {copy.faq.items.map((faq) => (
             <details
               key={faq.question}
               className="landing-faq__item"
@@ -811,36 +771,34 @@ function Faq() {
   )
 }
 
-function FinalCta() {
+function FinalCta({ copy }: { copy: LandingCopy }) {
   return (
     <section className="landing-section" aria-labelledby="final-title">
       <div className="landing-container">
         <div className="landing-final" data-reveal>
           <h2 className="landing-final__title" id="final-title">
-            Ready to see your shop clearly?
+            {copy.finalCta.title}
           </h2>
-          <p className="landing-final__sub">
-            Know what is happening in your shop, from the first sale.
-          </p>
-          {/* The final CTA matches the hero's primary CTA exactly
-              (landing-page-design A2; C05 section 6). */}
-          <GetStartedLink className="landing-final__cta" />
+          <p className="landing-final__sub">{copy.finalCta.lead}</p>
+          <GetStartedLink label={copy.finalCta.button} className="landing-final__cta" />
         </div>
       </div>
     </section>
   )
 }
 
-function LandingFooter() {
+function LandingFooter({ copy }: { copy: LandingCopy }) {
+  const headerLinks = [
+    { href: '#how-it-works', label: copy.nav.howItWorks },
+    { href: '#what-it-covers', label: copy.nav.whatItCovers },
+    { href: '#faq', label: copy.nav.faq },
+  ]
   return (
     <footer className="landing-footer">
       <div className="landing-container landing-footer__grid">
         <div className="landing-footer__brand">
           <p className="landing-footer__name">Sabi Shop</p>
-          <p className="landing-footer__line">
-            Sabi Shop helps small shops know what happened, what they have, and
-            where the money went.
-          </p>
+          <p className="landing-footer__line">{copy.footer.tagline}</p>
         </div>
         <nav className="landing-footer__nav" aria-label="Footer">
           {headerLinks.map((link) => (
@@ -853,18 +811,18 @@ function LandingFooter() {
             </a>
           ))}
           <a className="landing-footer__link" href={APP_HREF}>
-            Sign in
+            {copy.nav.signIn}
           </a>
         </nav>
         <div className="landing-footer__actions">
-          <GetStartedLink className="ui-button--sm landing-footer__cta" />
+          <GetStartedLink label={copy.nav.getStarted} className="ui-button--sm landing-footer__cta" />
           <p className="landing-footer__note">
             Privacy policy and terms will be published with the public release.
           </p>
         </div>
       </div>
       <div className="landing-container landing-footer__meta">
-        <p>© 2026 Sabi Shop.</p>
+        <p>© 2026 Sabi Shop. {copy.footer.builtFor}</p>
       </div>
     </footer>
   )
@@ -872,10 +830,31 @@ function LandingFooter() {
 
 export function LandingPage() {
   const taglineRef = useRef<HTMLElement>(null)
+  const [language, setLanguage] = useState<LandingLanguage>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = window.localStorage.getItem('sabi-shop:language')
+      if (stored === 'pcm' || stored === 'en') return stored
+    }
+    return 'en'
+  })
+
+  const copy = landingContent[language]
+
+  const handleLanguageChange = (lang: LandingLanguage) => {
+    setLanguage(lang)
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('sabi-shop:language', lang)
+      document.documentElement.lang = lang
+    }
+  }
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = language
+    }
+  }, [language])
 
   // Gentle entrance for sections as they enter the viewport
-  // (landing-page-design B7). IntersectionObserver only; never an
-  // unthrottled scroll listener. Elements without scripting render normally.
   useEffect(() => {
     if (!('IntersectionObserver' in window)) return
     const reveals = document.querySelectorAll('[data-reveal]')
@@ -894,25 +873,39 @@ export function LandingPage() {
     return () => observer.disconnect()
   }, [])
 
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: copy.faq.items.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+    })),
+  }
+
   return (
     <div id="top">
       <a className="landing-skip-link" href="#main">
         Skip to content
       </a>
-      <LandingHeader />
+      <LandingHeader
+        copy={copy}
+        language={language}
+        onLanguageChange={handleLanguageChange}
+      />
       <main id="main">
-        <Hero />
-        <Problem />
-        <Outcomes />
-        <TaglineReveal sectionRef={taglineRef} />
-        <HowItWorks />
-        <ProductAreas />
-        <Trust />
-        <Audience />
-        <Faq />
-        <FinalCta />
+        <Hero copy={copy} />
+        <Problem copy={copy} />
+        <Outcomes copy={copy} />
+        <TaglineReveal copy={copy} sectionRef={taglineRef} />
+        <HowItWorks copy={copy} />
+        <ProductAreas copy={copy} />
+        <Trust copy={copy} />
+        <Audience copy={copy} />
+        <Faq copy={copy} />
+        <FinalCta copy={copy} />
       </main>
-      <LandingFooter />
+      <LandingFooter copy={copy} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}

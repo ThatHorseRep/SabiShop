@@ -251,4 +251,70 @@ describe('public landing page', () => {
     expect(document.body.style.overflow).toBe('')
     expect(menuButton).toHaveFocus()
   })
+
+  it('switches between English and Nigerian Pidgin copy seamlessly', async () => {
+    const user = userEvent.setup()
+    render(<LandingPage />)
+
+    // Initially in English
+    expect(document.documentElement.lang).toBe('en')
+    expect(screen.getByText('EN')).toHaveClass('is-active')
+
+    // Switch to Pidgin
+    const pidginBtn = screen.getByRole('button', { name: 'Pidgin' })
+    await user.click(pidginBtn)
+
+    expect(document.documentElement.lang).toBe('pcm')
+    expect(window.localStorage.getItem('sabi-shop:language')).toBe('pcm')
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: /know wetin dey happen/i,
+      }),
+    ).toBeInTheDocument()
+
+    // Switch back to English
+    const englishBtn = screen.getByRole('button', { name: 'EN' })
+    await user.click(englishBtn)
+    expect(document.documentElement.lang).toBe('en')
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: /know what is happening/i,
+      }),
+    ).toBeInTheDocument()
+  })
+
+  it('interactively simulates offline toggling, adding items, and completing sales in the POS playground', async () => {
+    const user = userEvent.setup()
+    render(<LandingPage />)
+
+    // Initial state: offline badge present
+    expect(screen.getByText('Offline · saved on device')).toBeInTheDocument()
+
+    // Toggle to online
+    const networkToggle = screen.getByLabelText(/switch to online simulation/i)
+    await user.click(networkToggle)
+    expect(screen.getByText('Online · cloud synced')).toBeInTheDocument()
+
+    // Toggle back to offline
+    await user.click(screen.getByLabelText(/switch to offline simulation/i))
+    expect(screen.getByText('Offline · saved on device')).toBeInTheDocument()
+
+    // Add extra item (Brake Pads)
+    const addBrakeBtn = screen.getByRole('button', { name: /brake/i })
+    await user.click(addBrakeBtn)
+    expect(screen.getByText('Brake Pads Front (Corolla)')).toBeInTheDocument()
+
+    // Complete sale simulation
+    const completeBtn = screen.getByRole('button', { name: /complete sale/i })
+    await user.click(completeBtn)
+    expect(screen.getByText(/sale completed · receipt printed/i)).toBeInTheDocument()
+
+    // Reset demo
+    const resetBtn = screen.getByRole('button', { name: /reset demo/i })
+    await user.click(resetBtn)
+    expect(screen.queryByText('Brake Pads Front (Corolla)')).not.toBeInTheDocument()
+    expect(screen.getByText('Spark Plug NGK')).toBeInTheDocument()
+  })
 })
