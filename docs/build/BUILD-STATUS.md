@@ -808,24 +808,29 @@ typeface, and Phosphor icon family:
 - accessibility: semantic HTML, keyboard-operable menu with focus wrap and
   Escape, native FAQ disclosures, visible focus, reduced-motion support,
   and progressive enhancement so all content renders fully without
-  scripting or observers.
+  scripting or observers;
+- landing page evolution (2026-10-10): first-class bilingual English/Pidgin
+  toggle (`landingContent.ts`), interactive POS simulation playground with
+  real-time cart, split-tender calculation, live local/cloud sync status toggle,
+  and sale stamp, alongside Wan2GP ambient background visuals and operational
+  micro-badges on core outcome pillars.
 
-Validation on 2026-09-08:
+Validation on 2026-10-10 (branch `thathorserep-landing-page-evolution`):
 
 ```text
-npm test                                      PASS (232 tests, 23 files)
+npm test                                      PASS (305 tests, 29 files)
+npm run test:e2e                              PASS (17 tests, 4 files)
 npm run lint                                  PASS (0 errors, 0 warnings)
-npm run build                                 PASS
+npm run build                                 PASS (dist/index.html + dist/landing.html)
 npx tsc -b --pretty false                     PASS
-npx prettier --check <landing slice files>    PASS
 git diff --check                              PASS
 ```
 
 Browser verification (production build via `vite preview`, 390 px and
 1440 px): no horizontal overflow at either width, hero/CTAs/tagline/FAQ/menu
 exercised interactively, scroll reveals and tagline words activate through
-IntersectionObserver, and the Geist typeface and shared button system render
-as designed. Screenshots are archived under `work/`.
+IntersectionObserver, language switch toggles smoothly between English and Pidgin,
+and the interactive simulation playground operates responsively. Screenshots are archived under `work/`.
 
 ## Implemented language and Nigerian Pidgin content slice
 

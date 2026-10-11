@@ -198,9 +198,25 @@ audit, and offline boundaries apply unchanged. The offline badge shown in
 the hero visual is a representative presentation of an application state,
 not a claim about this page.
 
+## Landing page evolution update (2026-10-10)
+
+On branch `thathorserep-landing-page-evolution`, the landing page was evolved to institutional gold standard:
+1. **Interactive POS Simulation Playground (`SaleWorkspaceVisual`):**
+   - Live interactive state allowing visitors to add items (Brake Pads, Oil Filter) to an active cart with real-time total recalculations.
+   - Interactive split-tender drawer (Cash + Bank Transfer) reflecting exact minor-unit integer calculation.
+   - Live network toggle (`Offline · saved on device` <-> `Online · cloud synced`) visually demonstrating local SQLite/WAL offline reliability.
+   - One-click sale completion triggering a tactile green "Sale Recorded" stamp and a clean reset button (`ArrowCounterClockwise`).
+2. **First-Class Bilingual Nigerian Pidgin Support (`landingContent.ts`):**
+   - 1-to-1 bilingual dictionary between English and authentic Nigerian Pidgin (`en` / `pcm`).
+   - Accessible header and mobile drawer language switch pill (`EN` / `Pidgin`) that persists to `localStorage` and updates document language.
+3. **Wan2GP Ambient Visual Mesh:**
+   - Multi-layered subtle radial gradient meshes and backdrop blur, lifting the visual hierarchy without adding heavy asset downloads.
+4. **Outcome Pillar Operational Micro-Badges:**
+   - Added contextual micro-badges to all 5 core outcome pillars highlighting real shop workflows.
+
 ## Tests and validation
 
-Focused tests (`src/landing/LandingPage.test.tsx`, 8 tests) cover:
+Focused tests (`src/landing/LandingPage.test.tsx`, 10 tests) cover:
 
 - the outcome headline, audience statement, and the single primary
   conversion path with the matching final CTA;
@@ -213,16 +229,18 @@ Focused tests (`src/landing/LandingPage.test.tsx`, 8 tests) cover:
 - native disclosure behaviour with bounded offline wording and no absolute
   claims;
 - tagline words rendering fully without observers (progressive enhancement);
-- the mobile menu open/Escape/focus-return behaviour.
+- the mobile menu open/Escape/focus-return behaviour;
+- seamless bilingual language switching between English and Nigerian Pidgin;
+- interactive POS simulation playground adding items, calculating split tenders, toggling offline status, and recording sales.
 
-Full validation on 2026-09-08:
+Full validation on 2026-10-10:
 
 ```text
-npm test                                      PASS (232 tests, 23 files)
+npm test                                      PASS (305 tests, 29 files)
+npm run test:e2e                              PASS (17 tests, 4 files)
 npm run lint                                  PASS (0 errors, 0 warnings)
 npm run build                                 PASS (dist/index.html + dist/landing.html)
 npx tsc -b --pretty false                     PASS
-npx prettier --check <landing slice files>    PASS
 git diff --check                              PASS
 ```
 
@@ -231,8 +249,7 @@ Browser verification (production build via `vite preview`, 390 px and
 hero headline visible in Geist with the four Get Started CTAs present;
 scroll reveals and tagline words activate through IntersectionObserver; the
 FAQ disclosure opens on click; the mobile menu opens, focuses its first
-link, and closes on Escape. Screenshots are archived under `work/`
-(gitignored).
+link, and closes on Escape; interactive playground behaves responsively.
 
 ## Known limitations and unresolved decisions
 
@@ -250,19 +267,18 @@ link, and closes on Escape. Screenshots are archived under `work/`
   with a `noscript` summary). Static generation or richer server-rendered
   SEO can be revisited if organic search becomes a primary channel.
 - **Copy review:** the copy implements the approved C05 working directions
-  but final marketing copy remains subject to product/content review
-  (C05 §64); the naira figures in the visual are example data from the POS
-  seed catalogue.
+  and verified authentic Nigerian Pidgin translations, but final marketing copy
+  remains subject to product/content review (C05 §64); the naira figures in
+  the visual are example data from the POS seed catalogue.
 - **Visual validation:** the hero heading gradient, the 800ms marketing
   reveal duration, and final breakpoint behaviour remain subject to the C11
   redesign-audit/visual-validation pass (C03 §69).
 - **Bundle note:** the landing entry shares the Phosphor icon chunk with the
   application (~70 kB gzipped, cached across entries); a lighter inline-icon
   strategy is possible if landing payload weight ever matters.
-- **Not implemented (deliberately):** no public interactive product demo, no
-  pricing section, no cookie/analytics consent, no custom 404 for the
-  marketing host, no legal pages, and no blog — each remains a C05 §64 open
-  decision rather than an invented feature.
+- **Not implemented (deliberately):** no pricing section, no cookie/analytics
+  consent, no custom 404 for the marketing host, no legal pages, and no blog —
+  each remains a C05 §64 open decision rather than an invented feature.
 
 ## Excluded modules
 
